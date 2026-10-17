@@ -4,6 +4,13 @@
 
 Assignment guidelines: https://alexxthiery.github.io/teaching/guidelines/guidelines.html
 
+## Candidate projects (shortlisting — see issue #1)
+
+- [LLM-guided evolution of heuristics](https://alexxthiery.github.io/teaching/llm-evolution/llm-evolution.html)
+- [Bayesian optimisation vs evolutionary strategies](https://alexxthiery.github.io/teaching/bo-vs-es/bo-vs-es.html)
+- [Muon and its follow-ups](https://alexxthiery.github.io/teaching/muon/muon.html)
+- [Training small language models under computational constraints](https://alexxthiery.github.io/teaching/small-llm/small-llm.html)
+
 ## Repository layout
 
 ```
