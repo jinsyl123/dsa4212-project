@@ -3,6 +3,7 @@
 > Project topic: _TBD_ (shortlist: LLM-guided evolution of heuristics / Bayesian optimisation vs evolutionary strategies)
 
 Assignment guidelines: https://alexxthiery.github.io/teaching/guidelines/guidelines.html
+Report LaTeX template (Overleaf, read-only): https://www.overleaf.com/read/hrstqvkjhzff#a35f95
 
 ## Candidate projects (shortlisting — see issue #1)
 
