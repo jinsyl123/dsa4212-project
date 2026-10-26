@@ -1,0 +1,9 @@
+# Tiny sets for pipeline smoke tests only (fast to evaluate). Do not report results on these.
+seed: 1
+
+sets:
+  train:         {n_instances: 6, n_items: [200, 500], capacity: 100, dist: weibull, shape: 3, scale: 45}
+  val:           {n_instances: 4, n_items: 500, capacity: 100, dist: weibull, shape: 3, scale: 45}
+  test_id:       {n_instances: 3, n_items: 1000, capacity: 100, dist: weibull, shape: 3, scale: 45}
+  test_cap500:   {n_instances: 3, n_items: 1000, capacity: 500, dist: weibull, shape: 3, scale: 45}
+  test_shape_k5: {n_instances: 3, n_items: 1000, capacity: 100, dist: weibull, shape: 5, scale: 45}

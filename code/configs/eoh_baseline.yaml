@@ -1,0 +1,57 @@
+# G1 pilot: EoH (baseline) with a real LLM on the v0 instances.
+# Before running: export DEEPSEEK_API_KEY=...  (or switch to OpenAI below)
+experiment: eoh_baseline
+
+instances: { spec: configs/instances/v0.yaml, dir: data/v0 }
+
+# llm:
+#   backend: openai_compat
+#   model: deepseek-chat                      # EoH-S used DeepSeek-V3 via LLM4AD
+#   base_url: https://api.deepseek.com/v1
+#   api_key_env: DEEPSEEK_API_KEY
+#   temperature: 1.0
+#   max_tokens: 4096
+#   price_in_per_1m: 0.27                     # USD per 1M tokens: check current pricing and update
+#   price_out_per_1m: 1.10
+#   # OpenAI alternative:
+#   # model: gpt-4o-mini
+#   # base_url: https://api.openai.com/v1
+#   # api_key_env: OPENAI_API_KEY
+
+llm:
+  provider: gemini # presets: gemini, openai, anthropic, deepseek, openrouter, ollama (see llm.py PROVIDERS)
+  model: gemini-3.5-flash-lite # pin an exact model, not a "-latest" alias, so runs stay reproducible
+  temperature: 1.0
+  max_tokens: 4096 # includes the model's hidden reasoning tokens
+  extra: { reasoning_effort: low } # Gemini 3 always reasons; "low" keeps cost and latency down
+  price_in_per_1m: 0.30 # USD per 1M tokens: CHECK ai.google.dev/pricing before trusting cost_usd
+  price_out_per_1m: 2.50
+
+budget:
+  max_evals: 300 # pilot size; EoH paper used 2000
+  max_tokens: 1500000 # hard cap per run (all calls, prompt + completion)
+  max_minutes: 120
+
+parallel: { num_samplers: 2, num_evaluators: 2 }
+
+evaluation:
+  { mode: funsearch, timeout_seconds: 60, train_set: train, prompt: llm4ad }
+
+seeds: [0, 1, 2]
+
+methods:
+  - { name: eoh, params: { pop_size: 10 } }
+
+final_eval:
+  sets:
+    [
+      val,
+      test_id_5k,
+      test_size_10k,
+      test_cap500,
+      test_cap500_scaled,
+      test_shape_k1.5,
+      test_shape_k5,
+      test_uniform,
+    ]
+  timeout_seconds: 900

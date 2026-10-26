@@ -1,0 +1,2 @@
+experiment,label,method,seed,llm_provider,llm_model,mode,train_set,n_train,max_evals,max_tokens,stop_reason,wall_minutes,n_llm_calls,n_llm_errors,prompt_tokens,completion_tokens,token_source,cost_usd,n_evals,n_unique_programs,n_ok,n_error,n_timeout,n_crash,n_calls_not_evaluated,best_eval,best_train_excess,best_code_hash
+pipecheck,eoh,eoh,0,gemini,gemini-3.5-flash-lite,funsearch,train,6,12,60000,budget:evals,0.77,15,0,6251,2492,api,0.0081,12,9,12,0,0,0,3,3,0.0489073400788394,41e5fb5c303a

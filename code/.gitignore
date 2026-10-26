@@ -1,0 +1,28 @@
+# Python / environments
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# Secrets: API keys live here, never commit
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Generated instances (rebuilt deterministically from configs/instances/*.yaml)
+data/
+
+# Raw run outputs: keep only each run's summary and best program
+results/*/*/seed*/*
+!results/*/*/seed*/summary.json
+!results/*/*/seed*/best_program.py
+results/*/final_per_instance.csv
+
+# Archives and local copies of libraries
+*.zip
+LLM4AD/

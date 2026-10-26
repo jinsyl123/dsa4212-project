@@ -1,0 +1,39 @@
+# Main comparison: every method gets the same LLM, instances, evaluation budget and token cap.
+# Labels let the same method appear twice with different settings (ablations).
+experiment: compare
+
+instances: {spec: configs/instances/v0.yaml, dir: data/v0}
+
+llm:
+  backend: openai_compat
+  model: deepseek-chat
+  base_url: https://api.deepseek.com/v1
+  api_key_env: DEEPSEEK_API_KEY
+  temperature: 1.0
+  max_tokens: 4096
+  price_in_per_1m: 0.27
+  price_out_per_1m: 1.10
+
+budget:
+  max_evals: 500
+  max_tokens: 2500000
+  max_minutes: 180
+
+parallel: {num_samplers: 2, num_evaluators: 2}
+
+evaluation: {mode: funsearch, timeout_seconds: 60, train_set: train, prompt: llm4ad}
+
+seeds: [0, 1, 2]
+
+methods:
+  - {name: eoh, params: {pop_size: 10}}                                     # baseline
+  - {label: eoh_no_m2, name: eoh, params: {pop_size: 10, use_m2_operator: false}}   # ablation: no parameter-tuning operator
+  - {name: reevo, params: {pop_size: 10}}
+  - {name: hillclimb}                                                       # (1+1)-EPS simple baseline (PPSN 2024)
+  - {name: randsample}                                                      # control: LLM sampling without search
+  # - {name: funsearch}
+  # - {name: mcts_ahd, params: {pop_size: 10}}                              # experimental in v0
+
+final_eval:
+  sets: [val, test_id_5k, test_size_10k, test_cap500, test_cap500_scaled, test_shape_k1.5, test_shape_k5, test_uniform]
+  timeout_seconds: 900

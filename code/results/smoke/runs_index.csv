@@ -1,0 +1,11 @@
+experiment,label,method,seed,llm_provider,llm_model,mode,train_set,n_train,max_evals,max_tokens,stop_reason,wall_minutes,n_llm_calls,n_llm_errors,prompt_tokens,completion_tokens,token_source,cost_usd,n_evals,n_unique_programs,n_ok,n_error,n_timeout,n_crash,n_calls_not_evaluated,best_eval,best_train_excess,best_code_hash,llm_backend
+smoke,eoh,eoh,0,fake,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,1.56,25,0,10908,1463,estimate,0.0,24,14,23,1,0,0,1,4,0.0489073400788394,76603cf26736,
+smoke,eoh,eoh,1,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.01,25,0,6836,1485,estimate,0.0,24,18,21,3,0,0,1,1,0.048907,2d39f763b6be,fake
+smoke,funsearch,funsearch,0,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.14,28,0,3360,1661,estimate,0.0,24,17,22,1,1,0,4,1,0.048907,76603cf26736,fake
+smoke,funsearch,funsearch,1,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.01,28,0,3560,1673,estimate,0.0,24,17,21,3,0,0,4,1,0.048907,76603cf26736,fake
+smoke,hillclimb,hillclimb,0,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.14,24,0,2880,1455,estimate,0.0,24,17,22,1,1,0,0,1,0.048907,76603cf26736,fake
+smoke,hillclimb,hillclimb,1,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.01,24,0,2880,1438,estimate,0.0,24,17,21,3,0,0,0,1,0.048907,76603cf26736,fake
+smoke,randsample,randsample,0,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.14,24,0,2880,1455,estimate,0.0,24,17,22,1,1,0,0,1,0.048907,76603cf26736,fake
+smoke,randsample,randsample,1,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.01,24,0,2880,1438,estimate,0.0,24,17,21,3,0,0,0,1,0.048907,76603cf26736,fake
+smoke,reevo,reevo,0,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.01,43,0,14348,2676,estimate,0.0,24,13,20,4,0,0,19,4,0.048907,76603cf26736,fake
+smoke,reevo,reevo,1,,fake-heuristic-generator,funsearch,train,6,24,200000,budget:evals,0.01,43,0,14904,2742,estimate,0.0,24,19,23,1,0,0,19,1,0.048907,2d39f763b6be,fake

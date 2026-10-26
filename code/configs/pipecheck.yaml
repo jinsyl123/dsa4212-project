@@ -1,0 +1,35 @@
+# Real-LLM pipeline check: same plumbing as a real run, tiny budget. ~3-5 minutes, well under US$0.05.
+# Checks what smoke.yaml can't: API key, a real model's response format, real token counts and cost.
+# Run: python code/run_experiment.py --config configs/pipecheck.yaml   (then evaluate_final / summarise)
+experiment: pipecheck
+
+instances: { spec: configs/instances/smoke.yaml, dir: data/smoke } # 6 small train instances
+
+llm:
+  provider: gemini # presets: gemini, openai, anthropic, deepseek, openrouter, ollama (see llm.py PROVIDERS)
+  model: gemini-3.5-flash-lite # pin an exact model, not a "-latest" alias, so runs stay reproducible
+  temperature: 1.0
+  max_tokens: 4096 # includes the model's hidden reasoning tokens
+  extra: { reasoning_effort: low } # Gemini 3 always reasons; "low" keeps cost and latency down
+  price_in_per_1m: 0.30 # USD per 1M tokens: CHECK ai.google.dev/pricing before trusting cost_usd
+  price_out_per_1m: 2.50
+
+budget:
+  max_evals: 12 # pop 4 -> 4 initial programs, then ~8 evolved: reaches EoH's crossover/mutation prompts
+  max_tokens: 60000 # hard cost cap
+  max_minutes: 8
+
+parallel: { num_samplers: 4, num_evaluators: 4 } # more parallel calls = less waiting on the API
+
+evaluation:
+  { mode: funsearch, timeout_seconds: 10, train_set: train, prompt: llm4ad }
+
+seeds: [0]
+
+methods:
+  - { name: eoh, params: { pop_size: 4 } }
+  # - {name: reevo, params: {pop_size: 4}}    # uncomment one at a time to check each alternative method parses real output
+
+final_eval:
+  sets: [val, test_id]
+  timeout_seconds: 60

@@ -1,0 +1,60 @@
+# Single source of truth for every LLM the pipeline can use. Refer to an entry by its name:
+#   in a config:        llm: gemini-3.5-flash-lite
+#   from a notebook:    run_experiment.main(CONFIG, llm="gemini-3.8-flash")
+#   with tweaks:        llm={"name": "gemini-3.8-flash", "temperature": 0.5}
+# Fields: provider (see PROVIDERS in code/obpevo/llm.py), model (the API's model ID), prices in USD per 1M tokens
+# (paid tier; output includes reasoning tokens), and optional temperature, max_tokens, extra (provider options).
+# Prices change: re-check the provider's pricing page and update `checked` when you do.
+
+gemini-3.5-flash-lite:
+  provider: gemini
+  model: gemini-3.5-flash-lite
+  price_in_per_1m: 0.30
+  price_out_per_1m: 2.50
+  max_tokens: 8192
+  extra: { reasoning_effort: low }
+  notes: free tier available; Google's recommended low-cost model
+  checked: 2026-10-25 (ai.google.dev/pricing)
+
+gemini-3.1-flash-lite:
+  provider: gemini
+  model: gemini-3.1-flash-lite
+  price_in_per_1m: 0.25
+  price_out_per_1m: 1.50
+  max_tokens: 8192
+  extra: { reasoning_effort: low }
+  notes: free tier available; cheapest Gemini text model
+  checked: 2026-10-25 (ai.google.dev/pricing)
+
+gemini-3.8-flash:
+  provider: gemini
+  model: gemini-3.8-flash
+  price_in_per_1m: 0.75 # doubles to 1.50 from 2027-01-01
+  price_out_per_1m: 3.75 # doubles to 7.50 from 2027-01-01
+  max_tokens: 8192
+  extra: { reasoning_effort: low }
+  notes: free tier available; stronger model
+  checked: 2026-10-25 (ai.google.dev/pricing)
+
+claude-haiku-5-5:
+  provider: anthropic
+  model: claude-haiku-5-5
+  price_in_per_1m: 0 # SET from Anthropic's pricing page before use
+  price_out_per_1m: 0
+  max_tokens: 4096
+  notes: paid only (US$5 one-time trial for new accounts)
+
+deepseek-chat:
+  provider: deepseek
+  model: deepseek-chat
+  price_in_per_1m: 0.27 # not re-checked since Oct 2026; verify before use
+  price_out_per_1m: 1.10
+  max_tokens: 4096
+  notes: paid only
+
+fake:
+  provider: fake
+  model: fake-heuristic-generator
+  price_in_per_1m: 0
+  price_out_per_1m: 0
+  notes: offline stand-in for smoke tests; no key, no cost
