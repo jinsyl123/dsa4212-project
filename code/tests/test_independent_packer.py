@@ -21,8 +21,14 @@ def pack(priority, items, capacity) -> int:
       3. The item goes into the highest-scoring bin; ties go to the earliest bin.
       4. Bins used = bins whose remaining capacity is no longer `capacity`.
     """
-    # TODO: write this yourself (~10 lines, numpy only), without reading core.pack_funsearch
-    raise NotImplementedError
+    # Written from the rules above only, without reading core.pack_funsearch
+    bins = np.full(len(items), capacity, dtype=float)
+    for item in items:
+        idx = np.nonzero(bins >= item)[0]               # candidate bins, in bin order
+        scores = np.asarray(priority(item, bins[idx]))
+        best = idx[np.argmax(scores)]                   # argmax picks the first max, so ties go to the earliest bin
+        bins[best] -= item
+    return int(np.sum(bins != capacity))
 
 
 def train_instances():
@@ -32,13 +38,18 @@ def train_instances():
 
 class TestIndependentPacker(unittest.TestCase):
     def test_hand_checked(self):
-        # Work these out on paper first, then fill them in
-        items, cap = np.array([6, 5, 4, 3, 2]), 10
-        self.assertEqual(pack(baselines.best_fit, items, cap), ...)   # TODO: best fit, by hand
-        self.assertEqual(pack(baselines.first_fit, items, cap), ...)  # TODO: first fit, by hand
+        # BF and FF disagree here, so a packer that ignores the scores fails.
+        # BF: 3->A(7), 8->B(2), 2->B(0) tightest, 6->A(1)  => 2 bins
+        # FF: 3->A(7), 8->B(2), 2->A(5) earliest, 6->C(4)  => 3 bins
+        items, cap = np.array([3, 8, 2, 6]), 10
+        self.assertEqual(pack(baselines.best_fit, items, cap), 2)
+        self.assertEqual(pack(baselines.first_fit, items, cap), 3)
 
     def test_matches_core_on_train(self):
-        for fn in (baselines.best_fit, baselines.first_fit):
+        # BF and FF, plus the committed EoH best program (a real evolved rule, not just a baseline)
+        ns = {"np": np}
+        exec((ROOT / "results/eoh_baseline/eoh/seed0/best_program.py").read_text(), ns)
+        for fn in (baselines.best_fit, baselines.first_fit, ns["priority"]):
             for inst in train_instances():
                 with self.subTest(rule=fn.__name__, instance=inst["id"]):
                     self.assertEqual(pack(fn, inst["items"], inst["capacity"]),
