@@ -10,6 +10,8 @@ LLM API  ◄──────  LoggedLLM  ◄──────  LLM4AD method 
                   time budgets                                                               budget                   a score
 ```
 
+> **Where this lives:** in the team repo this pipeline sits in the `code/` folder. All paths below are relative to that folder, and commands are run from inside it (`cd code`).
+
 ---
 
 ## Contents
@@ -79,15 +81,17 @@ code/
   obpevo/llm.py          LLM clients (OpenAI-compatible, Anthropic, fake) + LoggedLLM wrapper
   obpevo/recorder.py     EvalRecorder: logs every candidate, enforces the eval budget
   obpevo/methods.py      registry of LLM4AD methods
-  obpevo/config.py       YAML config loading, inheritance (base:) and overrides
+  obpevo/config.py       YAML config loading: inheritance (base:), LLM/budget lookup, overrides
   make_instances.py      build instance sets from a spec
   run_experiment.py      step 1: search (every method x seed in a config)
   evaluate_final.py      step 2: score best programs + baselines on held-out sets
   summarise.py           step 3: tables and figures
 configs/
+  llms.yaml              every LLM we can use: provider, model ID, prices, settings (single source of truth)
+  budgets.yaml           named budgets (smoke, check, pilot, medium, full, large)
   smoke.yaml             fake LLM, plumbing check
   pipecheck.yaml         real LLM, tiny budget
-  pipecheck_claude.yaml  example of switching LLM by inheriting a config
+  pipecheck_claude.yaml  example of switching LLM in a config file
   eoh_baseline.yaml      EoH, full budget, 3 seeds (main baseline)
   compare.yaml           EoH vs alternatives and ablations
   instances/v0.yaml      instance sets used for real runs (frozen at G2)
@@ -185,6 +189,15 @@ python code/evaluate_final.py --config configs/eoh_baseline.yaml
 python code/summarise.py      --config configs/eoh_baseline.yaml
 ```
 
+**Trying another model or budget** needs no new config: pass `llm=` and `budget=` (names from `configs/llms.yaml` and `configs/budgets.yaml`) to all three steps. The results folder is named after them, so different choices never overwrite each other:
+
+```python
+args = dict(llm="gemini-3.8-flash", budget="pilot")
+run_experiment.main(CONFIG, seeds=[0], **args)   # -> results/eoh_baseline__gemini-3.8-flash__pilot/
+evaluate_final.main(CONFIG, **args)
+summarise.main(CONFIG, **args)
+```
+
 - **Finished runs are skipped.** A run with a `summary.json` counts as done. Pass `force=True` (`--force`) to redo it, e.g. after a failed run.
 - **Step 2 scores every finished seed** in the experiment together, so run seeds one at a time (e.g. on different days) and evaluate at the end.
 - **Long runs block the notebook cell.** Check progress from a second notebook or terminal:
@@ -208,16 +221,8 @@ One YAML file fixes everything about an experiment. Example (`configs/eoh_baseli
 experiment: eoh_baseline                     # results folder: results/eoh_baseline/
 instances: {spec: configs/instances/v0.yaml, dir: data/v0}
 
-llm:
-  provider: gemini
-  model: gemini-3.5-flash-lite
-  temperature: 1.0
-  max_tokens: 8192
-  extra: {reasoning_effort: low}
-  price_in_per_1m: 0.30                      # USD per 1M tokens; check the provider's pricing page
-  price_out_per_1m: 2.50
-
-budget: {max_evals: 300, max_tokens: 1500000, max_minutes: 120}
+llm: gemini-3.5-flash-lite                   # a name from configs/llms.yaml (model, prices, settings)
+budget: full                                 # a name from configs/budgets.yaml (300 evals, 1.5M tokens, 120 min)
 parallel: {num_samplers: 2, num_evaluators: 2}
 evaluation: {mode: funsearch, timeout_seconds: 60, train_set: train, prompt: llm4ad}
 seeds: [0, 1, 2]
@@ -232,8 +237,8 @@ final_eval:
 |---|---|
 | `experiment` | results folder name. **Use a new name for every model or setting you compare**, or runs overwrite each other / get skipped as done. |
 | `instances` | instance spec, and where generated sets are stored (built automatically on first run) |
-| `llm` | provider, model, sampling settings, prices (see §8) |
-| `budget` | per-run limits; the run stops at the first one reached. Keep `max_tokens` and `max_minutes` loose so `max_evals` is normally the binding limit. |
+| `llm` | a name from `configs/llms.yaml`, or a dict (see §8) |
+| `budget` | a name from `configs/budgets.yaml`, or a dict `{max_evals, max_tokens, max_minutes}`. The run stops at the first limit reached; keep `max_tokens` and `max_minutes` loose so `max_evals` normally binds. A dict replaces the preset entirely, so give all three. |
 | `parallel` | LLM calls / evaluations in parallel (lower `num_samplers` if you hit rate limits) |
 | `evaluation.mode` | `funsearch` (default, matches LLM4AD) or `anyfit` (see §11) |
 | `evaluation.timeout_seconds` | per-candidate time limit; ≥ 30 on Windows |
@@ -247,30 +252,58 @@ final_eval:
 ```yaml
 base: configs/eoh_baseline.yaml
 experiment: eoh_baseline_38flash
-llm: {provider: gemini, model: gemini-3.8-flash, max_tokens: 8192, extra: {reasoning_effort: low},
-      price_in_per_1m: 0.75, price_out_per_1m: 3.75}
+llm: gemini-3.8-flash
 ```
 
-A new `provider` replaces the whole `llm` section, so nothing carries over from the base model.
+Naming a different model replaces the whole `llm` section, so nothing carries over from the base model.
 
-**Overrides from a notebook** (no new file). Pass the same overrides to all three steps:
+**From a notebook** (no new file), every function takes the same optional arguments. Pass the same ones to all three steps:
 
-```python
-OV = {"experiment": "eoh_pilot", "budget": {"max_evals": 60, "max_tokens": 400000, "max_minutes": 45}}
-run_experiment.main("configs/eoh_baseline.yaml", seeds=[0], overrides=OV)
-evaluate_final.main("configs/eoh_baseline.yaml", overrides=OV)
-summarise.main("configs/eoh_baseline.yaml", overrides=OV)
-```
+| Argument | Example | Effect |
+|---|---|---|
+| `llm` | `"gemini-3.8-flash"` or `{"name": "gemini-3.8-flash", "temperature": 0.5}` | model from the registry, optionally adjusted |
+| `budget` | `"pilot"` or `{"max_evals": 80, "max_tokens": 500000, "max_minutes": 60}` | preset or custom budget |
+| `experiment` | `"eoh_80"` | results folder name (derived from `llm`/`budget` if omitted) |
+| `overrides` | `{"evaluation": {"prompt": "informed"}, "methods": [...]}` | any other setting |
+
+`overrides` does **not** rename the results folder: pass `experiment=` with it, or runs overwrite each other.
 
 ---
 
 ## 8. Choosing the LLM
 
-`provider` fills in the API address and which environment variable holds the key:
+**`configs/llms.yaml` is the single source of truth** for every model we can use: provider, model ID, prices and settings. Configs and functions refer to a model by its name only:
+
+```yaml
+gemini-3.8-flash:
+  provider: gemini
+  model: gemini-3.8-flash
+  price_in_per_1m: 0.75          # USD per 1M tokens, paid tier; doubles from 2027-01-01
+  price_out_per_1m: 3.75
+  max_tokens: 8192
+  extra: {reasoning_effort: low}
+  notes: free tier available; stronger model
+  checked: 2026-10-25 (ai.google.dev/pricing)
+```
+
+| Name | Provider | Price in / out (USD per 1M) | Notes |
+|---|---|---|---|
+| `gemini-3.5-flash-lite` | Gemini | 0.30 / 2.50 | default; free tier |
+| `gemini-3.1-flash-lite` | Gemini | 0.25 / 1.50 | cheapest; free tier |
+| `gemini-3.8-flash` | Gemini | 0.75 / 3.75 | stronger; free tier |
+| `claude-haiku-5-5` | Anthropic | set before use | paid only |
+| `deepseek-chat` | DeepSeek | 0.27 / 1.10 (unverified) | paid only |
+| `fake` | none | 0 / 0 | offline stand-in for tests |
+
+See them all from a notebook with `pd.DataFrame(C.llm_registry()).T`. Unknown names fail immediately with the list of valid ones.
+
+**Adding a model:** add an entry to `configs/llms.yaml` with `provider`, `model`, both prices and a `checked` date. Prices change, so re-check the provider's pricing page and update `checked` when you do. Every result records the model name (`llm_name` in `summary.json`), so old results stay attributable.
+
+**Providers** (the `provider` field) fill in the API address and which environment variable holds the key:
 
 | `provider` | Key variable | Notes |
 |---|---|---|
-| `gemini` | `GEMINI_API_KEY` | our default; free tier on Flash / Flash-Lite models |
+| `gemini` | `GEMINI_API_KEY` | free tier on Flash / Flash-Lite models |
 | `openai` | `OPENAI_API_KEY` | paid only; set `temperature: null` for models that only accept the default |
 | `anthropic` | `ANTHROPIC_API_KEY` | Claude; paid only (one-time trial credit for new accounts) |
 | `deepseek` | `DEEPSEEK_API_KEY` | paid |
@@ -279,11 +312,7 @@ summarise.main("configs/eoh_baseline.yaml", overrides=OV)
 | `openai_compat` | your choice | any other OpenAI-style server: also give `base_url` and `api_key_env` |
 | `fake` | none | offline stand-in for tests |
 
-Gemini models with a free tier (Oct 2026): `gemini-3.5-flash-lite` (default), `gemini-3.1-flash-lite`, `gemini-3.6-flash`, `gemini-3.8-flash`. On the free tier `cost_usd` shows what the run *would* cost on the paid tier, which is the figure to report. Free-tier prompts may be used by Google to improve its products, so don't send anything confidential.
-
-Pin exact model versions (not `-latest` aliases) so runs stay reproducible. Token counts include hidden reasoning tokens where the provider reports them; failed calls count zero tokens.
-
----
+On the free tier, `cost_usd` shows what the run *would* cost on the paid tier, which is the figure to report. Free-tier prompts may be used by Google to improve its products, so don't send anything confidential. Pin exact model versions (not `-latest` aliases) so runs stay reproducible. Token counts include hidden reasoning tokens where the provider reports them; failed calls count zero tokens.
 
 ## 9. Methods and ablations
 
@@ -320,9 +349,10 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 | Population size | `params: {pop_size: 5 / 10 / 20}` (LLM4AD suggests ~10 for 200+ evals, ~20 for 1000+) |
 | Problem information in the prompt | `evaluation: {prompt: informed}` |
 | Formatting rules | `evaluation: {format_hint: false}` |
-| Model / reasoning / temperature | `llm:` section |
+| Model | `llm="gemini-3.8-flash"` |
+| Reasoning / temperature | `llm={"name": "gemini-3.5-flash-lite", "extra": {"reasoning_effort": "medium"}}` or `{"name": ..., "temperature": 0.5}` |
 | Empty-bin rule | `evaluation: {mode: anyfit}` |
-| Budget | `budget: {max_evals: ...}` |
+| Budget | `budget="medium"` / `"full"` / `"large"` |
 
 **Change one thing at a time** against a baseline with the same model, budget and seeds, and use at least 3 seeds per arm: LLM runs vary a lot between seeds.
 
@@ -404,6 +434,7 @@ Each test set changes one thing from training, so a failure can be attributed to
 | Thousands of calls, 0 evals, `budget:tokens` | a broken `llm.py` edit (calls fail instantly) | run the one-call wrapper test below; check indentation inside `LoggedLLM.draw_sample` |
 | `UnboundLocalError` in `draw_sample` | a block pasted inside the `except:` branch | `if status == "ok":` must line up with `try:` / `except` |
 | `FileExistsError` / `PermissionError` on `results/.../seed0` (Windows) | an old process holds files in the run folder | close Explorer windows there; end stray `python.exe` in Task Manager; restart |
+| `KeyError: LLM '...' is not in configs/llms.yaml` | typo or a model not yet added | use a listed name, or add an entry (§8) |
 | `best_train_excess` is `None` | no candidate ran successfully | check `stop_reason`, `llm_calls.csv`, `evals.csv`, `error.txt` |
 
 **One-call test through the same wrapper the pipeline uses:**
@@ -446,6 +477,5 @@ One seed only: run seeds 1 and 2 before drawing conclusions. Details in `docs/lo
 - Only EoH has been run with a real LLM; pipecheck the other methods before their full runs.
 - Only each run's single best program goes to held-out evaluation.
 - No operator attribution yet (which EoH operator produced each candidate) and no diversity metrics (clone rate, collapse rate, behavioural diversity). Both planned before the exploration/exploitation study.
-- Planned: an LLM registry (`configs/llms.yaml`) as the single source of model details and prices, with `llm=` and `budget=` arguments on all three steps.
 - MCTS-AHD and HSEvo are untested.
-- Prices in configs were checked on 2026-10-25; re-check before trusting `cost_usd`.
+- Prices in `configs/llms.yaml` were checked on 2026-10-25; re-check before trusting `cost_usd`. `claude-haiku-5-5` has no price set yet.

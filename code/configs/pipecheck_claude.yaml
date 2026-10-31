@@ -1,0 +1,5 @@
+# Same check as pipecheck.yaml with a different LLM. From a notebook, run_experiment.main("configs/pipecheck.yaml",
+# llm="claude-haiku-5-5") does the same without this file. Needs ANTHROPIC_API_KEY and prices set in configs/llms.yaml.
+base: configs/pipecheck.yaml
+experiment: pipecheck_claude
+llm: claude-haiku-5-5
