@@ -12,6 +12,12 @@ One entry per decision that affects results. Newest at the top. Link the config 
 
 ---
 
+### 2026-10-31: failed held-out instances scored as Next Fit (Jin)
+- **Decision:** in `evaluate_final`, an instance where a program errors or times out gets Next Fit's excess instead of `NaN`; `status` and `failed_frac` still record the failure.
+- **Why:** `NaN` drops out of the mean, so a program that fails often would look better than one that runs everywhere. Next Fit is the simplest valid packing, so a failure is never rewarded. No current run has failures, so no reported number changes.
+- **Alternatives considered:** leave `NaN` and report `failed_frac` only (mean still flattering); a fixed penalty (arbitrary scale).
+- **Affects:** `evaluate_final.py`, `final_summary.csv` only when a program fails.
+
 ### 2026-10-25: v0 pipeline design (Nic)
 - **Decision:** LLM4AD runs the search methods; a thin BLADE-style layer (`code/obpevo/`) handles logging, budgets, train/test separation and run records. EoH is the baseline method.
 - **Why:** reuses tested reference implementations of EoH, ReEvo, FunSearch, (1+1)-EPS and random sampling, while keeping the comparison fair in one place that no method controls.
