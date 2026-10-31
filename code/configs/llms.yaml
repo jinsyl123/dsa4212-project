@@ -12,7 +12,7 @@ gemini-3.5-flash-lite:
   price_in_per_1m: 0.30
   price_out_per_1m: 2.50
   max_tokens: 8192
-  extra: {reasoning_effort: low}
+  extra: { reasoning_effort: low }
   notes: free tier available; Google's recommended low-cost model
   checked: 2026-10-25 (ai.google.dev/pricing)
 
@@ -22,24 +22,24 @@ gemini-3.1-flash-lite:
   price_in_per_1m: 0.25
   price_out_per_1m: 1.50
   max_tokens: 8192
-  extra: {reasoning_effort: low}
+  extra: { reasoning_effort: low }
   notes: free tier available; cheapest Gemini text model
   checked: 2026-10-25 (ai.google.dev/pricing)
 
 gemini-3.8-flash:
   provider: gemini
   model: gemini-3.8-flash
-  price_in_per_1m: 0.75          # doubles to 1.50 from 2027-01-01
-  price_out_per_1m: 3.75         # doubles to 7.50 from 2027-01-01
+  price_in_per_1m: 0.75 # doubles to 1.50 from 2027-01-01
+  price_out_per_1m: 3.75 # doubles to 7.50 from 2027-01-01
   max_tokens: 8192
-  extra: {reasoning_effort: low}
+  extra: { reasoning_effort: low }
   notes: free tier available; stronger model
   checked: 2026-10-25 (ai.google.dev/pricing)
 
 claude-haiku-5-5:
   provider: anthropic
   model: claude-haiku-5-5
-  price_in_per_1m: 0             # SET from Anthropic's pricing page before use
+  price_in_per_1m: 0 # SET from Anthropic's pricing page before use
   price_out_per_1m: 0
   max_tokens: 4096
   notes: paid only (US$5 one-time trial for new accounts)
@@ -47,10 +47,20 @@ claude-haiku-5-5:
 deepseek-chat:
   provider: deepseek
   model: deepseek-chat
-  price_in_per_1m: 0.27          # not re-checked since Oct 2026; verify before use
+  price_in_per_1m: 0.27 # not re-checked since Oct 2026; verify before use
   price_out_per_1m: 1.10
   max_tokens: 4096
   notes: paid only
+
+openrouter-gemini-3.5-flash-lite:
+  provider: openrouter
+  model: google/gemini-3.5-flash-lite
+  price_in_per_1m: 0.30
+  price_out_per_1m: 2.50
+  max_tokens: 8192
+  extra: { reasoning: { effort: low } } # OpenRouter's form of reasoning_effort; reasoning tokens are billed as output
+  notes: paid via OpenRouter; same model as gemini-3.5-flash-lite (Google free tier), no daily quota
+  checked: 2026-10-31 (openrouter.ai/models/google/gemini-3.5-flash-lite)
 
 fake:
   provider: fake
