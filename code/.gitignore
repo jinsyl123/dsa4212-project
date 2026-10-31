@@ -22,6 +22,7 @@ results/*/*/seed*/*
 !results/*/*/seed*/summary.json
 !results/*/*/seed*/best_program.py
 results/*/final_per_instance.csv
+results/*/diagnostics.csv
 
 # Archives and local copies of libraries
 *.zip

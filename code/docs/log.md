@@ -12,6 +12,12 @@ One entry per decision that affects results. Newest at the top. Link the config 
 
 ---
 
+### 2026-10-31: fresh-bin diagnostic, scores unchanged (Jin)
+- **Decision:** `obpevo/diagnostics.py` + `diagnose.py` rescore best programs and the BF/FF/WF baselines in both packing modes and add `fresh_bin_rate` (share of items put in an empty bin while a used bin had room). Separate from `core.py`; tests check it packs identically to `core.py` in both modes.
+- **Why:** tests the explanation for EoH seed 0's k=5 failure. Result: EoH opens a fresh bin in ~36% of choices on train (57% on k=5); BF/FF never do. In anyfit mode k=5 excess falls 38.9% → 8.1%, but EoH also loses most of its in-distribution lead (train 3.79% → 4.34%, BF 4.75%). The same bet drives both the gain and the failure. One seed so far.
+- **Alternatives considered:** adding the column inside `core.evaluate` (touches the search hot path and Nic's scorer).
+- **Affects:** `results/eoh_baseline/diagnostics_summary.csv`, report analysis section.
+
 ### 2026-10-25: v0 pipeline design (Nic)
 - **Decision:** LLM4AD runs the search methods; a thin BLADE-style layer (`code/obpevo/`) handles logging, budgets, train/test separation and run records. EoH is the baseline method.
 - **Why:** reuses tested reference implementations of EoH, ReEvo, FunSearch, (1+1)-EPS and random sampling, while keeping the comparison fair in one place that no method controls.
