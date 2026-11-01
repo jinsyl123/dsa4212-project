@@ -5,11 +5,15 @@ Usage (from code/):
 
 For every results/<experiment>/*/seed*/best_program.py:
   - `flags`: static rule violations from obpevo/integrity.py ('' = clean)
-  - rescored three times, each in a fresh process with freshly seeded RNGs:
-      A, B: instances in their usual order  -> `repeat_mismatch`  = instances where A and B differ (randomness)
-      S:    instances shuffled              -> `shuffle_mismatch` = instances where A and S differ (state kept
-                                                                     from one instance to the next)
+  - rescored four times, each in a fresh Python process (spawn) with its own hash seed and fresh RNG seeds:
+      A, B: instances in their usual order, S, T: the same shuffled order
+      `repeat_mismatch`  = instances where A != B or S != T (randomness, hash()/id(), clock)
+      `shuffle_mismatch` = instances where A != S (state kept from one instance to the next; only
+                           read as state when repeat_mismatch == 0)
+  Scripts that call check_programs need the usual `if __name__ == "__main__":` guard (spawn re-imports them).
+  - `verdict`: failed / nondeterministic / stateful / flagged / clean
 A clean, deterministic, stateless program has no flags and 0 mismatches. Nothing here changes a score.
+A program whose randomness rarely changes a bin count can still pass the rescoring; the static flags cover that.
 Output: results/<experiment>/integrity.csv
 """
 from __future__ import annotations
@@ -28,7 +32,8 @@ from obpevo import config as C, core, instances, integrity
 
 
 def _worker(program: str, insts: list[dict], mode: str, q):
-    # Forked children inherit the parent's RNG state, so unseeded randomness would repeat exactly. Reseed from OS entropy.
+    # Each child is a fresh interpreter (spawn) with its own PYTHONHASHSEED, so hash()/id()-based choices vary too;
+    # reseed the RNGs from OS entropy as well, in case a library seeded them at import.
     np.random.seed(int.from_bytes(os.urandom(4), "little"))
     random.seed(os.urandom(8))
     try:
@@ -40,15 +45,25 @@ def _worker(program: str, insts: list[dict], mode: str, q):
 
 
 def run_isolated(jobs: list[dict], mode: str, timeout: float, workers: int) -> list:
-    """Run each job's program on job['insts'] in its own process; returns (status, payload) per job, in order."""
-    ctx = mp.get_context("fork" if "fork" in mp.get_all_start_methods() else "spawn")
+    """Run each job's program on job['insts'] in its own fresh process; returns (status, payload) per job, in order.
+    Always `spawn` (not fork): forked children share the parent's hash seed and memory layout, which would hide
+    nondeterminism from hash() or id()."""
+    ctx = mp.get_context("spawn")
     results, pending, live = [None] * len(jobs), list(enumerate(jobs)), []
     while pending or live:
         while pending and len(live) < workers:
             k, j = pending.pop(0)
             q = ctx.Queue()
             p = ctx.Process(target=_worker, args=(j["program"], j["insts"], mode, q), daemon=True)
-            p.start()
+            old = os.environ.get("PYTHONHASHSEED")
+            os.environ["PYTHONHASHSEED"] = str(int.from_bytes(os.urandom(4), "little"))   # read by the new child
+            try:
+                p.start()
+            finally:
+                if old is None:
+                    os.environ.pop("PYTHONHASHSEED", None)
+                else:
+                    os.environ["PYTHONHASHSEED"] = old
             live.append((k, p, q, time.time()))
         time.sleep(0.05)
         for item in list(live):
@@ -76,22 +91,42 @@ def shuffled(insts: list[dict], seed: int = 0) -> list[dict]:
 
 def check_programs(progs: list[dict], sets: dict, mode: str, timeout: float, workers: int) -> pd.DataFrame:
     """progs: dicts with label, seed, program. sets: name -> instances. One row per (program, set)."""
-    jobs = [dict(**p, set=sn, run=run, insts=shuffled(insts) if run == "S" else insts)
-            for p in progs for sn, insts in sets.items() for run in "ABS"]
+    jobs = [dict(**p, set=sn, run=run, insts=shuffled(insts) if run in "ST" else insts)
+            for p in progs for sn, insts in sets.items() for run in RUNS]
     res = run_isolated(jobs, mode, timeout, workers)
     by = {(j["label"], j["seed"], j["set"], j["run"]): r for j, r in zip(jobs, res)}
     rows = []
     for p in progs:
         for sn, insts in sets.items():
-            (sa, a), (sb, b), (ss, s) = (by[(p["label"], p["seed"], sn, run)] for run in "ABS")
-            ok = sa == sb == ss == "ok"
-            rows.append(dict(label=p["label"], seed=p["seed"], flags=integrity.flag_str(p["program"]), set=sn,
-                             n_instances=len(insts),
-                             status="ok" if ok else "; ".join(f"{r}: {x}" for r, x in zip("ABS", (a, b, s))
-                                                              if isinstance(x, str)),
-                             repeat_mismatch=sum(a[i] != b[i] for i in a) if ok else None,
-                             shuffle_mismatch=sum(a[i] != s[i] for i in a) if ok else None))
+            got = {run: by[(p["label"], p["seed"], sn, run)] for run in RUNS}
+            ok = all(st == "ok" for st, _ in got.values())
+            a, b, s, t = (got[run][1] for run in RUNS)
+            flags = integrity.flag_str(p["program"])
+            # repeat: same order, two fresh processes, for both orders; shuffle: only counted if repeats agree
+            rep = sum(a[i] != b[i] or s[i] != t[i] for i in a) if ok else None
+            shuf = sum(a[i] != s[i] for i in a) if ok else None
+            rows.append(dict(label=p["label"], seed=p["seed"], flags=flags, set=sn, n_instances=len(insts),
+                             status="ok" if ok else "; ".join(f"{r}: {x}" for r, (st, x) in got.items() if st != "ok"),
+                             repeat_mismatch=rep, shuffle_mismatch=shuf, verdict=_verdict(ok, flags, rep, shuf)))
     return pd.DataFrame(rows)
+
+
+RUNS = "ABST"   # A, B: usual order; S, T: the same shuffled order
+
+
+RANDOM_FLAGS = {"random", "call:hash", "call:id", "clock", "star_import", "dynamic_getattr"}
+
+
+def _verdict(ok: bool, flags: str, rep, shuf) -> str:
+    """One word per row. Randomness that rarely changes a bin count can show up only in the shuffled runs, so a
+    shuffle-only change counts as 'stateful' only when the static check found no source of randomness."""
+    if not ok:
+        return "failed"
+    if rep or (shuf and RANDOM_FLAGS & set(flags.split(";"))):
+        return "nondeterministic"
+    if shuf:
+        return "stateful"
+    return "flagged" if flags else "clean"
 
 
 def main(config, sets=None, workers=None, overrides=None, llm=None, budget=None, experiment=None) -> pd.DataFrame:
@@ -106,7 +141,7 @@ def main(config, sets=None, workers=None, overrides=None, llm=None, budget=None,
         s, prog = json.loads(summ.read_text()), summ.parent / "best_program.py"
         if prog.exists():
             progs.append(dict(label=s["label"], seed=s["seed"], program=prog.read_text()))
-    print(f"[{cfg['experiment']}] {len(progs)} programs x {len(set_names)} sets x 3 rescorings")
+    print(f"[{cfg['experiment']}] {len(progs)} programs x {len(set_names)} sets x {len(RUNS)} rescorings")
     df = check_programs(progs, loaded, cfg["evaluation"]["mode"], cfg["final_eval"]["timeout_seconds"], workers)
     df.to_csv(out / "integrity.csv", index=False)
     print(df.to_string(index=False))

@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import multiprocessing as mp
+import queue
 import time
 from pathlib import Path
 
@@ -28,12 +29,15 @@ def _worker(program: str, insts: list[dict], mode: str, q):
 
 
 def _failed_row(meta: dict, inst: dict, status: str) -> dict:
-    """A failed instance is scored as Next Fit (the simplest valid packing), not NaN: a NaN would drop out of
-    the mean and make a program that fails often look better. `status` still records the failure."""
+    """A failed instance is scored as Next Fit, not NaN: a NaN would drop out of the mean and make a program that
+    fails often look better. `status` still records the failure. Next Fit is worse than every sensible heuristic
+    (it never beats Best Fit on any v0 instance), but it is not a strict floor: in funsearch mode a valid program
+    that always opens a new bin uses more bins than Next Fit, so it would score better by crashing."""
     items, cap = inst["items"], inst["capacity"]
     n, lb = baselines.pack_next_fit(items, cap), core.lower_bound(items, cap)
     return dict(**meta, instance=inst["id"], n_items=len(items), capacity=cap, bins=n, lb=lb,
                 excess=(n - lb) / lb, time_s=np.nan, status=status)
+
 
 def run_programs(jobs: list[dict], sets: dict, mode: str, timeout: float, workers: int) -> list[dict]:
     """Run (program x set) jobs in forked processes, at most `workers` at a time, killing any over `timeout`."""
@@ -56,7 +60,10 @@ def run_programs(jobs: list[dict], sets: dict, mode: str, timeout: float, worker
             elif time.time() - t0 > timeout:
                 status, payload = "timeout", f"exceeded {timeout}s"
             elif not p.is_alive():
-                status, payload = "crash", "process died"
+                try:                                                 # the result can land between the two checks
+                    status, payload = q.get(timeout=1)
+                except queue.Empty:
+                    status, payload = "crash", "process died"
             if status is None:
                 continue
             p.kill() if p.is_alive() else None

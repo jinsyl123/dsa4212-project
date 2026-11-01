@@ -49,7 +49,7 @@ class TestFailedPrograms(unittest.TestCase):
         self.assertAlmostEqual(self.summ.loc["ok", "mean_excess"], self.summ.loc["best_fit", "mean_excess"], 5)
 
     def test_next_fit_is_worse_than_best_fit(self):
-        # So a failure is never rewarded: Next Fit is the floor
+        # A failure is never better than Best Fit (Next Fit is not a strict floor: see _failed_row)
         for i in self.sets["t"]:
             self.assertGreaterEqual(baselines.pack_next_fit(i["items"], 100),
                                     core.pack_anyfit(baselines.best_fit, i["items"], 100))
