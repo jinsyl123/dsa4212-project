@@ -21,8 +21,13 @@ data/
 results/*/*/seed*/*
 !results/*/*/seed*/summary.json
 !results/*/*/seed*/best_program.py
+!results/*/*/seed*/evals.csv
+!results/*/*/seed*/llm_calls.csv
 results/*/final_per_instance.csv
 results/*/diagnostics.csv
+
+results/smoke/
+results/pipecheck*/
 
 # Archives and local copies of libraries
 *.zip

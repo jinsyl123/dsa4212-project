@@ -2,27 +2,25 @@
 # Exercises EoH plus alternative methods, budget enforcement and failure logging (NaN, wrong shape, timeout).
 experiment: smoke
 
-instances: {spec: configs/instances/smoke.yaml, dir: data/smoke}
+instances: { spec: configs/instances/smoke.yaml, dir: data/smoke }
 
-llm: {backend: fake, model: fake-heuristic-generator}
+llm: fake
 
-budget:
-  max_evals: 24          # identical for every method
-  max_tokens: 200000
-  max_minutes: 10
+budget: smoke
 
-parallel: {num_samplers: 2, num_evaluators: 2}
+parallel: { num_samplers: 2, num_evaluators: 2 }
 
-evaluation: {mode: funsearch, timeout_seconds: 8, train_set: train, prompt: llm4ad}
+evaluation:
+  { mode: funsearch, timeout_seconds: 30, train_set: train, prompt: llm4ad }
 
 seeds: [0, 1]
 
 methods:
-  - {name: eoh, params: {pop_size: 4}}                 # baseline
-  - {name: randsample}                                 # control: no search
-  - {name: hillclimb}                                  # (1+1)-EPS baseline
-  - {name: reevo, params: {pop_size: 4}}
-  - {name: funsearch}
+  - { name: eoh, params: { pop_size: 4 } } # baseline
+  - { name: randsample } # control: no search
+  - { name: hillclimb } # (1+1)-EPS baseline
+  - { name: reevo, params: { pop_size: 4 } }
+  - { name: funsearch }
 
 final_eval:
   sets: [val, test_id, test_cap500, test_shape_k5]
