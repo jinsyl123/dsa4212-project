@@ -2,9 +2,9 @@
 # A run stops at whichever limit it reaches first. Keep max_tokens and max_minutes loose enough that
 # max_evals is normally the one that binds, so methods are compared on equal numbers of evaluations.
 
-smoke: { max_evals: 24, max_tokens: 200000, max_minutes: 10 } # fake LLM plumbing check
-check: { max_evals: 12, max_tokens: 60000, max_minutes: 8 } # real LLM, does the reply format parse?
-pilot: { max_evals: 60, max_tokens: 400000, max_minutes: 45 } # first look at a method or model
-medium: { max_evals: 150, max_tokens: 900000, max_minutes: 90 } # ablations, multi-seed comparisons
-full: { max_evals: 300, max_tokens: 1500000, max_minutes: 120 } # main results
-large: { max_evals: 1000, max_tokens: 5000000, max_minutes: 480 } # scaling check (paid key advised)
+smoke:    {max_evals: 24,  max_tokens: 200000,  max_minutes: 10}    # fake LLM plumbing check
+check:    {max_evals: 12,  max_tokens: 60000,   max_minutes: 8}     # real LLM, does the reply format parse?
+pilot:    {max_evals: 60,  max_tokens: 400000,  max_minutes: 45}    # first look at a method or model
+medium:   {max_evals: 150, max_tokens: 900000,  max_minutes: 90}    # ablations, multi-seed comparisons
+full:     {max_evals: 300, max_tokens: 1500000, max_minutes: 120}   # main results
+large:    {max_evals: 1000, max_tokens: 5000000, max_minutes: 480}  # scaling check (paid key advised)

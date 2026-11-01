@@ -52,6 +52,16 @@ deepseek-chat:
   max_tokens: 4096
   notes: paid only
 
+openrouter-gemini-3.5-flash-lite:
+  provider: openrouter
+  model: google/gemini-3.5-flash-lite
+  price_in_per_1m: 0.30
+  price_out_per_1m: 2.50
+  max_tokens: 8192
+  extra: { reasoning: { effort: low } } # OpenRouter's form of reasoning_effort; reasoning tokens are billed as output
+  notes: paid via OpenRouter; same model as gemini-3.5-flash-lite (Google free tier), no daily quota
+  checked: 2026-10-31 (openrouter.ai/models/google/gemini-3.5-flash-lite)
+
 fake:
   provider: fake
   model: fake-heuristic-generator
