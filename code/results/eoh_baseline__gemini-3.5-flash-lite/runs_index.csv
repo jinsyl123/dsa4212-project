@@ -1,0 +1,2 @@
+experiment,label,method,seed,llm_name,llm_provider,llm_model,budget_name,mode,train_set,n_train,max_evals,max_tokens,stop_reason,wall_minutes,n_llm_calls,n_llm_errors,prompt_tokens,completion_tokens,token_source,cost_usd,n_evals,n_unique_programs,n_ok,n_error,n_timeout,n_crash,n_calls_not_evaluated,best_eval,best_train_excess,best_code_hash
+eoh_baseline__gemini-3.5-flash-lite,eoh,eoh,12,gemini-3.5-flash-lite,gemini,gemini-3.5-flash-lite,full,funsearch,train,32,300,1500000,budget:llm_errors,0.87,8,6,602,309,"api,estimate",0.001,2,2,2,0,0,0,6,1,1.4826206063983292,29f9964586c2

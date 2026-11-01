@@ -1,0 +1,9 @@
+call,t_start,latency_s,prompt_tokens,completion_tokens,token_source,cum_tokens,cost_usd,status,prompt_chars,response_chars
+1,1793514188.764,1.449,301,151,api,452,0.000468,ok,1309,604
+2,1793514188.764,1.668,301,158,api,911,0.000485,ok,1309,647
+3,1793514190.882,16.575,0,0,estimate,911,0.0,error:HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions,1309,0
+4,1793514191.056,16.844,0,0,estimate,911,0.0,error:HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions,1309,0
+5,1793514207.458,16.723,0,0,estimate,911,0.0,error:HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions,1309,0
+6,1793514207.901,16.554,0,0,estimate,911,0.0,error:HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions,1309,0
+7,1793514224.182,16.7,0,0,estimate,911,0.0,error:HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions,1309,0
+8,1793514224.457,16.462,0,0,estimate,911,0.0,error:HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions,1309,0
