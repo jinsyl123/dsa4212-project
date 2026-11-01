@@ -87,6 +87,7 @@ def finalize(run_dir: Path, meta: dict) -> dict:
         prog = next(c["program"] for c in cands if c["eval"] == best["eval"])
         (run_dir / "best_program.py").write_text(f"# eval {best['eval']}, train excess {best['train_excess']:.5f}\n{prog}")
     counts = ev.status.value_counts()
+    flags = ev["integrity"].fillna("") if "integrity" in ev else pd.Series("", index=ev.index)   # '' reads as NaN
     summary = dict(**meta,
                    n_llm_calls=len(calls), n_llm_errors=int((calls.status != "ok").sum()),
                    prompt_tokens=int(calls.prompt_tokens.sum()), completion_tokens=int(calls.completion_tokens.sum()),
@@ -96,6 +97,9 @@ def finalize(run_dir: Path, meta: dict) -> dict:
                    **{f"n_{s}": int(counts.get(s, 0)) for s in ["ok", "error", "timeout", "crash"]},
                    # LLM calls with no evaluation: unparseable code, ReEvo reflections, or a call cut off by the budget
                    n_calls_not_evaluated=max(len(calls) - len(ev), 0),
+                   # candidates breaking an integrity rule (integrity.py); they are still scored, only counted here
+                   n_flagged=int((flags != "").sum()),
+                   best_integrity=None if best is None else flags[best.name],
                    best_eval=None if best is None else int(best["eval"]),
                    best_train_excess=None if best is None else float(best["train_excess"]),
                    best_code_hash=None if best is None else best["code_hash"])

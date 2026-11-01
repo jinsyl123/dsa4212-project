@@ -13,6 +13,12 @@ One entry per decision that affects results. Newest at the top. Link the config 
 
 ---
 
+### 2026-11-01: integrity checks on candidates, flag only (Jin)
+- **Decision:** `obpevo/integrity.py` parses every candidate with `ast` and records rule violations (non-numpy imports, randomness, `global`, attribute assignment, module-level state, `exec`/`eval`/`open`, dunder access) in a new `integrity` column of `evals.csv`; `summary.json` gets `n_flagged` and `best_integrity`. `check_integrity.py` rescores each best program twice and once with instances shuffled, in fresh processes with fresh RNG seeds. Flagged programs are still scored and can still win.
+- **Why:** the brief asks to keep scoring outside the code being evolved. Flagging instead of dropping keeps every method's search unchanged (fair) and lets us report how often each rule is hit. All committed best programs (25 Oct seed 0, OpenRouter seeds 0–2) are clean: no flags, 0 repeat and 0 shuffle mismatches on train and val.
+- **Alternatives considered:** rejecting flagged candidates (changes the search and LLM4AD's behaviour); a runtime sandbox (heavier; LLM4AD already runs candidates in a child process with a timeout).
+- **Affects:** `evals.csv` (new column, at the end), `summary.json`, `results/*/integrity.csv`. No score changes.
+
 ### 2026-10-31: failed held-out instances scored as Next Fit (Jin)
 - **Decision:** in `evaluate_final`, an instance where a program errors or times out gets Next Fit's excess instead of `NaN`; `status` and `failed_frac` still record the failure.
 - **Why:** `NaN` drops out of the mean, so a program that fails often would look better than one that runs everywhere. Next Fit is the simplest valid packing, so a failure is never rewarded. No current run has failures, so no reported number changes.

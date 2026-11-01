@@ -90,12 +90,14 @@ pipeline/
   obpevo/task.py         LLM4AD task wrapper: template, task description, formatting rules for the LLM
   obpevo/llm.py          LLM clients (OpenAI-compatible, Anthropic, fake) + LoggedLLM wrapper
   obpevo/recorder.py     EvalRecorder: logs every candidate, enforces the eval budget
+  obpevo/integrity.py    static checks on candidates (imports, randomness, state, exec/eval/open), flag only
   obpevo/methods.py      registry of LLM4AD methods
   obpevo/config.py       YAML config loading: inheritance (base:), LLM/budget lookup, overrides
   make_instances.py      build instance sets from a spec
   run_experiment.py      step 1: search (every method x seed in a config)
   evaluate_final.py      step 2: score best programs + baselines on held-out sets
   summarise.py           step 3: tables and figures
+  check_integrity.py     rescore best programs twice + with shuffled instances; writes integrity.csv
 configs/
   llms.yaml              every LLM we can use: provider, model ID, prices, settings (single source of truth)
   budgets.yaml           named budgets (smoke, check, pilot, medium, full, large)
@@ -443,6 +445,12 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 **Lower bound.** `ceil(sum(items) / capacity)` (Martello and Toth's L1), the bound used by FunSearch and EoH. It is not the true optimum, so part of every heuristic's excess is unavoidable.
 
 **Formatting rules.** With `format_hint: true`, every prompt from every method ends with short rules: one complete function, the whole `def` line on one line, no helper functions, numpy only. LLM4AD's parser silently drops candidates with multi-line signatures and evolves the _wrong_ function when a helper comes first; the rules prevent both. The text is identical for all methods (fair), recorded in each `config.json`, and is our one deviation from LLM4AD's prompts. Mention it in the report.
+
+**Integrity checks** (the brief: keep scoring outside the code being evolved). They flag, never drop, and never change a score:
+
+- Every candidate is parsed (not run) by `obpevo/integrity.py`. Violations go in the `integrity` column of `evals.csv` (`''` = clean), and `summary.json` records `n_flagged` and `best_integrity`. Rules: imports other than numpy, `np.random` / `random`, `global` / `nonlocal`, attribute assignment or `setattr`, mutating a module-level name or a mutable default argument (state across calls), `exec` / `eval` / `compile` / `open` / `__import__`, dunder access such as `__builtins__`.
+- `python pipeline/check_integrity.py --config ... [--experiment ...]` rescores each best program three times, each in a fresh process with freshly seeded RNGs: twice in the usual order (`repeat_mismatch`: randomness) and once with instances shuffled (`shuffle_mismatch`: state carried from one instance to the next). Clean = no flags and 0 mismatches. All committed best programs are clean.
+- `tests/test_integrity.py` holds one deliberately bad program per rule.
 
 **Instance sets** (`configs/instances/v0.yaml`, generated deterministically from seed 2026):
 
