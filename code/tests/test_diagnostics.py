@@ -8,7 +8,7 @@ import numpy as np
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "code"))
+sys.path.insert(0, str(ROOT / "pipeline"))
 from obpevo import core, baselines, diagnostics, instances  # noqa: E402
 
 
@@ -19,7 +19,7 @@ def train_instances():
 
 def eoh_seed0():
     ns = {}
-    exec((ROOT / "results/eoh_baseline/eoh/seed0/best_program.py").read_text(), ns)
+    exec((ROOT / "results/eoh_baseline_25oct/eoh/seed0/best_program.py").read_text(), ns)
     return ns["priority"]
 
 

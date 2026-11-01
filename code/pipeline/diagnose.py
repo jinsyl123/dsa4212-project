@@ -1,6 +1,6 @@
 """Fresh-bin diagnostics: rescore every run's best program, and the priority baselines, under both packing modes.
 Usage:
-    python code/diagnose.py --config configs/eoh_baseline.yaml [--sets train test_shape_k5] [--workers 4]
+    python pipeline/diagnose.py --config configs/eoh_baseline.yaml --experiment eoh_baseline_25oct [--sets train test_shape_k5] [--workers 4]
 Tests the bin-opening explanation: if evolved rules fail because they open fresh bins while a used bin has room,
 fresh_bin_rate is high in funsearch mode and the excess drops in anyfit mode (where that choice is impossible).
 Outputs: results/<experiment>/diagnostics.csv (per instance) and diagnostics_summary.csv
@@ -48,11 +48,11 @@ def summarise(df: pd.DataFrame) -> pd.DataFrame:
     return out.round(5).sort_values(["set", "label", "mode"])
 
 
-def main(config, sets=None, workers=None, overrides=None) -> pd.DataFrame:
+def main(config, sets=None, workers=None, overrides=None, llm=None, budget=None, experiment=None) -> pd.DataFrame:
     """Run the diagnostics and return the summary table. Callable from a notebook."""
     workers = workers or max(mp.cpu_count() - 1, 1)
-    cfg = C.load(config, overrides)
-    out, idir = C.results_dir(cfg), C.instance_dir(cfg)
+    cfg = C.load(config, overrides, llm=llm, budget=budget, experiment=experiment)
+    out, idir = C.results_dir(cfg), C.ensure_instances(cfg)     # builds data/ on a fresh clone
     set_names = sets or [cfg["evaluation"]["train_set"]] + cfg["final_eval"]["sets"]
     progs = [dict(kind="baseline", label=name, seed=-1, program=None) for name in REFERENCE]
     for summ in sorted(out.glob("*/seed*/summary.json")):
@@ -78,5 +78,8 @@ if __name__ == "__main__":
     ap.add_argument("--config", required=True)
     ap.add_argument("--sets", nargs="*", help="default: train + final_eval.sets from the config")
     ap.add_argument("--workers", type=int, default=None)
+    ap.add_argument("--llm", help="model name from configs/llms.yaml (default: the config's)")
+    ap.add_argument("--budget", help="budget name from configs/budgets.yaml (default: the config's)")
+    ap.add_argument("--experiment", help="results folder name (default: from config, llm and budget)")
     a = ap.parse_args()
-    main(a.config, a.sets, a.workers)
+    main(a.config, a.sets, a.workers, llm=a.llm, budget=a.budget, experiment=a.experiment)
