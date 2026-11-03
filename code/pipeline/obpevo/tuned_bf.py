@@ -1,14 +1,16 @@
 """Tuned Best Fit: the budget-matched baseline an LLM search has to beat (decision #13).
 
-Best Fit puts each item in the bin it fills most tightly. Any score that only falls as the space left,
-r = bins - item, grows packs exactly like Best Fit, so a variant can only differ by being non-monotone in r.
-The simplest such variant is the strategy the FunSearch paper describes for its evolved Weibull heuristic:
-pack tightly when the fit is very tight, otherwise avoid leaving a small gap that later items are unlikely to fill.
+Best Fit puts each item in the bin it fills most tightly. Any score that strictly falls as the space left,
+r = bins - item, grows packs exactly like Best Fit, so a variant can only differ by not strictly falling in r.
+The simplest such variant is the strategy the FunSearch paper describes for several of its discovered heuristics
+(illustrated with its OR-dataset heuristic, Fig. 6): pack tightly when the fit is very tight, otherwise avoid
+leaving a small gap that later items are unlikely to fill.
 
     score = -r - penalty * (lo < r < hi)
 
-Three integer knobs, in the same absolute units as the items. An evolved program sees the same information
-(`item` and `bins` only, no capacity), so both are tuned on capacity 100 and face the same shifted test sets.
+Three integer knobs, in the same absolute units as the items. Like an evolved program it gets only `item` and
+`bins`, never the capacity. (In funsearch mode an evolved program could still read it from max(bins), since an
+empty bin is always offered; this rule doesn't.) It is tuned at capacity 100 and faces the same shifted test sets.
 
     lo       gaps of at most `lo` count as a tight fit and are not penalised             0 .. 10
     hi       gaps from lo+1 to hi-1 are slivers                                          lo+2 .. 40
