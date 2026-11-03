@@ -174,6 +174,8 @@ def _flags(tree: ast.Module) -> set[str]:
                     out.add("module_state")          # np.sctypeDict.setdefault(...): state in the numpy namespace
             if isinstance(f, ast.Attribute) and f.attr in ("tofile", "dump"):
                 out.add("file_io")
+        elif isinstance(n, ast.Attribute) and n.attr in FRAME_ATTRS:
+            out.add("frame")                 # gi_frame.f_back...: reaches the packer's own variables
         elif isinstance(n, ast.Attribute) and _is_dunder(n.attr):
             out.add(f"dunder:{n.attr}")
         elif isinstance(n, ast.Name) and _is_dunder(n.id):

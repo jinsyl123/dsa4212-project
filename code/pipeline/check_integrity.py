@@ -114,7 +114,8 @@ def check_programs(progs: list[dict], sets: dict, mode: str, timeout: float, wor
 RUNS = "ABST"   # A, B: usual order; S, T: the same shuffled order
 
 
-RANDOM_FLAGS = {"random", "call:hash", "call:id", "clock", "star_import", "dynamic_getattr"}
+RANDOM_FLAGS = {"random", "call:hash", "call:id", "clock", "star_import", "dynamic_getattr",
+                "import:random", "import:time", "import:secrets", "import:datetime", "import:uuid", "import:os"}
 
 
 def _verdict(ok: bool, flags: str, rep, shuf) -> str:

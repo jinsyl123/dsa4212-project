@@ -39,6 +39,7 @@ BAD = {
     "attr_assign": H + DEF + "    priority.calls = 1\n" + BF,
     "module_state": H + "seen = []\n" + DEF + "    seen.append(item)\n" + BF,
     "mutable_default": H + "def priority(item, bins, cache={}):\n" + BF,
+    "frame": H + DEF + "    b = []\n    g = (b[0].gi_frame.f_back.f_locals for _ in [0])\n    b.append(g)\n" + BF,
 }
 EXTRA_BAD = {   # same rules, other spellings (several found by review)
     "random": [H + DEF + "    rng = np.random.default_rng()\n" + BF,
