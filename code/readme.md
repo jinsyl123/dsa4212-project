@@ -520,6 +520,12 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 - Held-out: mean difference from Best Fit within ±0.1 pp on every set (`val` −0.10, `test_id_5k` −0.06, `test_uniform` −0.10, `test_shape_k5` +0.02, `test_cap500_scaled` +0.04).
 - Reading: with this model and budget, EoH mostly stalls at Best Fit. The likely cause is the LLM repeatedly rewriting Best Fit, which EoH discards as duplicates (to be quantified with the clone-rate diagnostics).
 
+**Tuned Best Fit: 3 seeds** (`tuned_bf`, 300 evaluations each, no LLM, about 2 min per seed, US$0; same results folder):
+
+- Training: **2.427 ± 0.051%** (Best Fit 4.751%, EoH above 4.670 ± 0.141%). All three seeds land on nearly the same knobs: `lo` 3–4, `hi` 31, `penalty` 73–97, i.e. avoid leaving a gap of about 4–30 units, opening a fresh bin instead if needed.
+- Held-out (Δ vs Best Fit, pp, mean of 3 seeds): `val` −2.40, `test_id_5k` −2.48, `test_size_10k` −2.45, `test_uniform` −2.01 (fewer bins than Best Fit on every instance of these four sets), `test_cap500` −0.02; **`test_shape_k1.5` +1.19**, **`test_cap500_scaled` +0.77**, **`test_shape_k5` +22.67**.
+- Reading: a three-knob Best Fit with the same evaluation budget beats every EoH run so far on training, including the 25 Oct run (3.788%), and on the held-out Weibull sets at capacity 100; the 25 Oct run is slightly better on `test_uniform` (−2.19 vs −2.01 pp). It fails on the same two shifts as the 25 Oct run (`test_shape_k5` +22.7 vs +30.7 pp, `test_cap500_scaled` +0.77 vs +1.29 pp), plus `test_shape_k1.5`, where that run gained. So these failures do not need an LLM: tuning three knobs on the training distribution produces them too.
+
 **EoH baseline, first run (25 Oct)** (`gemini-3.5-flash-lite`, 300 evals, 34 min, 301 calls, 0 failed, US$0.17 notional):
 
 - Training: **3.788%** excess vs Best Fit 4.751% (−0.96 pp). Stuck at Best Fit for ~150 evaluations (most candidates were Best Fit rewrites), then improved at ~165 and at eval 217.
@@ -539,4 +545,5 @@ This run used LLM4AD 1.0.0 (PyPI). Later runs (pinned LLM4AD, partly cut short b
 - Only each run's single best program (by training score) goes to held-out evaluation. Selecting among the top programs on `val` instead is a possible extension.
 - No operator attribution yet (which EoH operator produced each candidate) and no diversity metrics (clone rate, collapse rate, behavioural diversity). Both planned before the exploration/exploitation study.
 - MCTS-AHD and HSEvo are untested.
+- `tuned_bf`'s knobs are in absolute item units, tuned at capacity 100 (like the evolved programs). A variant with knobs relative to the bin size, or rescoring in `anyfit` mode, would help separate the two failure hypotheses (hard-coded capacity vs fit to the size distribution).
 - Prices in `configs/llms.yaml` were checked on 2026-10-25; re-check before trusting `cost_usd`. `claude-haiku-5-5` has no price set yet.
