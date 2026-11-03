@@ -79,8 +79,9 @@ def evaluate_program(src: str, insts: list[dict], mode: str = "funsearch") -> li
 
 def tune(train: list[dict], seed: int, max_evals: int, mode: str = "funsearch", space: dict | None = None):
     """Score each knob setting on the training set, in order. Yields one record per try:
-    eval (1-based), t_start, wall_s, params, program, status ("ok" / "error"), rows (per instance), error."""
-    for i, params in enumerate(sample(max_evals, seed, space or SPACE), start=1):
+    eval (1-based), t_start, wall_s, params, program, status ("ok" / "error"), rows (per instance), error.
+    `space` overrides any of SPACE's ranges (config: params: {space: {hi_max: 30}})."""
+    for i, params in enumerate(sample(max_evals, seed, {**SPACE, **(space or {})}), start=1):
         src, t0 = program(**params), time.time()
         try:
             rows, status, err = evaluate_program(src, train, mode), "ok", ""

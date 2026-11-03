@@ -17,6 +17,7 @@ seeds: [0, 1, 2]
 
 methods:
   - { name: eoh, params: { pop_size: 10 } }
+  - { name: tuned_bf } # no LLM: Best Fit's 3 knobs tuned by random search, same max_evals as eoh
 
 final_eval:
   sets:

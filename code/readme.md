@@ -63,7 +63,7 @@ def priority(item: float, bins: np.ndarray) -> np.ndarray:
 
 This is LLM4AD's template, character for character; the search starts from it. Each method asks the LLM for new versions of this function, scores them on training instances, and keeps the better ones.
 
-**The metric: excess over the lower bound.** For each instance, the lower bound is `ceil(total item size / capacity)`, the fewest bins any packing could possibly use. Excess = (bins used − lower bound) / lower bound, averaged over instances. **Lower is better.** Plain Best Fit scores 4.751% on our training set: the floor any evolved heuristic must beat. The stronger bar is a Best Fit with its parameters tuned under the same 300-evaluation budget (planned).
+**The metric: excess over the lower bound.** For each instance, the lower bound is `ceil(total item size / capacity)`, the fewest bins any packing could possibly use. Excess = (bins used − lower bound) / lower bound, averaged over instances. **Lower is better.** Plain Best Fit scores 4.751% on our training set: the floor any evolved heuristic must beat. The stronger bar is **tuned Best Fit** (`tuned_bf`, §9): Best Fit with three knobs tuned, without an LLM, under the same 300-evaluation budget.
 
 ---
 
@@ -91,6 +91,7 @@ pipeline/
   obpevo/llm.py          LLM clients (OpenAI-compatible, Anthropic, fake) + LoggedLLM wrapper
   obpevo/recorder.py     EvalRecorder: logs every candidate, enforces the eval budget
   obpevo/methods.py      registry of LLM4AD methods
+  obpevo/tuned_bf.py     tuned Best Fit: the budget-matched baseline (no LLM)
   obpevo/config.py       YAML config loading: inheritance (base:), LLM/budget lookup, overrides
   make_instances.py      build instance sets from a spec
   run_experiment.py      step 1: search (every method x seed in a config)
@@ -107,7 +108,7 @@ configs/
   instances/v0.yaml      instance sets used for real runs (frozen at G2)
   instances/smoke.yaml   small instance sets for tests
 notebooks/run_pipeline.ipynb
-tests/test_core.py       evaluator unit tests
+tests/                   unit tests: evaluator, tuned Best Fit, tuned run outputs
 docs/log.md              decision log: add an entry for every decision that affects results
 results/<experiment>/    run outputs (raw run folders are git-ignored)
 ```
@@ -128,7 +129,7 @@ Then, with the environment active:
 
 ```bash
 pip install -r requirements.txt        # installs LLM4AD at the pinned commit; add `jupyter` for browser notebooks
-python -m unittest discover tests      # 6 evaluator tests should pass
+python -m unittest discover tests      # 14 tests should pass
 ```
 
 Install LLM4AD **only** through `requirements.txt`: `pip install llm4ad` gives an older release (1.0.0) without ReEvo, MCTS-AHD or HSEvo.
@@ -356,6 +357,7 @@ On the free tier, `cost_usd` shows what the run _would_ cost on the paid tier, w
 | (1+1)-EPS hill climbing | `hillclimb`         | pure exploitation: always improves on the current best                |
 | Random sampling         | `randsample`        | pure exploration, no selection: the control                           |
 | MCTS-AHD, HSEvo         | `mcts_ahd`, `hsevo` | registered, untested: experimental                                    |
+| Tuned Best Fit (no LLM) | `tuned_bf`          | the budget-matched baseline: Best Fit's 3 knobs, random search (below) |
 
 Only EoH has been run with Gemini so far. **Run each other method once with `pipecheck.yaml` before its full run** to confirm Gemini's replies parse (FunSearch, hill climbing and random sampling use a different prompt style).
 
@@ -374,6 +376,15 @@ methods:
 ```
 
 Unknown params are dropped and listed in each run's `config.json` (`dropped_kwargs`).
+
+**Tuned Best Fit (`tuned_bf`): the budget-matched baseline.** Beating plain Best Fit is weak evidence, so every LLM method is also compared with a Best Fit whose knobs get the same number of scored tries. Any score that only falls as the space left `r = bins - item` grows packs exactly like Best Fit, so the variant adds the smallest change that can differ: a penalty for leaving a small gap, the strategy FunSearch reports for its Weibull heuristic.
+
+```python
+r = bins - item
+return -r - penalty * ((r > lo) & (r < hi))      # lo=0, hi=0, penalty=0 is plain Best Fit
+```
+
+The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1–100. Like an evolved program, the rule never sees the capacity. The tuner scores Best Fit first (every LLM method also starts from the Best Fit template), then `max_evals − 1` distinct random settings, on `train` only. It makes no LLM calls, takes about a minute per seed, and writes the same run files as an LLM method (with an empty `llm_calls.csv`), so steps 2 and 3 treat it like any other method. Its `summary.json` also records `best_params`. To change the ranges, use `params: { space: { lo: [0, 10], hi_max: 40, penalty: [1, 100] } }`.
 
 **EoH's operators.** EoH creates new heuristics in four ways: **E1** (as different as possible from the parents), **E2** (new heuristic on the parents' shared idea), **M1** (modify one parent), **M2** (keep the idea, change its parameters). Roughly a spectrum from exploration (E1) to exploitation (M2). E2, M1 and M2 can be switched off (`use_e2_operator`, `use_m1_operator`, `use_m2_operator`); E1 cannot.
 
@@ -422,6 +433,7 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `stop_reason`               | `budget:evals` is the normal ending. `budget:tokens` / `budget:wall_clock`: another limit bound first (raise it). `budget:llm_errors`: the API kept failing (quota, key). `error`: see `error.txt`. |
 | `best_train_excess`         | best candidate's excess on training (compare with Best Fit on the same set)                                                                                                                         |
+| `best_params`               | `tuned_bf` runs only: the winning knob setting                                                                                                                                                      |
 | `n_calls_not_evaluated`     | calls with no evaluation: candidates still being scored when the budget hit, unparseable replies, ReEvo reflections. 1–3 is normal for EoH.                                                         |
 | `mean_excess` / `sd_excess` | held-out excess, averaged within each run, then mean ± sd across seeds                                                                                                                              |
 | `delta_vs_bf_pp`            | difference from Best Fit in percentage points; **negative = better**                                                                                                                                |
