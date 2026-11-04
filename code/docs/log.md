@@ -68,5 +68,5 @@ One entry per decision that affects results. Newest at the top. Link the config 
 ### 2026-11-04: ablation plan revised after seeds 3–5 (Jin)
 
 - **Decision:** proposed replacing "prompt information + no-M2" with "empty-bin option (anyfit search, informed_rules) + training-data variety", 5 seeds per setting (Nic to confirm, #7).
-- **Why:** 3 of 6 OpenRouter seeds converge to Best Fit; the other 3 open fresh bins, which carries both their gains and their failures (k5, k1.5). No run points to M2.
+- **Why:** 3 of 6 OpenRouter seeds converge to Best Fit; the other 3 open fresh bins. For seeds 4/5 that carries both the gain and the k5 failure (blocking fresh bins removes it); seed 3's k1.5 failure stays with fresh bins blocked, so it has a different cause. No run points to M2.
 - **Affects:** #7, ablation configs.
