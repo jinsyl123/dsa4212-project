@@ -16,6 +16,7 @@ from pathlib import Path
 
 from llm4ad.base import SecureEvaluator
 
+from . import integrity
 from .llm import BudgetExhausted
 from .task import code_hash
 
@@ -32,6 +33,7 @@ class EvalRecorder:
         "code_chars",
         "code_lines",
         "error",
+        "integrity",  # static rule violations (integrity.py), ';'-separated; '' = clean. Flagged, never dropped
     ]
 
     def __init__(self, run_dir: Path, max_evals: int | None, timeout_s: float):
@@ -109,6 +111,7 @@ class EvalRecorder:
                         len(src),
                         src.count("\n") + 1,
                         err[:200],
+                        integrity.flag_str(src),
                     ]
                 )
             with open(self.cands, "a") as f:
