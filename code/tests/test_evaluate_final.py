@@ -63,5 +63,36 @@ class TestFailedPrograms(unittest.TestCase):
                                     core.pack_anyfit(baselines.best_fit, i["items"], 100))
 
 
+class TestL2Table(unittest.TestCase):
+    """summarise.py adds an excess-over-L2 table only for sets where L2 is tighter (e.g. test_scale65)."""
+
+    def test_l2_table_only_for_large_item_sets(self):
+        import json
+        import tempfile
+
+        import pandas as pd
+        import summarise
+
+        base = dict(n_instances=2, n_items=500, capacity=100, dist="weibull", shape=3)
+        sets = {"normal": instances.generate_set("normal", {**base, "scale": 45}, base_seed=0),
+                "big": instances.generate_set("big", {**base, "scale": 65}, base_seed=0)}
+        df = evaluate_final.add_l2(pd.DataFrame(evaluate_final.run_baselines(sets)), sets)
+        cfg = dict(experiment="x", budget="b", methods=[{"label": "eoh"}], final_eval={"sets": ["normal", "big"]})
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            (out / "eoh" / "seed0").mkdir(parents=True)
+            (out / "eoh" / "seed0" / "summary.json").write_text(json.dumps(dict(
+                label="eoh", prompt_tokens=1, completion_tokens=1, n_evals=1, n_ok=1, n_error=0, n_timeout=0,
+                n_llm_calls=1, cost_usd=0, wall_minutes=0, best_train_excess=0.04)))
+            evaluate_final.summarise(df).to_csv(out / "final_summary.csv", index=False)
+            text = summarise.tables(out, cfg, df)
+        l1, l2 = text.split("excess over L2")
+        self.assertIn("| normal | big |", l1)          # main table: every set, on L1
+        self.assertNotIn("normal", l2)                  # L2 table: only the set where L2 > L1
+        self.assertIn("| big |", l2)
+        bf = df[(df.label == "best_fit") & (df.set == "big")]
+        self.assertIn(f"{100 * bf.excess_l2.mean():.2f}", l2.split("best_fit")[1].split("\n")[0])
+
+
 if __name__ == "__main__":
     unittest.main()

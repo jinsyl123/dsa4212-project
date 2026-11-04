@@ -60,5 +60,5 @@ One entry per decision that affects results. Newest at the top. Link the config 
 ### 2026-11-04: L2 lower bound as an extra column (Jin)
 
 - **Decision:** `evaluate_final.py` adds Martello and Toth's L2 bound (`lb_l2`, `excess_l2`; `mean_excess_l2` in `final_summary.csv`). The search score and `excess` stay on L1.
-- **Why:** L1 ignores that two items over half a bin can't share one. On the planned `test_scale65` (~63% of items over half a bin), Best Fit is ~10% over L1 but ~0.3% over L2, so L1 would make every rule look far worse than it is. On our current sets L2 equals L1, so no existing number changes. Keeping L1 for the search keeps scores comparable with LLM4AD, FunSearch and EoH.
-- **Affects:** `core.py`, `evaluate_final.py`, tests, readme (lower bound).
+- **Why:** for the planned `test_scale65` (#12). L1 ignores that two items over half a bin can't share one; on `test_scale65` 63% of items do, so Best Fit is 10.2% over L1 but 0.4% over L2, and L1 would make every rule look far worse than it is. On every other current or planned test set L2 equals L1, so no existing number changes. Keeping L1 for the search keeps scores comparable with LLM4AD, FunSearch and EoH.
+- **Affects:** `core.py`, `evaluate_final.py`, `summarise.py` (extra L2 table for sets where it is tighter; backfills older results), tests, readme (lower bound).

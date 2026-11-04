@@ -91,8 +91,9 @@ def run_baselines(sets: dict) -> list[dict]:
 
 
 def add_l2(df: pd.DataFrame, sets: dict) -> pd.DataFrame:
-    """Add lb_l2 and excess_l2 per row. `lb` and `excess` stay on L1, the bound the search and the papers use;
-    L2 only matters where many items exceed half a bin (e.g. Best Fit on Weibull scale 65: 10% over L1, 0.4% over L2)."""
+    """Add lb_l2 and excess_l2 per row. `lb` and `excess` stay on L1, the bound the search and the papers use.
+    L2 only differs from L1 where many items exceed half a bin: of our sets, only test_scale65 (Best Fit is
+    10.2% over L1 but 0.4% over L2). Also used by summarise.py to backfill older results without rerunning."""
     lb2 = {(sn, i["id"]): core.lower_bound_l2(i["items"], i["capacity"]) for sn, insts in sets.items() for i in insts}
     lb_l2 = pd.Series([lb2[k] for k in zip(df["set"], df["instance"])], index=df.index)
     return df.assign(lb_l2=lb_l2, excess_l2=(df["bins"] - lb_l2) / lb_l2)
@@ -107,7 +108,7 @@ def summarise(df: pd.DataFrame) -> pd.DataFrame:
     per_run = d.groupby(["kind", "label", "set", "seed"]).agg(
         excess=("excess", "mean"), failed=("status", lambda s: (s != "ok").mean()),
         win=("win", "mean"), tie=("tie", "mean"), loss=("loss", "mean"), **l2).reset_index()
-    l2 = {"mean_excess_l2": ("excess_l2", "mean")} if l2 else {}
+    l2 = {"mean_excess_l2": ("excess_l2", "mean"), "sd_excess_l2": ("excess_l2", "std")} if l2 else {}
     out = per_run.groupby(["kind", "label", "set"]).agg(
         runs=("seed", "nunique"), mean_excess=("excess", "mean"), sd_excess=("excess", "std"),
         best_run=("excess", "min"), worst_run=("excess", "max"), failed_frac=("failed", "mean"),

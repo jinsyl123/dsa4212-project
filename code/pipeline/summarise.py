@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+import evaluate_final
 from obpevo import baselines, config as C, core, instances
 
 # Reference categorical palette (validated: CVD-safe adjacent order, light surface). Colour follows the
@@ -259,6 +260,20 @@ def md_table(df: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
+def held_out_table(fs: pd.DataFrame, cfg, sets: list[str], mean: str, sd: str) -> pd.DataFrame:
+    """Method x set table of "mean ± sd" excess (%), methods in config order; † marks sets with failed instances."""
+    fs = fs.copy()
+    fs["cell"] = (fs[mean] * 100).map("{:.2f}".format) + np.where(
+        fs.runs > 1, " ± " + (fs[sd] * 100).map("{:.2f}".format), ""
+    )
+    fs["cell"] += np.where(fs.failed_frac > 0, " †", "")  # some instances failed: scored as Next Fit
+    order = [m["label"] for m in cfg["methods"]] + list(baselines.BASELINES)
+    piv = fs.pivot(index="label", columns="set", values="cell").reindex(
+        [l for l in order if l in set(fs.label)]
+    )
+    return piv[sets].reset_index()
+
+
 def tables(out: Path, cfg, final: pd.DataFrame | None) -> str:
     idx = pd.DataFrame(
         [json.loads(p.read_text()) for p in sorted(out.glob("*/seed*/summary.json"))]
@@ -294,19 +309,8 @@ def tables(out: Path, cfg, final: pd.DataFrame | None) -> str:
     ]
     if final is not None:
         fs = pd.read_csv(out / "final_summary.csv")
-        fs["cell"] = (fs.mean_excess * 100).map("{:.2f}".format) + np.where(
-            fs.runs > 1, " ± " + (fs.sd_excess * 100).map("{:.2f}".format), ""
-        )
-        fs["cell"] += np.where(
-            fs.failed_frac > 0, " †", ""
-        )  # some instances failed: scored as Next Fit
-        order = [m["label"] for m in cfg["methods"]] + list(baselines.BASELINES)
-        piv = fs.pivot(index="label", columns="set", values="cell").reindex(
-            [l for l in order if l in set(fs.label)]
-        )
-        piv = piv[
-            [s for s in cfg["final_eval"]["sets"] if s in piv.columns]
-        ].reset_index()
+        sets = [s for s in cfg["final_eval"]["sets"] if s in set(fs.set)]
+        piv = held_out_table(fs, cfg, sets, "mean_excess", "sd_excess")
         legend = (
             "† some instances failed (crash/timeout) and were scored as Next Fit\n"
             if (fs.failed_frac > 0).any()
@@ -317,6 +321,15 @@ def tables(out: Path, cfg, final: pd.DataFrame | None) -> str:
             + legend,
             md_table(piv),
         ]
+        # Sets where L2 is tighter than L1 (of ours, only test_scale65): L1 overstates every rule's excess there
+        l2_sets = [s for s in sets if "lb_l2" in final and (final[final.set == s].lb_l2 > final[final.set == s].lb).any()]
+        if l2_sets and "mean_excess_l2" in fs:
+            md += [
+                "\n## Held-out sets where the L2 bound is tighter: excess over L2 (%), mean ± sd across seeds\n"
+                "Many items exceed half a bin here, so L1 overstates every rule's excess. Report these numbers "
+                "for these sets.\n" + legend,
+                md_table(held_out_table(fs, cfg, l2_sets, "mean_excess_l2", "sd_excess_l2")),
+            ]
     text = "\n".join(md) + "\n"
     (out / "summary_tables.md").write_text(text)
     return text
@@ -355,6 +368,14 @@ def main(config, overrides=None, llm=None, budget=None, experiment=None) -> Path
         if (out / "final_per_instance.csv").exists()
         else None
     )
+    if final is not None and "lb_l2" not in final:
+        # results from before the L2 column: add it from the saved instances, no need to rerun evaluate_final.py
+        idir = C.ensure_instances(cfg)
+        sets = {s: instances.load_set(idir / f"{s}.npz") for s in final.set.unique()}
+        final = evaluate_final.add_l2(final, sets)
+        final.to_csv(out / "final_per_instance.csv", index=False)
+        evaluate_final.summarise(final).to_csv(out / "final_summary.csv", index=False)
+        print("Added lb_l2 / excess_l2 to final_per_instance.csv and final_summary.csv")
     if final is not None:
         plot_test_sets(final, cfg, out / "figures" / "test_sets")
     print(tables(out, cfg, final))
