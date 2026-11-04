@@ -98,6 +98,7 @@ pipeline/
   evaluate_final.py      step 2: score best programs + baselines on held-out sets
   summarise.py           step 3: tables and figures
   check_integrity.py     rescore best programs twice + with shuffled instances; writes integrity.csv
+  paired_stats.py        each rule vs Best Fit / tuned Best Fit, instance by instance: sign test + bootstrap CI
 configs/
   llms.yaml              every LLM we can use: provider, model ID, prices, settings (single source of truth)
   budgets.yaml           named budgets (smoke, check, pilot, medium, full, large)
@@ -209,6 +210,8 @@ python pipeline/run_experiment.py --config configs/eoh_baseline.yaml --seeds 0
 python pipeline/evaluate_final.py --config configs/eoh_baseline.yaml
 python pipeline/summarise.py      --config configs/eoh_baseline.yaml
 ```
+
+**Paired statistics** (after step 2): `python pipeline/paired_stats.py --config configs/eoh_baseline.yaml` (same options) compares every rule with Best Fit and tuned Best Fit on the same instances and writes `paired_stats.csv`: wins/ties/losses, a two-sided sign test, the mean difference in percentage points with a 95% bootstrap interval, and a verdict (better / worse / tie / unclear). Each seed is compared on its own, because runs of the same method differ a lot. With 5 instances per set the sign test can never go below p = 0.0625, and a bootstrap interval over 5 values is rough, so read both as indicative until the sets have more instances (#12).
 
 **Trying another model or budget** needs no new config: pass `llm=` and `budget=` (names from `configs/llms.yaml` and `configs/budgets.yaml`) to all three steps. The results folder is named after them, so different choices never overwrite each other:
 
@@ -413,7 +416,7 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 
 **In git:** `summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` of each run (enough to rebuild every table and figure); the rest of each run folder stays local. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
 
-**Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
+**Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `paired_stats.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
 
 - `convergence_evals` / `convergence_tokens`: best training excess so far vs evaluations / tokens (median and range across seeds, Best Fit line);
 - `test_sets`: held-out change vs Best Fit per method and seed, one panel per set.
