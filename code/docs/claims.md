@@ -73,7 +73,7 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 
 ## A1b. Bin rules explained in the prompt (`abl_informed_rules.yaml`)
 
-- **Changes from baseline:** `evaluation: {prompt: informed_rules}`. The prompt says items arrive online and the function scores "the bins the current item fits into (remaining capacities, including empty bins)".
+- **Changes from baseline:** `evaluation: {prompt: informed_rules}`. The prompt states the task ("online 1D bin packing … minimise the number of bins") **and** that the function scores "the bins the current item fits into (remaining capacities, including empty bins)". The default LLM4AD prompt says neither, so this setting changes the **task framing and the bin rules together**.
 - **Question:** does knowing that empty bins are among the options change how often evolved rules open them?
 - **Hypothesis and why:** the default LLM4AD prompt never mentions empty bins, so the baseline found the bet by accident in 3/6 seeds. Saying so explicitly makes it easier to target: **more** fresh-bin seeds, found **earlier**. (The opposite is possible: an LLM told about empty bins may treat them as a last resort, as Best Fit does.)
 - **Prediction:**
@@ -83,7 +83,9 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **What counts as an effect:** the descriptive seed counts and median discovery eval, and per-seed verdicts on `test_id_5k` and `test_shape_k5`.
 - **If confirmed, we claim:** the fresh-bin habit comes partly from the prompt: the LLM exploits options it is told about, and that gain and that failure come together.
 - **If not confirmed, we claim:** the bet comes from selection pressure on this training set, not from what the LLM is told. Tuned Best Fit supports this reading, since it finds the bet with no prompt at all.
-- **What remains uncertain either way:** with 5 seeds, a 3/6 vs 4/5 difference can be chance (see the shared rules). This setting can only give strong evidence if the counts end up at 0/5 or 5/5.
+- **What remains uncertain either way:**
+  - **Which addition caused it:** an effect can't be pinned on the empty-bin clause alone, since the task framing changed too. Claim "task framing + bin rules", not "telling it about empty bins".
+  - **Seed counts:** with 5 seeds, a 3/6 vs 4/5 difference can be chance (see the shared rules). This setting can only give strong evidence if the counts end up at 0/5 or 5/5.
 
 ## A2. Training-data variety (`abl_mixed_shapes.yaml`)
 
@@ -101,7 +103,7 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 
 ## Control. Random sampling, no evolution (`control_randsample.yaml`)
 
-- **Changes from baseline:** `randsample`. The same 300-evaluation budget and prompt, but each proposal is independent (no parents, no crossover or mutation). The best on train is kept, as in EoH.
+- **Changes from baseline:** LLM4AD `randsample`. The same 300-evaluation budget, no evolution: every call sends the **same fixed FunSearch-style prompt** (Best Fit as `priority_v0`, "complete `priority_v1`"), with no task description and no parents. The best on train is kept, as in EoH. So the prompt differs from EoH's as well as the search.
 - **Question:** does the evolutionary search add anything beyond sampling the LLM many times and keeping the best?
 - **Hypothesis and why:** evolution helps. In the baseline, the rules that beat Best Fit appeared late (eval ~200 of 300, seeds 3–5), after many generations. Seeds 0 and 1 found Best Fit at eval 1 and never improved, so the LLM's first guess is Best Fit.
 - **Prediction:**
@@ -111,7 +113,10 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **What counts as an effect:** seed counts and per-seed verdicts vs Best Fit, and each seed's paired difference vs EoH's best seeds on `test_id_5k`.
 - **If confirmed, we claim:** evolution, not the LLM's prior alone, finds the rules that beat Best Fit (including the fresh-bin bet).
 - **If not confirmed, we claim:** best-of-300 sampling matches EoH, so its gains come from the LLM's prior plus selection on train, not from evolution. That is a negative result worth reporting.
-- **What remains uncertain either way:** unique programs differ (EoH's 300 evals hold 160–220 unique ones). Report unique programs per run next to the result.
+- **What remains uncertain either way:**
+  - **Search vs prompt:** randsample changes the prompt too, so "no evolution" and "different prompt" are confounded. Report it as "LLM4AD RandSample", not "EoH without search".
+  - **Unique programs:** a fixed prompt may return many duplicates (EoH's 300 evals hold 160–220 unique ones). Report unique programs per run next to the result.
+  - **The check run is a gate:** if its replies mostly fail to parse or repeat, fix that before the 5 seeds.
 
 ## Optional settings (fill in only if they will be run)
 
