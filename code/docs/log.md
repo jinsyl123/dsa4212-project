@@ -64,3 +64,9 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Decision:** inner folder renamed code/code → code/pipeline; informed prompt split into informed_rules / informed_dist / informed; best program still selected on training (val chooses between configurations).
 - **Why:** PR review (Jin): attribution of prompt effects, comparability with the EoH papers.
 - **Affects:** pipeline/, task.py, readme §6, §11, §13.
+
+### 2026-11-04: ablation plan revised after seeds 3–5 (Jin)
+
+- **Decision:** proposed replacing "prompt information + no-M2" with "empty-bin option (anyfit search, informed_rules) + training-data variety", 5 seeds per setting (Nic to confirm, #7).
+- **Why:** 3 of 6 OpenRouter seeds converge to Best Fit; the other 3 open fresh bins, which carries both their gains and their failures (k5, k1.5). No run points to M2.
+- **Affects:** #7, ablation configs.
