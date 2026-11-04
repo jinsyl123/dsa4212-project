@@ -8,9 +8,15 @@ Outputs: results/<experiment>/paired_stats.csv, one row per (rule, seed, set, re
                            uneven if neither rule were better
     mean_diff_pp           mean of (rule excess - reference excess) in percentage points; negative = rule better
     ci_low_pp, ci_high_pp  95% bootstrap interval for mean_diff_pp (instances resampled with replacement)
-    verdict                better / worse (interval excludes 0), tie (identical on every instance), unclear
+    verdict                better / worse when the interval excludes 0 AND sign_p < alpha (0.05); tie when identical
+                           on every instance; otherwise unclear. Both are required because a bootstrap interval over
+                           a handful of instances is too narrow: with 5 instances, 4-1 can give an interval that
+                           excludes 0 while p = 0.125. With 5 instances nothing reaches p < 0.05 (5-0 gives 0.0625).
 Each seed is compared on its own: runs of the same method can differ a lot, and a mean over seeds hides that.
 A reference with several seeds (tuned Best Fit) is averaged per instance first.
+--metric excess_l2 compares excess over the L2 bound instead of L1 (needed where many items exceed half a bin).
+There is no correction for running many comparisons (rules x seeds x sets x references): treat single verdicts as
+descriptive and look for patterns across seeds and sets.
 """
 from __future__ import annotations
 
@@ -23,6 +29,7 @@ import pandas as pd
 from obpevo import config as C
 
 REFERENCES = ["best_fit", "tuned_bf"]
+METRICS = ["excess", "excess_l2"]
 
 
 def sign_test(wins: int, losses: int) -> float:
@@ -43,42 +50,49 @@ def bootstrap_ci(diffs: np.ndarray, n_boot: int = 10_000, seed: int = 0) -> tupl
     return float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))
 
 
-def _reference(df: pd.DataFrame, label: str) -> pd.Series | None:
-    """Per-instance excess of a reference rule, averaged over its seeds; None if it isn't in the results."""
+def _reference(df: pd.DataFrame, label: str, metric: str) -> pd.Series | None:
+    """Per-instance metric of a reference rule, averaged over its seeds; None if it isn't in the results."""
     ref = df[df.label == label]
-    return None if ref.empty else ref.groupby(["set", "instance"])["excess"].mean()
+    return None if ref.empty else ref.groupby(["set", "instance"])[metric].mean()
 
 
-def compare(df: pd.DataFrame, references=REFERENCES, n_boot: int = 10_000) -> pd.DataFrame:
+def compare(df: pd.DataFrame, references=REFERENCES, n_boot: int = 10_000, metric: str = "excess",
+            alpha: float = 0.05) -> pd.DataFrame:
     """One row per (rule label, seed, set, reference); see the module docstring for the columns."""
+    if metric not in df:
+        raise KeyError(f"column {metric!r} not in the results (excess_l2 needs evaluate_final.py with the L2 bound)")
     rows = []
     for ref_label in references:
-        ref = _reference(df, ref_label)
+        ref = _reference(df, ref_label, metric)
         if ref is None:
             continue
         for (kind, label, seed, set_name), g in df[df.label != ref_label].groupby(["kind", "label", "seed", "set"]):
             g = g.set_index(["set", "instance"]).sort_index()
-            d = (g["excess"] - ref.reindex(g.index)).dropna().to_numpy() * 100        # percentage points
+            d = (g[metric] - ref.reindex(g.index)).dropna().to_numpy() * 100          # percentage points
             wins, losses = int((d < 0).sum()), int((d > 0).sum())
             lo, hi = bootstrap_ci(d, n_boot)
-            verdict = ("tie" if len(d) and not d.any() else "better" if hi < 0 else "worse" if lo > 0 else "unclear")
-            rows.append(dict(kind=kind, label=label, seed=seed, set=set_name, reference=ref_label, n=len(d),
-                             wins=wins, ties=len(d) - wins - losses, losses=losses, sign_p=sign_test(wins, losses),
+            p = sign_test(wins, losses)
+            verdict = ("tie" if len(d) and not d.any() else "better" if hi < 0 and p < alpha
+                       else "worse" if lo > 0 and p < alpha else "unclear")
+            rows.append(dict(kind=kind, label=label, seed=seed, set=set_name, reference=ref_label, metric=metric,
+                             n=len(d), wins=wins, ties=len(d) - wins - losses, losses=losses, sign_p=p,
                              mean_diff_pp=float(d.mean()) if len(d) else np.nan, ci_low_pp=lo, ci_high_pp=hi,
                              verdict=verdict, failed=int((g["status"] != "ok").sum()) if "status" in g else 0))
     return pd.DataFrame(rows)
 
 
-def main(config, references=None, n_boot=10_000, overrides=None, llm=None, budget=None, experiment=None) -> pd.DataFrame:
+def main(config, references=None, n_boot=10_000, metric="excess", alpha=0.05, overrides=None, llm=None, budget=None,
+         experiment=None) -> pd.DataFrame:
     cfg = C.load(config, overrides, llm=llm, budget=budget, experiment=experiment)
     out = C.results_dir(cfg)
     src = out / "final_per_instance.csv"
     if not src.exists():
         raise FileNotFoundError(f"{src} not found: run evaluate_final.py with the same arguments first")
-    res = compare(pd.read_csv(src), references or REFERENCES, n_boot).round(5)
-    res.to_csv(out / "paired_stats.csv", index=False)
+    res = compare(pd.read_csv(src), references or REFERENCES, n_boot, metric, alpha).round(5)
+    name = "paired_stats.csv" if metric == "excess" else f"paired_stats_{metric}.csv"
+    res.to_csv(out / name, index=False)
     show = res[res.kind != "baseline"]
-    print(f"[{cfg['experiment']}] {len(res)} comparisons -> {out / 'paired_stats.csv'}")
+    print(f"[{cfg['experiment']}] {len(res)} comparisons on {metric} -> {out / name}")
     if not show.empty:
         print(show[["label", "seed", "set", "reference", "wins", "ties", "losses", "sign_p", "mean_diff_pp",
                     "ci_low_pp", "ci_high_pp", "verdict"]].to_string(index=False))
@@ -90,8 +104,10 @@ if __name__ == "__main__":
     ap.add_argument("--config", required=True)
     ap.add_argument("--references", nargs="*", help=f"reference labels (default: {' '.join(REFERENCES)}, if present)")
     ap.add_argument("--n-boot", type=int, default=10_000, help="bootstrap resamples (default 10000)")
+    ap.add_argument("--metric", choices=METRICS, default="excess", help="excess over L1 (default) or the L2 bound")
+    ap.add_argument("--alpha", type=float, default=0.05, help="sign-test level a verdict also needs (default 0.05)")
     ap.add_argument("--llm", help="model name from configs/llms.yaml (default: the config's)")
     ap.add_argument("--budget", help="budget name from configs/budgets.yaml (default: the config's)")
     ap.add_argument("--experiment", help="results folder name (default: from config, llm and budget)")
     a = ap.parse_args()
-    main(a.config, a.references, a.n_boot, llm=a.llm, budget=a.budget, experiment=a.experiment)
+    main(a.config, a.references, a.n_boot, a.metric, a.alpha, llm=a.llm, budget=a.budget, experiment=a.experiment)
