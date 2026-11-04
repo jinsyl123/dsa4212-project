@@ -1,0 +1,9 @@
+# Ablation 1 (#7): empty bins hidden during search.
+# The heuristic only scores open bins; a new bin opens only when nothing fits (anyfit), so the
+# fresh-bin bet that drives both the gains and the failures in seeds 3-5 is not available.
+# Question: can EoH still beat Best Fit without it? Everything else as the main baseline.
+base: configs/eoh_baseline.yaml
+experiment: abl_anyfit
+llm: openrouter-gemini-3.5-flash-lite
+seeds: [0, 1, 2, 3, 4]
+evaluation: { mode: anyfit }

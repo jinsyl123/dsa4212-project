@@ -136,7 +136,9 @@ def instance_dir(cfg: dict) -> Path:
 def ensure_instances(cfg: dict) -> Path:
     """data/ is not in git: build the instance sets from their spec (deterministic) the first time any step needs them."""
     d = instance_dir(cfg)
-    if not (d / "manifest.csv").exists():
+    spec = ROOT / cfg["instances"]["spec"]
+    sets = (yaml.safe_load(spec.read_text()) or {}).get("sets", {})
+    if not (d / "manifest.csv").exists() or any(not (d / f"{s}.npz").exists() for s in sets):
         from obpevo import instances
-        instances.build_all(ROOT / cfg["instances"]["spec"], d)
+        instances.build_all(spec, d)        # existing set files are kept; only missing sets are generated
     return d

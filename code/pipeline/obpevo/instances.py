@@ -35,12 +35,15 @@ def _sample_items(rng: np.random.Generator, n: int, cap: int, spec: dict) -> np.
 
 
 def generate_set(set_name: str, spec: dict, base_seed: int) -> list[dict]:
+    """`mix: [{shape: 2}, {shape: 4}]` makes a mixed set: instance k uses the spec updated with mix[k % len(mix)]."""
     rng = np.random.default_rng(_set_seed(base_seed, set_name))
-    n_spec, cap = spec["n_items"], int(spec["capacity"])
+    mix = spec.get("mix") or [{}]
     out = []
     for k in range(int(spec["n_instances"])):
+        s = {**spec, **mix[k % len(mix)]}
+        n_spec, cap = s["n_items"], int(s["capacity"])
         n = int(rng.integers(n_spec[0], n_spec[1] + 1)) if isinstance(n_spec, list) else int(n_spec)
-        out.append(dict(id=f"{set_name}_{k:03d}", capacity=cap, items=_sample_items(rng, n, cap, spec)))
+        out.append(dict(id=f"{set_name}_{k:03d}", capacity=cap, items=_sample_items(rng, n, cap, s)))
     return out
 
 

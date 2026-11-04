@@ -390,9 +390,31 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 | Model                             | `llm="gemini-3.8-flash"`                                                                                                                  |
 | Reasoning / temperature           | `llm={"name": "gemini-3.5-flash-lite", "extra": {"reasoning_effort": "medium"}}` or `{"name": ..., "temperature": 0.5}`                   |
 | Empty-bin rule                    | `evaluation: {mode: anyfit}`                                                                                                              |
+| Training-data variety             | `evaluation: {train_set: train_mixed}` (Weibull shapes 2 and 4; a set's `mix:` list alternates specs across its instances)               |
 | Budget                            | `budget="medium"` / `"full"` / `"large"`                                                                                                  |
 
 **Change one thing at a time** against a baseline with the same model, budget and seeds, and use at least 3 seeds per arm: LLM runs vary a lot between seeds.
+
+**The planned ablations (#7)** each have a config that inherits `eoh_baseline.yaml` (`base:`) and changes one setting. All use `openrouter-gemini-3.5-flash-lite`, the `full` budget and seeds 0–4, so the main baseline (seeds 0–5) is the comparison row.
+
+| Config                    | Changes                                   | Status (#7)        |
+| ------------------------- | ----------------------------------------- | ------------------ |
+| `abl_anyfit.yaml`         | empty bins hidden during search           | main               |
+| `abl_informed_rules.yaml` | prompt explains how bins are offered      | main               |
+| `abl_mixed_shapes.yaml`   | training on Weibull shapes 2 and 4        | main               |
+| `abl_informed_dist.yaml`  | prompt states the training distribution   | optional           |
+| `abl_informed.yaml`       | both of the above in the prompt           | optional           |
+| `abl_no_m2.yaml`          | EoH without M2                            | fallback           |
+| `control_randsample.yaml` | random sampling, no search                | control            |
+
+Run one with a `check` budget first, then in full, then score it (no `--llm` needed: the model is set in the file):
+
+```bash
+python pipeline/run_experiment.py --config configs/abl_anyfit.yaml --budget check
+python pipeline/run_experiment.py --config configs/abl_anyfit.yaml
+python pipeline/evaluate_final.py --config configs/abl_anyfit.yaml
+python pipeline/summarise.py --config configs/abl_anyfit.yaml
+```
 
 ---
 

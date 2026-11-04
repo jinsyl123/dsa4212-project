@@ -1,0 +1,7 @@
+# Control (#7): the same LLM calls without search (random sampling). Tests whether evolution itself helps.
+base: configs/eoh_baseline.yaml
+experiment: control_randsample
+llm: openrouter-gemini-3.5-flash-lite
+seeds: [0, 1, 2, 3, 4]
+methods:
+  - { name: randsample }
