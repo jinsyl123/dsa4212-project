@@ -405,13 +405,14 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 | `config.json`                 | resolved config, method kwargs used/dropped, library versions, exact prompt text added                                     |
 | `llm_calls.csv`               | one row per LLM call: tokens (`api` or `estimate`), latency, cost, status (with the provider's error message if it failed) |
 | `evals.csv`                   | one row per candidate: status (`ok` / `error` / `timeout` / `crash`), score, train excess, error message                   |
+| `llm_calls.jsonl`             | full prompt and response text of every LLM call (runs from 5 Nov on)                                                        |
 | `candidates.jsonl`            | every evaluated program                                                                                                    |
 | `per_instance.csv`            | every candidate × training instance: bins, lower bound, excess                                                             |
 | `best_program.py`             | best program by training score (ties go to the earliest)                                                                   |
 | `summary.json`                | counts, tokens, cost, stop reason, best result                                                                             |
 | `stdout.log`, `llm4ad_log_*/` | LLM4AD's own output                                                                                                        |
 
-**In git:** `summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` of each run (enough to rebuild every table and figure); the rest of each run folder stays local. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
+**In git:** every file of each run folder, so every evaluated program and LLM4AD's logs can be audited (`summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` alone are enough to rebuild every table and figure). Runs made before 4 Nov only have those four files committed, unless their full folders were added later. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
 
 **Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
 

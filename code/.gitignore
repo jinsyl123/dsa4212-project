@@ -17,14 +17,9 @@ Thumbs.db
 # Generated instances (rebuilt deterministically from configs/instances/*.yaml)
 data/
 
-# Raw run outputs: keep only each run's summary and best program
-results/*/*/seed*/*
-!results/*/*/seed*/summary.json
-!results/*/*/seed*/best_program.py
-!results/*/*/seed*/evals.csv
-!results/*/*/seed*/llm_calls.csv
-results/*/final_per_instance.csv
-results/*/diagnostics.csv
+# Run outputs are committed in full (every evaluated program, LLM4AD logs, per-instance scores),
+# so results can be audited. Only the temporary per-candidate folder, deleted at the end of a run, stays out.
+results/*/*/seed*/per_instance/
 
 results/smoke/
 results/pipecheck*/
