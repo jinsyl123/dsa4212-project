@@ -90,18 +90,28 @@ def run_baselines(sets: dict) -> list[dict]:
     return rows
 
 
+def add_l2(df: pd.DataFrame, sets: dict) -> pd.DataFrame:
+    """Add lb_l2 and excess_l2 per row. `lb` and `excess` stay on L1, the bound the search and the papers use;
+    L2 only matters where many items exceed half a bin (e.g. Best Fit on Weibull scale 65: 10% over L1, 0.4% over L2)."""
+    lb2 = {(sn, i["id"]): core.lower_bound_l2(i["items"], i["capacity"]) for sn, insts in sets.items() for i in insts}
+    lb_l2 = pd.Series([lb2[k] for k in zip(df["set"], df["instance"])], index=df.index)
+    return df.assign(lb_l2=lb_l2, excess_l2=(df["bins"] - lb_l2) / lb_l2)
+
+
 def summarise(df: pd.DataFrame) -> pd.DataFrame:
     """Mean excess per (label, set): averaged within each run first, then across seeds; plus wins vs Best Fit."""
     bf = df[df.label == "best_fit"].set_index(["set", "instance"])["bins"]
     d = df.assign(bf_bins=df.set_index(["set", "instance"]).index.map(bf))
     d = d.assign(win=d.bins < d.bf_bins, tie=d.bins == d.bf_bins, loss=d.bins > d.bf_bins)
+    l2 = {"excess_l2": ("excess_l2", "mean")} if "excess_l2" in d else {}
     per_run = d.groupby(["kind", "label", "set", "seed"]).agg(
         excess=("excess", "mean"), failed=("status", lambda s: (s != "ok").mean()),
-        win=("win", "mean"), tie=("tie", "mean"), loss=("loss", "mean")).reset_index()
+        win=("win", "mean"), tie=("tie", "mean"), loss=("loss", "mean"), **l2).reset_index()
+    l2 = {"mean_excess_l2": ("excess_l2", "mean")} if l2 else {}
     out = per_run.groupby(["kind", "label", "set"]).agg(
         runs=("seed", "nunique"), mean_excess=("excess", "mean"), sd_excess=("excess", "std"),
         best_run=("excess", "min"), worst_run=("excess", "max"), failed_frac=("failed", "mean"),
-        win_vs_bf=("win", "mean"), tie_vs_bf=("tie", "mean"), loss_vs_bf=("loss", "mean")).reset_index()
+        win_vs_bf=("win", "mean"), tie_vs_bf=("tie", "mean"), loss_vs_bf=("loss", "mean"), **l2).reset_index()
     bf_set = out[out.label == "best_fit"].set_index("set")["mean_excess"]
     out["delta_vs_bf_pp"] = (out.mean_excess - out.set.map(bf_set)) * 100      # percentage points; negative = better
     return out.round(5).sort_values(["set", "mean_excess"])
@@ -125,7 +135,7 @@ def main(config, sets=None, workers=None, overrides=None, llm=None, budget=None,
 
     rows = run_baselines(sets) + run_programs(jobs, sets, cfg["evaluation"]["mode"],
                                               cfg["final_eval"]["timeout_seconds"], workers)
-    df = pd.DataFrame(rows)
+    df = add_l2(pd.DataFrame(rows), sets)
     df.to_csv(out / "final_per_instance.csv", index=False)
     summ = summarise(df)
     summ.to_csv(out / "final_summary.csv", index=False)

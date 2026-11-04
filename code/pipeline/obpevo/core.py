@@ -25,6 +25,26 @@ def lower_bound(items: np.ndarray, capacity: int) -> int:
     return int(np.ceil(np.sum(items) / capacity))
 
 
+def lower_bound_l2(items: np.ndarray, capacity: int) -> int:
+    """Martello and Toth's L2 lower bound (1990): never below L1, and much tighter when many items exceed half a bin.
+
+    Two items larger than half a bin can never share one, which L1 ignores. For each threshold K in [0, C/2]:
+    J1 = items > C - K, J2 = items in (C/2, C - K], J3 = items in [K, C/2]. Every J1 and J2 item needs its own bin,
+    and J3 items that don't fit in the space left in J2 bins need extra bins:
+        L(K) = |J1| + |J2| + max(0, ceil((sum(J3) - (|J2| * C - sum(J2))) / C)).
+    L2 = max over K; the maximum is reached at K = 0 or at an item size <= C/2.
+    """
+    s, c = np.asarray(items), capacity
+    best = 0
+    for k in np.unique(np.concatenate(([0], s[s <= c / 2]))):
+        n1 = int(np.count_nonzero(s > c - k))
+        j2 = s[(s > c / 2) & (s <= c - k)]
+        j3_sum = int(s[(s >= k) & (s <= c / 2)].sum())
+        spare = len(j2) * c - int(j2.sum())
+        best = max(best, n1 + len(j2) + max(0, int(np.ceil((j3_sum - spare) / c))))
+    return best
+
+
 def _checked(scores, n: int) -> np.ndarray:
     s = np.asarray(scores, dtype=float)
     if s.shape != (n,):

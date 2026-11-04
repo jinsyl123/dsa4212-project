@@ -48,6 +48,14 @@ class TestFailedPrograms(unittest.TestCase):
         self.assertEqual(self.summ.loc["ok", "failed_frac"], 0.0)
         self.assertAlmostEqual(self.summ.loc["ok", "mean_excess"], self.summ.loc["best_fit", "mean_excess"], 5)
 
+    def test_l2_columns(self):
+        df = evaluate_final.add_l2(self.df, self.sets)
+        self.assertFalse(df[["lb_l2", "excess_l2"]].isna().any().any())
+        self.assertTrue((df.lb_l2 >= df.lb).all())                            # L2 is never below L1
+        self.assertTrue((df.excess_l2 <= df.excess).all())
+        self.assertIn("mean_excess_l2", evaluate_final.summarise(df).columns)
+        self.assertNotIn("mean_excess_l2", self.summ.columns)                 # optional: old per-instance files still work
+
     def test_next_fit_is_worse_than_best_fit(self):
         # A failure is never better than Best Fit (Next Fit is not a strict floor: see _failed_row)
         for i in self.sets["t"]:

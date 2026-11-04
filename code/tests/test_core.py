@@ -54,5 +54,62 @@ class TestCore(unittest.TestCase):
         self.assertFalse((a[0]["items"] == c[0]["items"]).all())
 
 
+def _optimum(items, capacity) -> int:
+    """Exact minimum number of bins by exhaustive search (tiny instances only)."""
+    items = sorted(items, reverse=True)
+    best = [len(items)]
+
+    def place(k, bins):
+        if len(bins) >= best[0]:
+            return
+        if k == len(items):
+            best[0] = len(bins)
+            return
+        for b in range(len(bins)):
+            if bins[b] >= items[k] and bins[b] not in bins[:b]:              # skip bins with the same space left
+                bins[b] -= items[k]
+                place(k + 1, bins)
+                bins[b] += items[k]
+        place(k + 1, bins + [capacity - items[k]])
+
+    place(0, [])
+    return best[0]
+
+
+class TestLowerBoundL2(unittest.TestCase):
+    def test_hand_checked_examples(self):
+        self.assertEqual(core.lower_bound(np.array([60, 60, 60]), 100), 2)    # L1 misses that no two 60s share a bin
+        self.assertEqual(core.lower_bound_l2(np.array([60, 60, 60]), 100), 3)
+        # L2 is a bound, not the optimum: it treats the 3 x 40 gaps as 120 units of shared space, so the four 30s
+        # seem to fit (L2 = 3), though each gap holds only one 30 (optimum = 4)
+        big = np.array([60, 60, 60, 30, 30, 30, 30])
+        self.assertEqual(core.lower_bound_l2(big, 100), 3)
+        self.assertEqual(_optimum(big, 100), 4)
+        self.assertEqual(core.lower_bound_l2(np.array([50, 50]), 100), 1)     # exactly half a bin may share
+
+    def test_never_above_optimum_never_below_l1(self):
+        rng = np.random.default_rng(0)
+        for _ in range(300):
+            cap = int(rng.choice([10, 20, 100]))
+            items = rng.integers(1, cap + 1, size=int(rng.integers(1, 9)))
+            l1, l2, opt = core.lower_bound(items, cap), core.lower_bound_l2(items, cap), _optimum(items, cap)
+            self.assertLessEqual(l1, l2, (items, cap))
+            self.assertLessEqual(l2, opt, (items, cap))
+
+    def test_large_items_much_tighter_than_l1(self):
+        # Weibull scale 65: ~63% of items exceed half a bin, so L1 is far too low
+        spec = dict(n_instances=2, n_items=2000, capacity=100, dist="weibull", shape=3, scale=65)
+        for i in instances.generate_set("big", spec, base_seed=0):
+            l1, l2 = core.lower_bound(i["items"], 100), core.lower_bound_l2(i["items"], 100)
+            bf = core.pack_anyfit(baselines.best_fit, i["items"], 100)
+            self.assertGreater(l2, 1.05 * l1)
+            self.assertLessEqual(l2, bf)
+
+    def test_equals_l1_on_training_distribution(self):
+        # Weibull(3, 45): few large items, so L2 adds nothing and existing scores are unchanged
+        for i in instances.generate_set("t", dict(n_instances=3, n_items=1000, capacity=100), base_seed=0):
+            self.assertEqual(core.lower_bound_l2(i["items"], 100), core.lower_bound(i["items"], 100))
+
+
 if __name__ == "__main__":
     unittest.main()
