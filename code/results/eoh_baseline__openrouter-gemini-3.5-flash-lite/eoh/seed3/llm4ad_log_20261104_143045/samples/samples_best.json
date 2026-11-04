@@ -1,0 +1,37 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm calculates priority as the remaining capacity after adding the item, assigning negative infinity to bins that cannot fit the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, remaining, -np.inf)\n\n",
+        "score": -1.4826206063983292,
+        "program": ""
+    },
+    {
+        "sample_order": 3,
+        "algorithm": "{The algorithm calculates the priority of adding an item to each bin based on the remaining space after insertion, penalizing bins that overflow or have large unused capacities.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, -remaining)\n\n",
+        "score": -0.04751333399919737,
+        "program": ""
+    },
+    {
+        "sample_order": 169,
+        "algorithm": "{\\1. The algorithm determines bin priority by computing the inverse polynomial of the absolute deviation between the remaining space ratio and a preferred filling fraction, ensuring invalid bins are strictly excluded.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    ratio = remaining / (bins + 1e-8)\n    score = -1.0 / (np.abs(ratio - 0.7) + 0.05)\n    return np.where((bins < item) | (bins <= 0), -np.inf, score)\n\n",
+        "score": -0.04721585244176538,
+        "program": ""
+    },
+    {
+        "sample_order": 208,
+        "algorithm": "{The new algorithm determines bin priority by using a trigonometric cosine modulation of the residual capacity fraction combined with a inverse-square root penalty for deviation from a target fullness.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    valid = (bins >= item) & (bins > 0)\n    remaining = bins - item\n    fraction = remaining / (bins + 1e-8)\n    score = np.cos(np.pi * fraction) - 1.0 / np.sqrt(np.abs(fraction - 0.6) + 0.01)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.046665340463321575,
+        "program": ""
+    },
+    {
+        "sample_order": 222,
+        "algorithm": "{The algorithm determines bin priority by evaluating a Gaussian function centered around a target remaining capacity, strictly penalizing invalid bins that cannot accommodate the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    optimal_remaining = 0.3 * bins\n    score = -np.exp(-((remaining - optimal_remaining) ** 2) / (2 * (0.1 ** 2) + 1e-8))\n    return np.where((bins < item) | (bins <= 0), -np.inf, score)\n\n",
+        "score": -0.04602191919308543,
+        "program": ""
+    }
+]
