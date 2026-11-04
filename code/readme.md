@@ -513,11 +513,23 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 
 ## 13. Results so far
 
-**EoH baseline: 3 seeds** (`openrouter-gemini-3.5-flash-lite`, 300 evals each, pinned LLM4AD, US$0.49 in total; `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/`):
+**EoH baseline: 6 seeds** (`openrouter-gemini-3.5-flash-lite`, 300 evals each, pinned LLM4AD, US$1.04 in total; seeds 0–2 run on 1 Nov, seeds 3–5 on 4 Nov with the same setup; `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/`):
 
-- Training: two seeds never improved on Best Fit (4.751%: their best program was the first one evaluated); one reached 4.507% (−0.24 pp) at eval 66, then plateaued. Mean 4.670 ± 0.141%.
-- Held-out: mean difference from Best Fit within ±0.1 pp on every set (`val` −0.10, `test_id_5k` −0.06, `test_uniform` −0.10, `test_shape_k5` +0.02, `test_cap500_scaled` +0.04).
-- Reading: with this model and budget, EoH mostly stalls at Best Fit. The likely cause is the LLM repeatedly rewriting Best Fit, which EoH discards as duplicates (to be quantified with the clone-rate diagnostics).
+- Training excess per seed: 4.751, 4.751, 4.507, 4.602, 3.719, 3.719% (Best Fit 4.751%). Seeds 0–1 are Best Fit itself, seed 2 nearly so. Seeds 4 and 5 found the same rule independently (`-sin(π·r/item) - r/item`, r = space left): it avoids leaving a gap smaller than about one item, and uses only ratios.
+- Held-out, Δ vs Best Fit per seed (pp; negative = better):
+
+  | Set | BF % | s0 | s1 | s2 | s3 | s4 | s5 |
+  |---|---|---|---|---|---|---|---|
+  | val | 4.73 | 0.00 | 0.00 | −0.30 | −0.05 | −1.22 | −1.22 |
+  | test_id_5k | 4.17 | 0.00 | 0.00 | −0.18 | −0.04 | −1.30 | −1.30 |
+  | test_size_10k | 3.95 | 0.00 | 0.00 | −0.05 | +0.13 | −1.07 | −1.07 |
+  | test_cap500 | 0.50 | 0.00 | 0.00 | 0.00 | +0.20 | +0.05 | +0.05 |
+  | test_cap500_scaled | 4.44 | 0.00 | 0.00 | +0.12 | +0.17 | −1.33 | −1.33 |
+  | test_shape_k1.5 | 1.34 | 0.00 | 0.00 | −0.04 | **+2.58** | −0.12 | −0.12 |
+  | test_shape_k5 | 8.25 | 0.00 | 0.00 | +0.06 | −1.94 | **+2.36** | **+2.36** |
+  | test_uniform | 5.07 | 0.00 | 0.00 | −0.30 | −0.65 | −1.24 | −1.24 |
+
+- Reading: half the seeds stall at Best Fit (the LLM keeps rewriting it); the other half find rules that open fresh bins, with gains on most sets and a failure on one item-size shift. Mean ± sd (`summary_tables.md`) hides this split, so report results per seed.
 
 **EoH baseline, first run (25 Oct)** (`gemini-3.5-flash-lite`, 300 evals, 34 min, 301 calls, 0 failed, US$0.17 notional):
 
@@ -526,11 +538,11 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 - The two failures are _consistent with_ a specific mechanism, which we treat as a hypothesis to test: the evolved rule switches formula at `item / remaining capacity = 0.5`, which suits training's item sizes but may send tightly clustered items (k=5) into fresh bins (43% of bins held one item, vs 0% for Best Fit), and it uses absolute units of space, so it may behave differently at capacity 500.
 - Supporting check: rescoring the same program in `anyfit` mode (no empty bins offered while an open bin fits) removes both failures (`test_shape_k5` 8.15%, `test_cap500_scaled` 3.85%) and about half the training gain (4.34%). This points to the rule opening new bins too eagerly, rather than general overfitting.
 
-**Fresh-bin diagnostic** (`pipeline/diagnose.py`, `diagnostics_summary.csv` in each folder): the OpenRouter programs never open a fresh bin while a used bin has room. 25 Oct seed 0 does in 36% of choices on train (57% on `test_shape_k5`). A second free-tier run, seed 11 (`results/eoh_freetier_seed11/`, separate run: older pipeline, 62 of 363 calls hit rate limits), does in 9%: train 4.48%, no k=5 failure, but **`test_cap500` 6.12%** vs Best Fit 0.50%, because its periodic score `cos(π·remaining/(1.618·item))` also peaks on empty capacity-500 bins. In anyfit mode both failures disappear: seed 11 falls back to about Best Fit on every set, and seed 0 keeps about half its gain. In our five runs, the failures come only from programs that open fresh bins. The anyfit comparison shows what these programs do, not why some runs learn it: the free-tier and OpenRouter runs also differ in provider, pipeline version and date.
+**Fresh-bin diagnostic** (`pipeline/diagnose.py`, `diagnostics_summary.csv` in each folder): OpenRouter seeds 0–2 never open a fresh bin while a used bin has room; seeds 3–5 do (6-seed mean `fresh_given_room` 11% on train, 19% on `test_shape_k5`). 25 Oct seed 0 does in 36% of choices on train (57% on `test_shape_k5`). A second free-tier run, seed 11 (`results/eoh_freetier_seed11/`, separate run: older pipeline, 62 of 363 calls hit rate limits), does in 9%: train 4.48%, no k=5 failure, but **`test_cap500` 6.12%** vs Best Fit 0.50%, because its periodic score `cos(π·remaining/(1.618·item))` also peaks on empty capacity-500 bins. In anyfit mode both failures disappear: seed 11 falls back to about Best Fit on every set, and seed 0 keeps about half its gain. Seeds 4/5 behave the same way: in anyfit mode their k=5 failure disappears (8.18% vs Best Fit 8.25%) and about half their gain remains (`test_id_5k` 3.70% vs 4.17%). Seed 3 is the exception: its `test_shape_k1.5` failure stays in anyfit mode (3.99% vs Best Fit 1.34%), so not every failure is a fresh-bin failure. The anyfit comparison shows what these programs do, not why some runs learn it.
 
 Reproduce: `python pipeline/evaluate_final.py --config configs/eoh_baseline.yaml --experiment eoh_baseline_25oct` (then `summarise.py` with the same arguments).
 
-This run used LLM4AD 1.0.0 (PyPI). Later runs (pinned LLM4AD, partly cut short by the free-tier quota) found heuristics much closer to Best Fit: small gains, no large failures. Run-to-run variance is large, so conclusions wait for three full-budget seeds (in progress via OpenRouter). Details in `docs/log.md`.
+This run used LLM4AD 1.0.0 (PyPI). Later runs (pinned LLM4AD, partly cut short by the free-tier quota) found heuristics much closer to Best Fit: small gains, no large failures. Run-to-run variance is large: see the 6 OpenRouter seeds above. Details in `docs/log.md`.
 
 ---
 

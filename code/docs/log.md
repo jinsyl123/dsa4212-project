@@ -27,6 +27,7 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Follow-ups:** `test_cap500` is not trivial (seed 11 fails there), so it stays in the final sets and the "near-trivial" note is dropped. Baseline rows in `final_summary.csv` use their classical AnyFit definitions (Worst Fit ~13%), while evolved programs are scored in funsearch mode (Worst Fit 148% there); for BF/FF the two conventions give identical bins (readme §11).
 - **Alternatives considered:** adding the column inside `core.evaluate` (touches the search hot path and Nic's scorer).
 - **Affects:** `results/{eoh_baseline_25oct,eoh_freetier_seed11,eoh_baseline__openrouter-gemini-3.5-flash-lite}/diagnostics_summary.csv`, readme §11, report analysis section.
+- **Update 2026-11-04:** OpenRouter seeds 3–5 (same setup) do open fresh bins, and seed 3 has a failure that is not a fresh-bin failure. See "ablation plan revised after seeds 3–5" below and readme §13.
 
 ### 2026-10-31: failed held-out instances scored as Next Fit (Jin)
 - **Decision:** in `evaluate_final`, an instance where a program errors or times out gets Next Fit's excess instead of `NaN`; `status` and `failed_frac` still record the failure.
