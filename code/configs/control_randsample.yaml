@@ -1,4 +1,5 @@
-# Control (#7): the same LLM calls without search (random sampling). Tests whether evolution itself helps.
+# Control (#7): LLM4AD RandSample, same 300-eval budget, no evolution: every call sends the same FunSearch-style
+# prompt (Best Fit as priority_v0, complete priority_v1) and the best program on train is kept. Tests whether evolution helps.
 base: configs/eoh_baseline.yaml
 experiment: control_randsample
 llm: openrouter-gemini-3.5-flash-lite

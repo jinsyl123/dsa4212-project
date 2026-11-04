@@ -276,7 +276,7 @@ final_eval:
 | `parallel`                   | LLM calls / evaluations in parallel (lower `num_samplers` if you hit rate limits)                                                                                                                                                                                |
 | `evaluation.mode`            | `funsearch` (default, matches LLM4AD) or `anyfit` (see §11)                                                                                                                                                                                                      |
 | `evaluation.timeout_seconds` | per-candidate time limit; ≥ 30 on Windows                                                                                                                                                                                                                        |
-| `evaluation.prompt`          | `llm4ad` (default, LLM4AD's wording), `informed_rules` (how bins are offered: remaining capacities, empty bins included), `informed_dist` (the training distribution and capacity), or `informed` (both)                                                         |
+| `evaluation.prompt`          | `llm4ad` (default, LLM4AD's wording), `informed_rules` (task framing plus how bins are offered: "online 1D bin packing, minimise bins", remaining capacities, empty bins included; the default prompt says none of this), `informed_dist` (the training distribution and capacity), or `informed` (both)                                                         |
 | `evaluation.format_hint`     | `true` (default): append formatting rules to every prompt (§11)                                                                                                                                                                                                  |
 | `seeds`, `methods`           | runs = methods × seeds                                                                                                                                                                                                                                           |
 | `final_eval`                 | held-out sets and timeout for step 2                                                                                                                                                                                                                             |
@@ -356,7 +356,7 @@ On the free tier, `cost_usd` shows what the run _would_ cost on the paid tier, w
 | ReEvo                   | `reevo`             | also asks the LLM for written reflections (~1.8 calls per evaluation) |
 | FunSearch               | `funsearch`         |                                                                       |
 | (1+1)-EPS hill climbing | `hillclimb`         | pure exploitation: always improves on the current best                |
-| Random sampling         | `randsample`        | pure exploration, no selection: the control                           |
+| Random sampling         | `randsample`        | no evolution (LLM4AD's fixed FunSearch-style prompt every call); best on train kept: the control |
 | MCTS-AHD, HSEvo         | `mcts_ahd`, `hsevo` | registered, untested: experimental                                    |
 
 Only EoH has been run with Gemini so far. **Run each other method once with `pipecheck.yaml` before its full run** to confirm Gemini's replies parse (FunSearch, hill climbing and random sampling use a different prompt style).
@@ -400,12 +400,12 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 | Config                    | Changes                                   | Status (#7)        |
 | ------------------------- | ----------------------------------------- | ------------------ |
 | `abl_anyfit.yaml`         | empty bins hidden during search           | main               |
-| `abl_informed_rules.yaml` | prompt explains how bins are offered      | main               |
+| `abl_informed_rules.yaml` | prompt states the task and how bins are offered (incl. empty bins) | main               |
 | `abl_mixed_shapes.yaml`   | training on Weibull shapes 2 and 4        | main               |
 | `abl_informed_dist.yaml`  | prompt states the training distribution   | optional           |
 | `abl_informed.yaml`       | both of the above in the prompt           | optional           |
 | `abl_no_m2.yaml`          | EoH without M2                            | fallback           |
-| `control_randsample.yaml` | random sampling, no search                | control            |
+| `control_randsample.yaml` | LLM4AD RandSample: same budget, fixed FunSearch-style prompt, no evolution | control            |
 
 Run one with a `check` budget first, then in full, then score it (no `--llm` needed: the model is set in the file):
 
@@ -419,8 +419,8 @@ python pipeline/summarise.py --config configs/abl_anyfit.yaml
 Before the full runs:
 
 - **Branch:** run from a branch that includes #14, so every run saves each LLM prompt and response (`llm_calls.jsonl`). Commit the whole run folder afterwards.
-- **Order:** the three main settings first (`abl_anyfit`, `abl_informed_rules`, `abl_mixed_shapes`), then `control_randsample`. It has not run on OpenRouter yet, so its `check` run matters most. The optional settings only if time allows.
-- **Credit:** about US$0.16–0.20 per run, ~US$5 for the main settings plus the control. Check the OpenRouter balance first.
+- **Order:** the three main settings first (`abl_anyfit`, `abl_informed_rules`, `abl_mixed_shapes`), then `control_randsample`. It has not run on OpenRouter yet and uses a different prompt (Best Fit as `priority_v0`, "complete `priority_v1`"), so its `check` run is a gate: look at `n_unique_programs` and `n_calls_not_evaluated` in `summary.json` before the 5 full seeds. The optional settings only if time allows.
+- **Credit:** about US$0.16–0.20 per run, 20 runs (3 main settings + control, 5 seeds each) ≈ US$3–4; budget ~US$5 for check runs and headroom. Check the OpenRouter balance first.
 
 ---
 

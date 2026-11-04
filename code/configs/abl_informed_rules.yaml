@@ -1,4 +1,5 @@
-# Ablation 1 (#7): the prompt explains how bins are offered (remaining capacities, including empty bins).
+# Ablation 1 (#7): the prompt states the task (online 1D bin packing, minimise bins) and how bins are offered
+# (remaining capacities, including empty bins). The default prompt says neither, so an effect is task framing + bin rules.
 # Question: does knowing the rule change how often EoH bets on fresh bins (fresh_given_room)?
 base: configs/eoh_baseline.yaml
 experiment: abl_informed_rules
