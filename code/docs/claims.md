@@ -33,66 +33,85 @@ Team agreement: "Freeze test sets **and the claim we'll make for each outcome** 
 | Sets | train, val (selection only, never reported as a test), and the test sets frozen in #12 |
 | Metric | excess over L1 (%), over L2 on `test_scale65` (#10); fewer bins = better |
 | Per-seed verdict vs a reference | `paired_stats.py` (#13): **better / worse** only if the 95% bootstrap CI excludes 0 **and** sign-test p < 0.05; **tie** if identical on every instance; else **unclear** |
-| Setting-level effect | ___ (e.g. "at least 3 of 5 seeds better than the baseline on ___"; decide before the runs) |
-| Mechanism measure | `fresh_given_room` from `diagnose.py` (#5): share of placements that open an empty bin while a used one has room |
+| Setting-level effect | Descriptive only: the number of seeds (of 5) in each category, next to the baseline's (of 6). Even the most extreme split, 3/6 vs 0/5 or 5/5, gives Fisher p = 0.18, so **seed counts are never called significant**. Significance comes only from the per-seed paired verdicts above. |
+| Mechanism measure | `fresh_given_room` from `diagnose.py` (#5): share of placements that open an empty bin while a used one has room. A seed is a **fresh-bin seed** if it is > 0.01 on train |
+| Held-out sets used for claims | **in-distribution:** `test_id_5k`; **shift:** `test_shape_k1.5`, `test_shape_k5`, plus the other #12 sets as secondary. `train` is reported but not a claim (it is the set searched on) |
 | Integrity | `check_integrity.py` (#6): flagged programs reported, not dropped |
+
+**Baseline to compare against** (EoH, 6 seeds, `baseline_findings.md`): 3/6 fresh-bin seeds (3, 4, 5). Seeds 0–2
+behave like Best Fit (2 exactly; seed 2 Best Fit for small gaps, else First Fit). Seeds 4/5 beat Best Fit on train
+(3.72 vs 4.75) but lose on k5 (10.62 vs 8.25) through fresh bins. Seed 3 loses on k1.5 (3.92 vs 1.34) for a different
+reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`, 4.65 with empty bins blocked.
 
 ## Template (copy for each setting)
 
 - **Changes from baseline:** one thing only.
 - **Question:** what this setting tells us that the baseline cannot.
-- **Hypothesis and why:** the mechanism we expect, and the baseline evidence behind it (#5, `baseline_findings.md`).
+- **Hypothesis and why:** the mechanism we expect, and the baseline evidence behind it.
 - **Prediction:** direction and rough size, on which sets, for which measure.
 - **What counts as an effect:** using the shared rules above.
 - **If confirmed, we claim:**
 - **If not confirmed, we claim:**
-- **What remains uncertain either way:** e.g. 5 seeds, one LLM, one problem family.
+- **What remains uncertain either way:**
 
 ---
 
 ## A1a. Empty bins hidden during search (`abl_anyfit.yaml`)
 
-- **Changes from baseline:** `evaluation: {mode: anyfit}`; the rule is never offered an empty bin while a used bin fits.
+- **Changes from baseline:** `evaluation: {mode: anyfit}`. The rule is never offered an empty bin while a used bin fits, so the fresh-bin bet is impossible by construction (`fresh_given_room` = 0).
 - **Question:** can EoH still beat Best Fit without the fresh-bin bet?
-- **Hypothesis and why:**
+- **Hypothesis and why:** part of EoH's gain does not need fresh bins. When seeds 4/5 are rescored with empty bins blocked, about half the train gain remains (4.31 vs Best Fit 4.75), and the k5 failure disappears (8.18 vs 8.25). Tuned Best Fit keeps almost none of its gain (4.65), so a 3-knob family cannot find this part, but an LLM might.
 - **Prediction:**
-- **What counts as an effect:**
-- **If confirmed, we claim:**
-- **If not confirmed, we claim:**
-- **What remains uncertain either way:**
+  - At least 2 of 5 seeds are **better** than Best Fit on `test_id_5k`, by about 0.3–0.5 pp (half the baseline's ~1 pp).
+  - **No** seed is worse than Best Fit on `test_shape_k5` (the fresh-bin failure cannot happen).
+  - Failures of seed 3's kind (k1.5) can still appear: they do not come from fresh bins.
+  - The anyfit-retuned tuned Best Fit is within ~0.1 pp of Best Fit.
+- **What counts as an effect:** per-seed **better** verdicts vs Best Fit on `test_id_5k`, and vs anyfit tuned Best Fit.
+- **If confirmed, we claim:** EoH finds gains that do not rely on opening empty bins, which a tuned 3-knob Best Fit does not. Removing the option also removes the k5 failure, so the option drives the failure, not the gain as a whole.
+- **If not confirmed, we claim** (all seeds tie with or lose to Best Fit): the fresh-bin bet was the whole of EoH's advantage on this distribution. Without it, EoH rediscovers Best Fit. The brief counts this as evidence too ("rediscovering a known heuristic … can also provide evidence").
+- **What remains uncertain either way:** whether hiding empty bins changes what the LLM proposes or only what gets selected. Read a sample of `candidates.jsonl` to tell them apart.
 
 ## A1b. Bin rules explained in the prompt (`abl_informed_rules.yaml`)
 
-- **Changes from baseline:** `evaluation: {prompt: informed_rules}`; the prompt says how bins are offered, including empty bins.
-- **Question:** does knowing the bin rules change how often evolved rules open fresh bins?
-- **Hypothesis and why:**
+- **Changes from baseline:** `evaluation: {prompt: informed_rules}`. The prompt says items arrive online and the function scores "the bins the current item fits into (remaining capacities, including empty bins)".
+- **Question:** does knowing that empty bins are among the options change how often evolved rules open them?
+- **Hypothesis and why:** the default LLM4AD prompt never mentions empty bins, so the baseline found the bet by accident in 3/6 seeds. Saying so explicitly makes it easier to target: **more** fresh-bin seeds, found **earlier**. (The opposite is possible: an LLM told about empty bins may treat them as a last resort, as Best Fit does.)
 - **Prediction:**
-- **What counts as an effect:**
-- **If confirmed, we claim:**
-- **If not confirmed, we claim:**
-- **What remains uncertain either way:**
+  - At least 4 of 5 fresh-bin seeds (baseline 3/6).
+  - The best rule is found earlier than the baseline's eval ~200.
+  - Hence more seeds better on train and `test_id_5k`, **and** more seeds worse on `test_shape_k5`.
+- **What counts as an effect:** the descriptive seed counts and median discovery eval, and per-seed verdicts on `test_id_5k` and `test_shape_k5`.
+- **If confirmed, we claim:** the fresh-bin habit comes partly from the prompt: the LLM exploits options it is told about, and that gain and that failure come together.
+- **If not confirmed, we claim:** the bet comes from selection pressure on this training set, not from what the LLM is told. Tuned Best Fit supports this reading, since it finds the bet with no prompt at all.
+- **What remains uncertain either way:** with 5 seeds, a 3/6 vs 4/5 difference can be chance (see the shared rules). This setting can only give strong evidence if the counts end up at 0/5 or 5/5.
 
 ## A2. Training-data variety (`abl_mixed_shapes.yaml`)
 
-- **Changes from baseline:** `evaluation: {train_set: train_mixed}`; Weibull shapes 2 and 4 (test shapes 1.5 and 5 stay out).
+- **Changes from baseline:** `evaluation: {train_set: train_mixed}`. Same sizes and capacity, with half the instances at Weibull shape 2 and half at shape 4. Test shapes 1.5 and 5 stay out.
 - **Question:** do the k1.5 / k5 failures come from training on a single item-size shape?
-- **Hypothesis and why:**
+- **Hypothesis and why:** the fresh-bin bet pays off only when later small items fill the gaps, which holds for shape 3 but not for clustered sizes (k5: 9% single-item bins). Shape-4 training instances are clustered enough to punish the bet during search, so selection should prefer rules that hold up across shapes. Seed 3's skip window fitted shape 3 by accident and would be scored on two shapes instead.
 - **Prediction:**
-- **What counts as an effect:**
-- **If confirmed, we claim:**
-- **If not confirmed, we claim:**
-- **What remains uncertain either way:**
+  - Fewer seeds worse than Best Fit on `test_shape_k5` or `test_shape_k1.5` (baseline: 3 of 6 lose on one of them).
+  - Smaller gains on `test_id_5k` than the baseline's best seeds: about 0–0.5 pp, against ~1 pp.
+  - `fresh_given_room` lower on average.
+- **What counts as an effect:** per-seed **worse** verdicts on k1.5 and k5 vs Best Fit and vs `train_mixed`-retuned tuned Best Fit, compared with the baseline's.
+- **If confirmed, we claim:** the shape-shift failures come from training on one shape. A more varied training set trades some in-distribution gain for robustness.
+- **If not confirmed, we claim:** the failures don't come from the training shape alone. The rule family or the search picks fragile rules even when the training data covers more than one shape.
+- **What remains uncertain either way:** shapes 2 and 4 bracket the training shape but not the test shapes (1.5, 5), so this tests interpolation, not extrapolation. Mixing also changes the average training difficulty.
 
-## Control. Random sampling, no search (`control_randsample.yaml`)
+## Control. Random sampling, no evolution (`control_randsample.yaml`)
 
-- **Changes from baseline:** `randsample`: the same number of LLM proposals, no selection or evolution.
-- **Question:** does the evolutionary search add anything over sampling the LLM 300 times and keeping the best?
-- **Hypothesis and why:**
+- **Changes from baseline:** `randsample`. The same 300-evaluation budget and prompt, but each proposal is independent (no parents, no crossover or mutation). The best on train is kept, as in EoH.
+- **Question:** does the evolutionary search add anything beyond sampling the LLM many times and keeping the best?
+- **Hypothesis and why:** evolution helps. In the baseline, the rules that beat Best Fit appeared late (eval ~200 of 300, seeds 3–5), after many generations. Seeds 0 and 1 found Best Fit at eval 1 and never improved, so the LLM's first guess is Best Fit.
 - **Prediction:**
-- **What counts as an effect:**
-- **If confirmed, we claim:**
-- **If not confirmed, we claim:**
-- **What remains uncertain either way:**
+  - Most seeds end at Best Fit or a near copy.
+  - At most 1 of 5 fresh-bin seeds (baseline 3/6).
+  - No seed better than the best EoH seeds on `test_id_5k`.
+- **What counts as an effect:** seed counts and per-seed verdicts vs Best Fit, and each seed's paired difference vs EoH's best seeds on `test_id_5k`.
+- **If confirmed, we claim:** evolution, not the LLM's prior alone, finds the rules that beat Best Fit (including the fresh-bin bet).
+- **If not confirmed, we claim:** best-of-300 sampling matches EoH, so its gains come from the LLM's prior plus selection on train, not from evolution. That is a negative result worth reporting.
+- **What remains uncertain either way:** unique programs differ (EoH's 300 evals hold 160–220 unique ones). Report unique programs per run next to the result.
 
 ## Optional settings (fill in only if they will be run)
 
