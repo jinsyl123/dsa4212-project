@@ -138,7 +138,8 @@ def ensure_instances(cfg: dict) -> Path:
     d = instance_dir(cfg)
     spec = ROOT / cfg["instances"]["spec"]
     sets = (yaml.safe_load(spec.read_text()) or {}).get("sets", {})
-    if not (d / "manifest.csv").exists() or any(not (d / f"{s}.npz").exists() for s in sets):
-        from obpevo import instances
-        instances.build_all(spec, d)        # existing set files are kept; only missing sets are generated
+    from obpevo import instances
+    if (not (d / "manifest.csv").exists() or any(not (d / f"{s}.npz").exists() for s in sets)
+            or instances.spec_changed(spec, d)):
+        instances.build_all(spec, d)        # builds missing sets and sets whose spec changed; others are kept
     return d

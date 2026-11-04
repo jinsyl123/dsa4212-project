@@ -85,6 +85,22 @@ class TestMixedSet(unittest.TestCase):
             self.assertTrue((out / "b.npz").exists())
             self.assertEqual((out / "a.npz").read_bytes(), a_before)                     # existing sets untouched
 
+    def test_changed_set_is_rebuilt(self):
+        # if a set is redefined under the same name (e.g. #12), an existing data/ must not keep the old instances
+        with tempfile.TemporaryDirectory() as d:
+            spec = Path(d) / "spec.yaml"
+            spec.write_text("seed: 0\nsets:\n  a: {n_instances: 1, n_items: 50, capacity: 100}\n"
+                            "  b: {n_instances: 1, n_items: 50, capacity: 100}\n")
+            cfg = {"instances": {"spec": str(spec), "dir": str(Path(d) / "data")}}
+            out = C.ensure_instances(cfg)
+            b_before = (out / "b.npz").read_bytes()
+            spec.write_text(spec.read_text().replace("a: {n_instances: 1", "a: {n_instances: 3"))
+            C.ensure_instances(cfg)
+            self.assertEqual(len(instances.load_set(out / "a.npz")), 3)                  # changed set rebuilt
+            self.assertEqual((out / "b.npz").read_bytes(), b_before)                     # unchanged set untouched
+            self.assertEqual(instances.load_set(out / "a.npz")[0]["items"].tolist(),
+                             instances.generate_set("a", {"n_instances": 3, "n_items": 50, "capacity": 100}, 0)[0]["items"].tolist())
+
 
 if __name__ == "__main__":
     unittest.main()
