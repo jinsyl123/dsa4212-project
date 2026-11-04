@@ -24,6 +24,7 @@ results/*/*/seed*/*
 !results/*/*/seed*/evals.csv
 !results/*/*/seed*/llm_calls.csv
 results/*/final_per_instance.csv
+results/*/diagnostics.csv
 
 results/smoke/
 results/pipecheck*/
