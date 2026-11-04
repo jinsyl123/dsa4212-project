@@ -416,6 +416,12 @@ python pipeline/evaluate_final.py --config configs/abl_anyfit.yaml
 python pipeline/summarise.py --config configs/abl_anyfit.yaml
 ```
 
+Before the full runs:
+
+- **Branch:** run from a branch that includes #14, so every run saves each LLM prompt and response (`llm_calls.jsonl`). Commit the whole run folder afterwards.
+- **Order:** the three main settings first (`abl_anyfit`, `abl_informed_rules`, `abl_mixed_shapes`), then `control_randsample`. It has not run on OpenRouter yet, so its `check` run matters most. The optional settings only if time allows.
+- **Credit:** about US$0.16–0.20 per run, ~US$5 for the main settings plus the control. Check the OpenRouter balance first.
+
 ---
 
 ## 10. Outputs and how to read them
