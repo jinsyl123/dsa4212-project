@@ -13,6 +13,13 @@ One entry per decision that affects results. Newest at the top. Link the config 
 
 ---
 
+### 2026-11-04: ablation settings locked (Nic)
+
+- **Decision:** run the main settings `abl_anyfit`, `abl_informed_rules` and `abl_mixed_shapes`, plus the control `control_randsample`. Seeds 0–4 each, `openrouter-gemini-3.5-flash-lite`, budget `full` (300 evals). The comparison row is the EoH baseline, seeds 0–5. Optional if time allows: `abl_informed_dist`, `abl_informed`. Fallback: `abl_no_m2`.
+- **Why:** the baseline shows the gain and the k5 failure both come from opening fresh bins (seeds 4/5), plus one failure from training on a single shape (seed 3, k1.5). Ablation 1 tests the empty-bin option; Ablation 2 tests training variety; randsample tests whether search adds anything. 5 seeds because half the baseline seeds collapse to Best Fit.
+- **Alternatives considered:** no-M2 as a main setting (no run points to M2), thoughts on/off (EoH Table 6 already covers it), a budget sweep (would be a third ablation).
+- **Affects:** `configs/abl_*.yaml`, `configs/control_randsample.yaml`, `results/<setting>/`. Plan and evidence: #7. Claims frozen before scoring: #15.
+
 ### 2026-11-01: integrity checks on candidates, flag only (Jin)
 - **Decision:** `obpevo/integrity.py` parses every candidate with `ast` and records rule violations (non-numpy imports, randomness incl. `hash()`/`id()`/clock, `exec`/`eval`/`open`, numpy file I/O, dunder access, `global`, attribute assignment, module-level state, mutable defaults) in a new `integrity` column of `evals.csv`; `summary.json` gets `n_flagged` and `best_integrity`. `check_integrity.py` rescores each best program four times (usual order twice, one shuffled order twice), each in a fresh spawned process with its own hash and RNG seeds. Flagged programs are still scored and can still win.
 - **Why:** the brief asks to keep scoring outside the code being evolved. Flagging instead of dropping keeps every method's search unchanged (fair) and lets us report how often each rule is hit. All committed best programs (25 Oct seed 0, OpenRouter seeds 0–2) are clean: no flags, 0 repeat and 0 shuffle mismatches on train and val.
