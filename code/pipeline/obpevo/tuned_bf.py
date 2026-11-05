@@ -19,6 +19,10 @@ empty bin is always offered; this rule doesn't.) It is tuned at capacity 100 and
 
 lo=0, hi=0, penalty=0 is plain Best Fit.
 
+These ranges (and the 99 above) assume capacity 100, the training capacity. To tune at another capacity,
+rescale SPACE with it (config: params: {space: ...}). Test sets at another capacity (e.g. test_cap500) are only
+scored, never tuned on, so the tuned knobs keep their capacity-100 values there.
+
 Same budget means the same number of scored tries: `tune` scores Best Fit first (every LLM method also starts
 from the Best Fit template), then max_evals - 1 distinct random knob settings, on the training set only. Same
 wall-clock time would be unfair (an LLM search waits on the API) and same dollars is meaningless (tuning is free).
@@ -32,7 +36,8 @@ import numpy as np
 
 from . import core
 
-SPACE = dict(lo=(0, 10), hi_max=40, penalty=(1, 100))     # inclusive ranges; hi is drawn from lo+2 .. hi_max
+SPACE = dict(lo=(0, 10), hi_max=40, penalty=(1, 100))     # inclusive ranges; hi is drawn from lo+2 .. hi_max.
+                                                          # Sized for capacity 100: rescale to tune at another
 BEST_FIT = dict(lo=0, hi=0, penalty=0)
 
 TEMPLATE = '''import numpy as np
