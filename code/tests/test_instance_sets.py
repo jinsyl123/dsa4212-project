@@ -43,6 +43,16 @@ class TestTestSets(unittest.TestCase):
             if name.startswith("test_"):
                 self.assertEqual(spec["n_instances"], 10, name)
 
+    def test_final_eval_scores_every_test_set(self):
+        # every held-out set gets scored, and final_eval names no set that v0.yaml doesn't define
+        tests = {n for n in SPEC["sets"] if n.startswith("test_")}
+        for cfg in ("eoh_baseline", "compare"):
+            with self.subTest(cfg):
+                sets = yaml.safe_load((ROOT / "configs" / f"{cfg}.yaml").read_text())["final_eval"]["sets"]
+                self.assertEqual(len(sets), len(set(sets)))
+                self.assertLessEqual(set(sets), set(SPEC["sets"]))
+                self.assertLessEqual(tests, set(sets))
+
 
 if __name__ == "__main__":
     unittest.main()
