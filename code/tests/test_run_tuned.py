@@ -45,6 +45,18 @@ class TestRunTuned(unittest.TestCase):
             exec((run / "best_program.py").read_text(), ns)
             self.assertAlmostEqual(-core.score(core.evaluate(ns["priority"], train)), s["best_train_excess"])
 
+    def test_runs_index_fills_missing_kind(self):
+        import run_experiment
+        with tempfile.TemporaryDirectory() as tmp:
+            for label, extra in [("eoh", {}), ("tuned_bf", {"kind": "tuned"})]:   # an EoH run saved before `kind`
+                d = Path(tmp) / label / "seed0"
+                d.mkdir(parents=True)
+                (d / "summary.json").write_text(json.dumps(dict(label=label, method=label, **extra, seed=0)))
+            idx = run_experiment.write_runs_index(Path(tmp))
+            self.assertEqual(list(idx.columns), ["label", "method", "kind", "seed"])
+            self.assertEqual(list(idx.kind), ["evolved", "tuned"])
+            self.assertEqual(list(pd.read_csv(Path(tmp) / "runs_index.csv").kind), ["evolved", "tuned"])
+
     def test_bad_params_raise_before_writing(self):
         import run_experiment
         spec = dict(n_instances=2, n_items=[200, 300], capacity=100, dist="weibull", shape=3, scale=45)

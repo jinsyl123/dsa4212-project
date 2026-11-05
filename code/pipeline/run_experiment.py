@@ -146,7 +146,7 @@ def run_one(cfg, m: dict, seed: int, train: list[dict], out: Path, verbose: bool
                     cfg["llm"]["price_in_per_1m"], cfg["llm"]["price_out_per_1m"], prompt_suffix=suffix)
     task = T.OBPTask(train, run_dir, ev["mode"], ev["timeout_seconds"], task_description(cfg))
 
-    meta = dict(experiment=cfg["experiment"], label=m["label"], method=m["name"], seed=seed,
+    meta = dict(experiment=cfg["experiment"], label=m["label"], method=m["name"], kind="evolved", seed=seed,
                 llm_name=cfg["llm"].get("name"), llm_provider=cfg["llm"].get("provider") or cfg["llm"].get("backend"),
                 llm_model=cfg["llm"]["model"], budget_name=b.get("name"), mode=ev["mode"],
                 train_set=ev["train_set"], n_train=len(train), max_evals=b["max_evals"], max_tokens=b["max_tokens"])
@@ -229,6 +229,17 @@ def run_tuned(cfg, m: dict, seed: int, train: list[dict], out: Path) -> dict:
     return summary
 
 
+def write_runs_index(out: Path) -> pd.DataFrame:
+    """runs_index.csv: one row per finished run in `out` (its summary.json). Runs saved before `kind` was
+    recorded are LLM runs (tuned runs have always set it), so a missing kind reads as "evolved"."""
+    idx = pd.DataFrame([json.loads(p.read_text()) for p in sorted(out.glob("*/seed*/summary.json"))])
+    if len(idx):
+        kind = idx.pop("kind").fillna("evolved") if "kind" in idx else "evolved"
+        idx.insert(idx.columns.get_loc("method") + 1, "kind", kind)          # same place as in summary.json
+    idx.to_csv(out / "runs_index.csv", index=False)
+    return idx
+
+
 def main(config, methods=None, seeds=None, force=False, verbose=False, overrides=None,
          llm=None, budget=None, experiment=None) -> pd.DataFrame:
     """Run every (method x seed) in `config`; returns the runs index. Callable from a notebook.
@@ -255,9 +266,7 @@ def main(config, methods=None, seeds=None, force=False, verbose=False, overrides
               f"| {r['n_llm_calls']} calls, {r['prompt_tokens'] + r['completion_tokens']:,} tokens | best train excess {best} "
               f"| {r['stop_reason']} | {r['wall_minutes']} min")
 
-    # index of all finished runs in this experiment
-    idx = pd.DataFrame([json.loads(p.read_text()) for p in sorted(out.glob("*/seed*/summary.json"))])
-    idx.to_csv(out / "runs_index.csv", index=False)
+    idx = write_runs_index(out)
     print(f"Wrote {out / 'runs_index.csv'} ({len(idx)} runs)")
     return idx
 
