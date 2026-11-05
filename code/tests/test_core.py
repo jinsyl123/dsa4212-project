@@ -96,6 +96,26 @@ class TestLowerBoundL2(unittest.TestCase):
             self.assertLessEqual(l1, l2, (items, cap))
             self.assertLessEqual(l2, opt, (items, cap))
 
+    def test_matches_martello_toth_definition(self):
+        # Martello & Toth (1990), Knapsack Problems, §8.3.2: L2 = max of L(alpha) (Theorem 8.3, eq. 8.19) over every
+        # integer 0 <= alpha <= c/2 (Corollary 8.3, eq. 8.20). lower_bound_l2 only tries alpha = 0 and item sizes
+        # <= c/2 (their Theorem 8.4); this checks that shortcut against the full definition
+        def book_l2(w, c):
+            best = 0
+            for a in range(c // 2 + 1):
+                j1, j2, j3 = w[w > c - a], w[(w <= c - a) & (w > c / 2)], w[(w <= c / 2) & (w >= a)]
+                best = max(best, len(j1) + len(j2) + max(0, int(np.ceil((j3.sum() - (len(j2) * c - j2.sum())) / c))))
+            return best
+
+        rng = np.random.default_rng(1)
+        for _ in range(1000):
+            cap = int(rng.choice([10, 50, 100, 150, 200]))
+            items = rng.integers(1, cap + 1, size=int(rng.integers(1, 60)))
+            self.assertEqual(core.lower_bound_l2(items, cap), book_l2(items, cap), (items, cap))
+        for cap, lo, hi in [(100, 1, 101), (100, 51, 101), (150, 20, 101)]:          # our set sizes: 5000 items
+            items = rng.integers(lo, hi, size=5000)
+            self.assertEqual(core.lower_bound_l2(items, cap), book_l2(items, cap), cap)
+
     def test_large_items_much_tighter_than_l1(self):
         # Weibull scale 65: ~63% of items exceed half a bin, so L1 is far too low
         spec = dict(n_instances=2, n_items=2000, capacity=100, dist="weibull", shape=3, scale=65)
