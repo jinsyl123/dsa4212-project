@@ -31,11 +31,11 @@ Team agreement: "Freeze test sets **and the claim we'll make for each outcome** 
 | Seeds per setting | 5 (seeds 0–4) |
 | References | Best Fit, and tuned Best Fit retuned in the same setting (#8) |
 | Sets | train, val (selection only, never reported as a test), and the test sets frozen in #12 |
-| Metric | excess over L1 (%), over L2 on `test_scale65` (#10); fewer bins = better |
+| Metric | excess over L2 (%) on every set (#12 decision 7, #10); fewer bins = better. Same as L1 except on `test_scale65` and `test_control`, so numbers stay comparable with FunSearch/EoH |
 | Per-seed verdict vs a reference | `paired_stats.py` (#13): **better / worse** only if the 95% bootstrap CI excludes 0 **and** sign-test p < 0.05; **tie** if identical on every instance; else **unclear** |
 | Setting-level effect | Descriptive only: the number of seeds (of 5) in each category, next to the baseline's (of 6). Even the most extreme split, 3/6 vs 0/5 or 5/5, gives Fisher p = 0.18, so **seed counts are never called significant**. Significance comes only from the per-seed paired verdicts above. |
 | Mechanism measure | `fresh_given_room` from `diagnose.py` (#5): share of placements that open an empty bin while a used one has room. A seed is a **fresh-bin seed** if it is > 0.01 on train |
-| Held-out sets used for claims | **in-distribution:** `test_id_5k`; **shift:** `test_shape_k1.5`, `test_shape_k5`, plus the other #12 sets as secondary. `train` is reported but not a claim (it is the set searched on) |
+| Held-out sets used for claims | **in-distribution:** `test_id_5k`; **shift:** `test_shape_k1.5`, `test_shape_k5`, plus the other #12 sets as secondary. `train` is reported but not a claim (it is the set searched on). `test_control` (#16) is a scoring check, not a claim: every rule must be exactly 0% over L2 there |
 | Integrity | `check_integrity.py` (#6): flagged programs reported, not dropped |
 
 **Baseline to compare against** (EoH, 6 seeds, `baseline_findings.md`): 3/6 fresh-bin seeds (3, 4, 5). Seeds 0–2
