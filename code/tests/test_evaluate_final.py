@@ -64,9 +64,9 @@ class TestFailedPrograms(unittest.TestCase):
 
 
 class TestL2Table(unittest.TestCase):
-    """summarise.py adds an excess-over-L2 table only for sets where L2 is tighter (e.g. test_scale65)."""
+    """summarise.py reports excess over L2 on every set, plus an L1 table only for sets where L1 differs."""
 
-    def test_l2_table_only_for_large_item_sets(self):
+    def test_main_table_on_l2_and_l1_table_only_for_large_item_sets(self):
         import json
         import tempfile
 
@@ -86,12 +86,14 @@ class TestL2Table(unittest.TestCase):
                 n_llm_calls=1, cost_usd=0, wall_minutes=0, best_train_excess=0.04)))
             evaluate_final.summarise(df).to_csv(out / "final_summary.csv", index=False)
             text = summarise.tables(out, cfg, df)
-        l1, l2 = text.split("excess over L2")
-        self.assertIn("| normal | big |", l1)          # main table: every set, on L1
-        self.assertNotIn("normal", l2)                  # L2 table: only the set where L2 > L1
-        self.assertIn("| big |", l2)
+        main, l1 = text.split("excess over L2 lower bound")[1].split("excess over L1")
+        self.assertIn("| normal | big |", main)        # main table: every set, on L2
+        self.assertNotIn("normal", l1)                  # L1 table: only the set where L1 differs
+        self.assertIn("| big |", l1)
         bf = df[(df.label == "best_fit") & (df.set == "big")]
-        self.assertIn(f"{100 * bf.excess_l2.mean():.2f}", l2.split("best_fit")[1].split("\n")[0])
+        row = lambda t: t.split("best_fit")[1].split("\n")[0]  # noqa: E731
+        self.assertIn(f"{100 * bf.excess_l2.mean():.2f}", row(main))
+        self.assertIn(f"{100 * bf.excess.mean():.2f}", row(l1))
 
 
 if __name__ == "__main__":

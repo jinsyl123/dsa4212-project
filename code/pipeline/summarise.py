@@ -180,14 +180,16 @@ def plot_convergence(
 
 
 def plot_test_sets(final: pd.DataFrame, cfg, path: Path):
-    """Small multiples: one panel per held-out set, change in excess vs Best Fit (pp) per method and seed."""
+    """Small multiples: one panel per held-out set, change in excess vs Best Fit (pp) per method and seed.
+    Excess is over L2 when the results have it (#12 decision 7), else over L1."""
+    metric = "excess_l2" if "excess_l2" in final else "excess"
     ev = final[final.kind == "evolved"]
     per_run = (
         ev.groupby(["label", "set", "seed"])
-        .agg(excess=("excess", "mean"))
+        .agg(excess=(metric, "mean"))
         .reset_index()
     )
-    bf = final[final.label == "best_fit"].groupby("set").excess.mean()
+    bf = final[final.label == "best_fit"].groupby("set")[metric].mean()
     per_run["delta"] = (per_run.excess - per_run.set.map(bf)) * 100
     sets = [s for s in cfg["final_eval"]["sets"] if s in per_run.set.unique()]
     labels = [
@@ -228,7 +230,8 @@ def plot_test_sets(final: pd.DataFrame, cfg, path: Path):
     for ax in axes.flat[len(sets) :]:
         ax.set_visible(False)
     fig.supxlabel(
-        "Change in excess over lower bound vs Best Fit (percentage points; left of 0 = better)",
+        f"Change in excess over {'L2' if metric == 'excess_l2' else 'L1'} lower bound vs Best Fit "
+        "(percentage points; left of 0 = better)",
         color=INK2,
         fontsize=8.5,
     )
@@ -310,25 +313,30 @@ def tables(out: Path, cfg, final: pd.DataFrame | None) -> str:
     if final is not None:
         fs = pd.read_csv(out / "final_summary.csv")
         sets = [s for s in cfg["final_eval"]["sets"] if s in set(fs.set)]
-        piv = held_out_table(fs, cfg, sets, "mean_excess", "sd_excess")
+        # Report excess over L2 on every set (#12 decision 7). It equals L1 except where many items exceed half a
+        # bin; L1 (the bound FunSearch/EoH use) is shown separately for those sets so the papers' metric is visible
+        on_l2 = "mean_excess_l2" in fs
+        bound = "L2" if on_l2 else "L1"
+        cols = ("mean_excess_l2", "sd_excess_l2") if on_l2 else ("mean_excess", "sd_excess")
+        piv = held_out_table(fs, cfg, sets, *cols)
         legend = (
             "† some instances failed (crash/timeout) and were scored as Next Fit\n"
             if (fs.failed_frac > 0).any()
             else ""
         )
         md += [
-            "\n## Held-out sets: excess over lower bound (%), mean ± sd across seeds\n"
+            f"\n## Held-out sets: excess over {bound} lower bound (%), mean ± sd across seeds\n"
             + legend,
             md_table(piv),
         ]
-        # Sets where L2 is tighter than L1 (of ours, test_scale65 and test_control): L1 overstates every rule's excess there
+        # Sets where L2 is tighter than L1 (of ours, test_scale65 and test_control): the only sets where L1 differs
         l2_sets = [s for s in sets if "lb_l2" in final and (final[final.set == s].lb_l2 > final[final.set == s].lb).any()]
-        if l2_sets and "mean_excess_l2" in fs:
+        if l2_sets and on_l2:
             md += [
-                "\n## Held-out sets where the L2 bound is tighter: excess over L2 (%), mean ± sd across seeds\n"
-                "Many items exceed half a bin here, so L1 overstates every rule's excess. Report these numbers "
-                "for these sets.\n" + legend,
-                md_table(held_out_table(fs, cfg, l2_sets, "mean_excess_l2", "sd_excess_l2")),
+                "\n## For comparison with FunSearch/EoH: excess over L1 (%), sets where it differs from L2\n"
+                "Many items exceed half a bin here, so L1 overstates every rule's excess. On every other set the "
+                "table above is already L1.\n" + legend,
+                md_table(held_out_table(fs, cfg, l2_sets, "mean_excess", "sd_excess")),
             ]
     text = "\n".join(md) + "\n"
     (out / "summary_tables.md").write_text(text)
