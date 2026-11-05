@@ -1,0 +1,26 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm calculates the priority of each bin as the remaining capacity after placing the item, setting the priority to negative infinity for bins that cannot accommodate the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, remaining, -np.inf)\n\n",
+        "score": -1.4826206063983292
+    },
+    {
+        "sample_order": 2,
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after adding the item, provided the bin has enough space, and assigns negative infinity otherwise.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "sample_order": 179,
+        "algorithm": "{The new algorithm determines bin priority using a piecewise polynomial fit of the packing density combined with a power-law penalty for absolute slack capacity, while masking infeasible bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    density = item / bins\n    score = np.where(density < 0.5, density ** 2 - np.sqrt(remaining), -np.power(remaining, 1.5) + density)\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.04084557819287486
+    },
+    {
+        "sample_order": 217,
+        "algorithm": "{The new algorithm calculates bin priority using a logarithmic scaling of the remaining capacity combined with an exponential density bonus, while masking infeasible bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    density = item / bins\n    score = np.where(density < 0.5, np.exp(density) - np.log1p(remaining), np.power(density, 1.5) - remaining)\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.037875823315885196
+    }
+]

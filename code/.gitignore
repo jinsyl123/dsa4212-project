@@ -24,6 +24,9 @@ results/*/*/seed*/per_instance/
 results/smoke/
 results/pipecheck*/
 
+# Run logs are part of the audit trail (the repo-root .gitignore ignores *.log elsewhere)
+!results/*/*/seed*/stdout.log
+
 # Archives and local copies of libraries
 *.zip
 LLM4AD/
