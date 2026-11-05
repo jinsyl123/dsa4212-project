@@ -321,7 +321,7 @@ def tables(out: Path, cfg, final: pd.DataFrame | None) -> str:
             + legend,
             md_table(piv),
         ]
-        # Sets where L2 is tighter than L1 (of ours, only test_scale65): L1 overstates every rule's excess there
+        # Sets where L2 is tighter than L1 (of ours, test_scale65 and test_control): L1 overstates every rule's excess there
         l2_sets = [s for s in sets if "lb_l2" in final and (final[final.set == s].lb_l2 > final[final.set == s].lb).any()]
         if l2_sets and "mean_excess_l2" in fs:
             md += [

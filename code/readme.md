@@ -405,13 +405,14 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 | `config.json`                 | resolved config, method kwargs used/dropped, library versions, exact prompt text added                                     |
 | `llm_calls.csv`               | one row per LLM call: tokens (`api` or `estimate`), latency, cost, status (with the provider's error message if it failed) |
 | `evals.csv`                   | one row per candidate: status (`ok` / `error` / `timeout` / `crash`), score, train excess, error message                   |
+| `llm_calls.jsonl`             | full prompt and response text of every LLM call (runs from 5 Nov on)                                                        |
 | `candidates.jsonl`            | every evaluated program                                                                                                    |
 | `per_instance.csv`            | every candidate × training instance: bins, lower bound, excess                                                             |
 | `best_program.py`             | best program by training score (ties go to the earliest)                                                                   |
 | `summary.json`                | counts, tokens, cost, stop reason, best result                                                                             |
 | `stdout.log`, `llm4ad_log_*/` | LLM4AD's own output                                                                                                        |
 
-**In git:** `summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` of each run (enough to rebuild every table and figure); the rest of each run folder stays local. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
+**In git:** every file of each run folder, so every evaluated program and LLM4AD's logs can be audited (`summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` alone are enough to rebuild every table and figure). Runs made before 4 Nov only have those four files committed, unless their full folders were added later. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
 
 **Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
 
@@ -442,7 +443,9 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 - `funsearch` (default): one bin per item is set up at the start, all at full capacity, so `bins` always includes empty bins. Identical to LLM4AD, FunSearch and EoH; we verified our scores match LLM4AD's exactly. Consequence: any heuristic that prefers emptier bins always opens a new bin and collapses to about one item per bin (~148% excess on our training set).
 - `anyfit`: only open, non-empty bins are offered; a new bin opens only when none fit (Sgall's AnyFit class).
 
-**Lower bound.** `ceil(sum(items) / capacity)` (Martello and Toth's L1), the bound used by FunSearch and EoH. It is not the true optimum, so part of every heuristic's excess is unavoidable. The search and `excess` always use L1, so our numbers stay comparable with the papers. `evaluate_final.py` also writes Martello and Toth's tighter L2 bound (`lb_l2`, `excess_l2` per instance; `mean_excess_l2` in `final_summary.csv`). L2 counts that two items over half a bin can never share one. It is there for `test_scale65` (issue #12), where 63% of items exceed half a bin: Best Fit is 10.2% over L1 but 0.4% over L2, so L1 would make every rule look far worse than it is. On every other test set L2 equals L1. `summarise.py` adds a second held-out table, excess over L2, for the sets where L2 is tighter; report those numbers for them. Older results without the L2 columns are filled in by `summarise.py`, no need to rerun `evaluate_final.py`.
+**Which convention each row uses.** Evolved programs are always scored in `evaluation.mode` (`funsearch` by default). The baseline rows in `final_summary.csv` use their classical AnyFit definitions, so Worst Fit is ~13% there but 148% in funsearch mode (on train). Best Fit and First Fit never open a fresh bin while a used bin has room, so the two conventions give them identical bins (`tests/test_diagnostics.py` checks the first part; the diagnostics summaries show identical scores on every set), so their rows compare directly. State this in the report. `pipeline/diagnose.py` rescores every program and baseline in both modes and reports `fresh_given_room`: the share of choices where a program put the item in an empty bin although a used bin had room.
+
+**Lower bound.** `ceil(sum(items) / capacity)` (Martello and Toth's L1), the bound used by FunSearch and EoH. It is not the true optimum, so part of every heuristic's excess is unavoidable. The search and `excess` always use L1, so our numbers stay comparable with the papers. `evaluate_final.py` also writes Martello and Toth's tighter L2 bound (`lb_l2`, `excess_l2` per instance; `mean_excess_l2` in `final_summary.csv`). L2 counts that two items over half a bin can never share one. It is there for `test_scale65` (issue #12), where 63% of items exceed half a bin: Best Fit is 10.2% over L1 but 0.4% over L2, so L1 would make every rule look far worse than it is. L2 is also tighter on the control set `test_control`, where every rule must be exactly 0% over L2. On every other test set L2 equals L1. `summarise.py` adds a second held-out table, excess over L2, for the sets where L2 is tighter (found from the data); report those numbers for them. Older results without the L2 columns are filled in by `summarise.py`, no need to rerun `evaluate_final.py`.
 
 **Formatting rules.** With `format_hint: true`, every prompt from every method ends with short rules: one complete function, the whole `def` line on one line, no helper functions, numpy only. LLM4AD's parser silently drops candidates with multi-line signatures and evolves the _wrong_ function when a helper comes first; the rules prevent both. The text is identical for all methods (fair), recorded in each `config.json`, and is our one deviation from LLM4AD's prompts. Mention it in the report.
 
@@ -450,7 +453,7 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 
 - Every candidate is parsed (not run) by `obpevo/integrity.py`. Violations go in the `integrity` column of `evals.csv` (`''` = clean), and `summary.json` records `n_flagged` and `best_integrity`. Rules: imports other than numpy, `np.random` / `random` (also via `getattr` or `from numpy import *`), wall-clock time, `hash()` / `id()`, `exec` / `eval` / `compile` / `open` / `__import__`, numpy file I/O (`np.save` / `np.load` / ...), process-wide numpy settings, dunder access such as `__builtins__`, `global`, attribute assignment, mutating a module-level name, mutable default arguments. The full list is in the module docstring.
 - **What the static check can see:** LLM4AD keeps only the _body_ of the LLM's function (template imports + `def` line + body); module-level imports, globals and changed signatures in the reply are thrown away before evaluation. So in our runs the body-level rules are the ones that can fire, and an empty column means "no body-level violation", not "the LLM never tried".
-- `python pipeline/check_integrity.py --config ... [--experiment ...]` rescores each best program four times, each in a fresh Python process with its own hash seed and RNG seeds: twice in the usual order and twice in one shuffled order. `repeat_mismatch` = randomness (including `hash()`); `shuffle_mismatch` = state carried from one instance to the next. `verdict`: clean / flagged / stateful / nondeterministic / failed. Randomness that rarely changes a bin count can pass the rescoring; the static flags cover that. All committed best programs are clean.
+- `python pipeline/check_integrity.py --config ... [--experiment ...]` rescores each best program four times, each in a fresh Python process with its own hash seed and RNG seeds: twice in the usual order and twice in one shuffled order. `repeat_mismatch` = randomness (including `hash()`); `shuffle_mismatch` = state carried from one instance to the next. `verdict`: clean / flagged / stateful / nondeterministic / failed. Randomness that rarely changes a bin count can pass the rescoring; the static flags cover that. The rescored best programs (25 Oct seed 0, OpenRouter seeds 0–2) are clean; free-tier seed 11 has no static flags but has not been rescored.
 - `tests/test_integrity.py` holds one deliberately bad program per rule, plus legitimate programs that must stay unflagged.
 
 **Instance sets** (`configs/instances/v0.yaml`, generated deterministically from seed 2026):
@@ -461,7 +464,7 @@ Unknown params are dropped and listed in each run's `config.json` (`dropped_kwar
 | `val`                | 10 × 1000         | 100      | Weibull(3) × 45   | choosing between configurations (e.g. models, prompts); never seen by the search. Within a run, the best program is picked on training, as in the EoH papers |
 | `test_id_5k`         | 5 × 5000          | 100      | Weibull(3) × 45   | in-distribution (FunSearch/EoH standard)                                                                                                                     |
 | `test_size_10k`      | 5 × 10000         | 100      | Weibull(3) × 45   | size shift                                                                                                                                                   |
-| `test_cap500`        | 5 × 5000          | 500      | Weibull(3) × 45   | bigger bins, same items (near-trivial: all heuristics tie)                                                                                                   |
+| `test_cap500`        | 5 × 5000          | 500      | Weibull(3) × 45   | bigger bins, same items (BF/FF/EoH seed 0 within 0.1 pp; EoH free-tier seed 11 fails here, see §13)                                                                                                   |
 | `test_cap500_scaled` | 5 × 5000          | 500      | Weibull(3) × 225  | everything ×5: scale-invariance check                                                                                                                        |
 | `test_shape_k1.5`    | 5 × 5000          | 100      | Weibull(1.5) × 45 | wider spread of item sizes                                                                                                                                   |
 | `test_shape_k5`      | 5 × 5000          | 100      | Weibull(5) × 45   | tightly clustered item sizes                                                                                                                                 |
@@ -511,11 +514,23 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 
 ## 13. Results so far
 
-**EoH baseline: 3 seeds** (`openrouter-gemini-3.5-flash-lite`, 300 evals each, pinned LLM4AD, US$0.49 in total; `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/`):
+**EoH baseline: 6 seeds** (`openrouter-gemini-3.5-flash-lite`, 300 evals each, pinned LLM4AD, US$1.04 in total; seeds 0–2 run on 1 Nov, seeds 3–5 on 4 Nov with the same setup; `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/`):
 
-- Training: two seeds never improved on Best Fit (4.751%: their best program was the first one evaluated); one reached 4.507% (−0.24 pp) at eval 66, then plateaued. Mean 4.670 ± 0.141%.
-- Held-out: mean difference from Best Fit within ±0.1 pp on every set (`val` −0.10, `test_id_5k` −0.06, `test_uniform` −0.10, `test_shape_k5` +0.02, `test_cap500_scaled` +0.04).
-- Reading: with this model and budget, EoH mostly stalls at Best Fit. The likely cause is the LLM repeatedly rewriting Best Fit, which EoH discards as duplicates (to be quantified with the clone-rate diagnostics).
+- Training excess per seed: 4.751, 4.751, 4.507, 4.602, 3.719, 3.719% (Best Fit 4.751%). Seeds 0–1 are Best Fit itself, seed 2 nearly so. Seeds 4 and 5 found the same rule independently (`-sin(π·r/item) - r/item`, r = space left): it avoids leaving a gap smaller than about one item, and uses only ratios.
+- Held-out, Δ vs Best Fit per seed (pp; negative = better):
+
+  | Set | BF % | s0 | s1 | s2 | s3 | s4 | s5 |
+  |---|---|---|---|---|---|---|---|
+  | val | 4.73 | 0.00 | 0.00 | −0.30 | −0.05 | −1.22 | −1.22 |
+  | test_id_5k | 4.17 | 0.00 | 0.00 | −0.18 | −0.04 | −1.30 | −1.30 |
+  | test_size_10k | 3.95 | 0.00 | 0.00 | −0.05 | +0.13 | −1.07 | −1.07 |
+  | test_cap500 | 0.50 | 0.00 | 0.00 | 0.00 | +0.20 | +0.05 | +0.05 |
+  | test_cap500_scaled | 4.44 | 0.00 | 0.00 | +0.12 | +0.17 | −1.33 | −1.33 |
+  | test_shape_k1.5 | 1.34 | 0.00 | 0.00 | −0.04 | **+2.58** | −0.12 | −0.12 |
+  | test_shape_k5 | 8.25 | 0.00 | 0.00 | +0.06 | −1.94 | **+2.36** | **+2.36** |
+  | test_uniform | 5.07 | 0.00 | 0.00 | −0.30 | −0.65 | −1.24 | −1.24 |
+
+- Reading: half the seeds stall at Best Fit (the LLM keeps rewriting it); the other half find rules that open fresh bins, with gains on most sets and a failure on one item-size shift. Mean ± sd (`summary_tables.md`) hides this split, so report results per seed.
 
 **EoH baseline, first run (25 Oct)** (`gemini-3.5-flash-lite`, 300 evals, 34 min, 301 calls, 0 failed, US$0.17 notional):
 
@@ -524,9 +539,11 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 - The two failures are _consistent with_ a specific mechanism, which we treat as a hypothesis to test: the evolved rule switches formula at `item / remaining capacity = 0.5`, which suits training's item sizes but may send tightly clustered items (k=5) into fresh bins (43% of bins held one item, vs 0% for Best Fit), and it uses absolute units of space, so it may behave differently at capacity 500.
 - Supporting check: rescoring the same program in `anyfit` mode (no empty bins offered while an open bin fits) removes both failures (`test_shape_k5` 8.15%, `test_cap500_scaled` 3.85%) and about half the training gain (4.34%). This points to the rule opening new bins too eagerly, rather than general overfitting.
 
+**Fresh-bin diagnostic** (`pipeline/diagnose.py`, `diagnostics_summary.csv` in each folder): OpenRouter seeds 0–2 never open a fresh bin while a used bin has room; seeds 3–5 do (6-seed mean `fresh_given_room` 11% on train, 19% on `test_shape_k5`). 25 Oct seed 0 does in 36% of choices on train (57% on `test_shape_k5`). A second free-tier run, seed 11 (`results/eoh_freetier_seed11/`, separate run: older pipeline, 62 of 363 calls hit rate limits), does in 9%: train 4.48%, no k=5 failure, but **`test_cap500` 6.12%** vs Best Fit 0.50%, because its periodic score `cos(π·remaining/(1.618·item))` also peaks on empty capacity-500 bins. In anyfit mode both failures disappear: seed 11 falls back to about Best Fit on every set, and seed 0 keeps about half its gain. Seeds 4/5 behave the same way: in anyfit mode their k=5 failure disappears (8.18% vs Best Fit 8.25%) and about half their gain remains (`test_id_5k` 3.70% vs 4.17%). Seed 3 is the exception: its `test_shape_k1.5` failure stays in anyfit mode (3.99% vs Best Fit 1.34%), so not every failure is a fresh-bin failure. The anyfit comparison shows what these programs do, not why some runs learn it.
+
 Reproduce: `python pipeline/evaluate_final.py --config configs/eoh_baseline.yaml --experiment eoh_baseline_25oct` (then `summarise.py` with the same arguments).
 
-This run used LLM4AD 1.0.0 (PyPI). Later runs (pinned LLM4AD, partly cut short by the free-tier quota) found heuristics much closer to Best Fit: small gains, no large failures. Run-to-run variance is large, so conclusions wait for three full-budget seeds (in progress via OpenRouter). Details in `docs/log.md`.
+This run used LLM4AD 1.0.0 (PyPI). Later runs (pinned LLM4AD, partly cut short by the free-tier quota) found heuristics much closer to Best Fit: small gains, no large failures. Run-to-run variance is large: see the 6 OpenRouter seeds above. Details in `docs/log.md`.
 
 ---
 

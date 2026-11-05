@@ -92,8 +92,9 @@ def run_baselines(sets: dict) -> list[dict]:
 
 def add_l2(df: pd.DataFrame, sets: dict) -> pd.DataFrame:
     """Add lb_l2 and excess_l2 per row. `lb` and `excess` stay on L1, the bound the search and the papers use.
-    L2 only differs from L1 where many items exceed half a bin: of our sets, only test_scale65 (Best Fit is
-    10.2% over L1 but 0.4% over L2). Also used by summarise.py to backfill older results without rerunning."""
+    L2 only differs from L1 where many items exceed half a bin: of our sets, test_scale65 (Best Fit is 10.2% over
+    L1 but 0.4% over L2) and the control set test_control (every rule is exactly 0% over L2). The sets are detected
+    from the data, not listed. Also used by summarise.py to backfill older results without rerunning."""
     lb2 = {(sn, i["id"]): core.lower_bound_l2(i["items"], i["capacity"]) for sn, insts in sets.items() for i in insts}
     lb_l2 = pd.Series([lb2[k] for k in zip(df["set"], df["instance"])], index=df.index)
     return df.assign(lb_l2=lb_l2, excess_l2=(df["bins"] - lb_l2) / lb_l2)
