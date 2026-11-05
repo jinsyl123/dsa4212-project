@@ -45,7 +45,9 @@ def task_description(cfg) -> str:
         raise ValueError(f"evaluation.prompt={prompt!r}; choose from {sorted(T.DESCRIPTIONS)}")
     import yaml
     spec = yaml.safe_load((C.ROOT / cfg["instances"]["spec"]).read_text())["sets"][cfg["evaluation"]["train_set"]]
-    return T.DESCRIPTIONS[prompt].format(shape=spec.get("shape", 3.0), scale=spec.get("scale", 45), capacity=spec["capacity"])
+    mix = spec.get("mix") or [{}]
+    shape = " or ".join(str(m.get("shape", spec.get("shape", 3.0))) for m in mix)       # mixed sets: "2 or 4"
+    return T.DESCRIPTIONS[prompt].format(shape=shape, scale=spec.get("scale", 45), capacity=spec["capacity"])
 
 
 def versions() -> dict:

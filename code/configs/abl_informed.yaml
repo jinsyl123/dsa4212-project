@@ -1,0 +1,6 @@
+# Ablation 1 (#7), optional: both the bin rules and the training distribution in the prompt.
+base: configs/eoh_baseline.yaml
+experiment: abl_informed
+llm: openrouter-gemini-3.5-flash-lite
+seeds: [0, 1, 2, 3, 4]
+evaluation: { prompt: informed }
