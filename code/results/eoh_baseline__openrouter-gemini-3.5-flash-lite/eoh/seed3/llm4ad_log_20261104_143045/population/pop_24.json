@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm determines bin priority by evaluating a Gaussian function centered around a target remaining capacity, strictly penalizing invalid bins that cannot accommodate the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    optimal_remaining = 0.3 * bins\n    score = -np.exp(-((remaining - optimal_remaining) ** 2) / (2 * (0.1 ** 2) + 1e-8))\n    return np.where((bins < item) | (bins <= 0), -np.inf, score)\n\n",
+        "score": -0.04602191919308543
+    },
+    {
+        "algorithm": "{The new algorithm determines bin priority by using a trigonometric cosine modulation of the residual capacity fraction combined with a inverse-square root penalty for deviation from a target fullness.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = (bins >= item) & (bins > 0)\n    remaining = bins - item\n    fraction = remaining / (bins + 1e-8)\n    score = np.cos(np.pi * fraction) - 1.0 / np.sqrt(np.abs(fraction - 0.6) + 0.01)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.046665340463321575
+    },
+    {
+        "algorithm": "{\\1. The algorithm determines bin priority by computing the inverse polynomial of the absolute deviation between the remaining space ratio and a preferred filling fraction, ensuring invalid bins are strictly excluded.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    ratio = remaining / (bins + 1e-8)\n    score = -1.0 / (np.abs(ratio - 0.7) + 0.05)\n    return np.where((bins < item) | (bins <= 0), -np.inf, score)\n\n",
+        "score": -0.04721585244176538
+    },
+    {
+        "algorithm": "{The algorithm calculates the priority of adding an item to each bin based on the remaining space after insertion, penalizing bins that overflow or have large unused capacities.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, -remaining)\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins using a polynomial penalty based on the post-insertion slack ratio relative to a golden ratio target, heavily penalizing near-capacity tightness and overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    slack_ratio = remaining / (bins + 1e-8)\n    score = -1.0 / (np.abs(slack_ratio - 0.618) + 0.01)\n    return np.where((bins < item) | (bins <= 0), -np.inf, score)\n\n",
+        "score": -0.04753622686199023
+    },
+    {
+        "algorithm": "{The algorithm calculates priority by penalizing bins where the remaining space after adding the item falls below a specific threshold, favoring bins that leave either very little or substantial remaining capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where((bins < item) | (bins <= 0), -np.inf, -np.abs(remaining - 0.5))\n\n",
+        "score": -0.047718955970814866
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining a logarithmic remaining capacity penalty with a sinusoidal utilization reward to encourage tightly packed yet balanced bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = (bins >= item) & (bins > 0)\n    utilization = 1.0 - (remaining / (bins + 1e-8))\n    score = -np.log(remaining + 1e-5) * (np.sin(np.pi * utilization) + 1.05)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.04788006838446765
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining an exponential utilization gradient with a Gaussian penalty centered on a targeted residual capacity fraction.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = (bins >= item) & (bins > 0)\n    remaining = bins - item\n    fraction = remaining / (bins + 1e-8)\n    score = np.exp(1.0 - fraction) - np.exp(-((fraction - 0.5) ** 2) / 0.05)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.04881452035062611
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins using an inverse hyperbolic sine transformation of the post-insertion slack combined with an exponential utilization weight to smoothly favor balanced fill levels.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = (bins >= item) & (bins > 0)\n    fill_ratio = item / (bins + 1e-8)\n    asinh_slack = np.arcsinh(remaining)\n    score = fill_ratio * np.exp(-np.abs(asinh_slack - 0.5))\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.049313596129294326
+    },
+    {
+        "algorithm": "{The new algorithm determines bin priority by combining a logistic sigmoid transformation of the post-insertion capacity ratio with a Gaussian penalty centered on a target remaining capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = (bins >= item) & (bins > 0)\n    remaining = bins - item\n    sigmoid_ratio = 1.0 / (1.0 + np.exp(-remaining))\n    gaussian_penalty = np.exp(-((remaining - 1.0) ** 2) / 0.5)\n    score = sigmoid_ratio * gaussian_penalty\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.049822994492420836
+    }
+]
