@@ -543,11 +543,24 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 
 - Reading: half the seeds stall at Best Fit (the LLM keeps rewriting it); the other half find rules that open fresh bins, with gains on most sets and a failure on one item-size shift. Mean ± sd (`summary_tables.md`) hides this split, so report results per seed.
 
-**Tuned Best Fit: 3 seeds** (`tuned_bf`, 300 evaluations each, no LLM, about 2 min per seed, US$0; same results folder):
+**Tuned Best Fit: 6 seeds** (`tuned_bf`, 300 evaluations each, no LLM, about 2.5 min per seed, US$0; seeds 0–2 run on 3 Nov, seeds 3–5 on 5 Nov with the same setup; same results folder):
 
-- Training: **2.427 ± 0.051%** (Best Fit 4.751%, EoH above 4.670 ± 0.141%). All three seeds land on nearly the same knobs: `lo` 3–4, `hi` 31, `penalty` 73–97, i.e. avoid leaving a gap of about 4–30 units, opening a fresh bin instead if needed.
-- Held-out (Δ vs Best Fit, pp, mean of 3 seeds): `val` −2.40, `test_id_5k` −2.48, `test_size_10k` −2.45, `test_uniform` −2.01 (fewer bins than Best Fit on every instance of these four sets), `test_cap500` −0.02; **`test_shape_k1.5` +1.19**, **`test_cap500_scaled` +0.77**, **`test_shape_k5` +22.67**.
-- Reading: a three-knob Best Fit with the same evaluation budget beats every EoH run so far on training, including the 25 Oct run (3.788%), and on the held-out Weibull sets at capacity 100; the 25 Oct run is slightly better on `test_uniform` (−2.19 vs −2.01 pp). It fails on the same two shifts as the 25 Oct run (`test_shape_k5` +22.7 vs +30.7 pp, `test_cap500_scaled` +0.77 vs +1.29 pp), plus `test_shape_k1.5`, where that run gained. So these failures do not need an LLM: tuning three knobs on the training distribution produces them too.
+- Training excess per seed: 2.441, 2.370, 2.468, 2.362, 2.376, 2.469% (**2.414 ± 0.051%**; Best Fit 4.751%, EoH 4.342 ± 0.491%, best EoH seed 3.719%). All six seeds land on nearly the same knobs: `lo` 3–4, `hi` 29–31, `penalty` 64–97, i.e. avoid leaving a gap of about 4–30 units, opening a fresh bin instead if needed.
+- Held-out, Δ vs Best Fit per seed (pp; negative = better):
+
+  | Set | BF % | s0 | s1 | s2 | s3 | s4 | s5 | mean |
+  |---|---|---|---|---|---|---|---|---|
+  | val | 4.73 | −2.41 | −2.44 | −2.36 | −2.19 | −2.31 | −2.24 | −2.32 |
+  | test_id_5k | 4.17 | −2.38 | −2.67 | −2.38 | −2.46 | −2.53 | −2.60 | −2.50 |
+  | test_size_10k | 3.95 | −2.31 | −2.71 | −2.31 | −2.65 | −2.69 | −2.76 | −2.57 |
+  | test_cap500 | 0.50 | −0.05 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | −0.01 |
+  | test_cap500_scaled | 4.44 | **+0.71** | **+0.78** | **+0.83** | **+0.70** | **+0.80** | **+0.83** | **+0.77** |
+  | test_shape_k1.5 | 1.34 | +0.78 | **+2.21** | +0.58 | −0.32 | −0.27 | +1.38 | +0.73 |
+  | test_shape_k5 | 8.25 | **+21.60** | **+24.79** | **+21.60** | **+19.27** | **+19.27** | **+19.27** | **+20.97** |
+  | test_uniform | 5.07 | −2.19 | −2.18 | −1.64 | −1.59 | −1.64 | −1.84 | −1.85 |
+
+- Reading: every tuned_bf seed beats every EoH seed on training and on `val`, `test_id_5k`, `test_size_10k` and `test_uniform`, using fewer bins than Best Fit on every instance of those four sets. The 25 Oct run (3.788% train) is better on `test_uniform` (−2.19 vs −1.85 pp). Every seed fails on `test_shape_k5` and `test_cap500_scaled`; on `test_shape_k1.5`, 4 of 6 seeds are worse than Best Fit. EoH runs fail on the same shifts (OpenRouter seeds 3–5 on k5 or k1.5, the 25 Oct run on k5 and cap500_scaled), so these failures do not need an LLM: tuning three knobs on the training distribution produces them too.
+- Packing convention: almost all of the gain comes from opening fresh bins on purpose, which `funsearch` mode allows. By `diagnose.py`, tuned_bf puts 33% of items on train (53% on `test_shape_k5`) into a fresh bin while a used bin has room. Rescored in `anyfit` mode, train is 4.62% and `test_shape_k5` 8.20%, close to Best Fit (4.75%, 8.25%). `test_cap500_scaled` is 5.22% in both modes: no fresh bins there, but the sliver zone is in absolute units, so at capacity 500 it penalises what are actually tight fits. State the mode next to every comparison with tuned_bf. An EoH run searched in `anyfit` mode must be compared with tuned_bf **retuned** in `anyfit` mode, not with these programs rescored.
 
 **EoH baseline, first run (25 Oct)** (`gemini-3.5-flash-lite`, 300 evals, 34 min, 301 calls, 0 failed, US$0.17 notional):
 
@@ -570,5 +583,5 @@ This run used LLM4AD 1.0.0 (PyPI). Later runs (pinned LLM4AD, partly cut short b
 - Only each run's single best program (by training score) goes to held-out evaluation. Selecting among the top programs on `val` instead is a possible extension.
 - No operator attribution yet (which EoH operator produced each candidate) and no diversity metrics (clone rate, collapse rate, behavioural diversity). Both planned before the exploration/exploitation study.
 - MCTS-AHD and HSEvo are untested.
-- `tuned_bf`'s knobs are in absolute item units, tuned at capacity 100 (like the evolved programs). A variant with knobs relative to the bin size, or rescoring in `anyfit` mode, would help separate the two failure hypotheses (hard-coded capacity vs fit to the size distribution).
+- `tuned_bf`'s knobs are in absolute item units, tuned at capacity 100 (like the evolved programs). A variant with knobs relative to the bin size would test the hard-coded-capacity explanation for `test_cap500_scaled`. Each ablation setting needs its own tuned_bf, retuned under that setting (`anyfit` mode, `train_mixed`; #7).
 - Prices in `configs/llms.yaml` were checked on 2026-10-25; re-check before trusting `cost_usd`. `claude-haiku-5-5` has no price set yet.
