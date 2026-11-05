@@ -1,0 +1,7 @@
+label,seed,flags,set,n_instances,status,repeat_mismatch,shuffle_mismatch,verdict
+eoh,0,,train,32,ok,0,0,clean
+eoh,0,,val,10,ok,0,0,clean
+eoh,1,,train,32,ok,0,0,clean
+eoh,1,,val,10,ok,0,0,clean
+eoh,2,,train,32,ok,0,0,clean
+eoh,2,,val,10,ok,0,0,clean
