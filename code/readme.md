@@ -105,7 +105,7 @@ configs/
   smoke.yaml             fake LLM, plumbing check
   pipecheck.yaml         real LLM, tiny budget
   pipecheck_claude.yaml  example of switching LLM in a config file
-  eoh_baseline.yaml      EoH + tuned Best Fit, full budget, seeds 0–2 (main baseline)
+  eoh_baseline.yaml      EoH + tuned Best Fit, full budget, seeds 0–5 (main baseline)
   compare.yaml           EoH vs alternatives and ablations
   instances/v0.yaml      instance sets used for real runs (frozen at G2)
   instances/smoke.yaml   small instance sets for tests
