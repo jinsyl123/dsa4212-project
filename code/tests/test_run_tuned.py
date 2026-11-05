@@ -1,5 +1,6 @@
 """End-to-end check that a tuned Best Fit run writes the same files as an LLM run. Needs llm4ad installed
 (run_experiment imports it). Run: python -m unittest discover tests"""
+import csv
 import importlib.util
 import json
 import sys
@@ -26,6 +27,11 @@ class TestRunTuned(unittest.TestCase):
             run = Path(tmp) / "tuned_bf" / "seed0"
             ev, calls = pd.read_csv(run / "evals.csv"), pd.read_csv(run / "llm_calls.csv")
             self.assertEqual(list(ev["eval"]), [1, 2, 3, 4, 5, 6])
+            with open(run / "evals.csv", newline="") as f:          # pandas would pad a short row with NaN
+                header, *rows = list(csv.reader(f))
+            self.assertEqual(header, run_experiment.EvalRecorder.FIELDS)
+            self.assertTrue(all(len(r) == len(header) for r in rows))
+            self.assertEqual((s["n_flagged"], s["best_integrity"]), (0, ""))  # the tuned rule breaks no rule
             self.assertTrue((ev.status == "ok").all())
             self.assertEqual(len(calls), 0)
             self.assertEqual(json.loads((run / "summary.json").read_text()), s)

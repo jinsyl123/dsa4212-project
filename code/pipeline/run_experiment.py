@@ -27,7 +27,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from obpevo import config as C, core, instances, methods, task as T, tuned_bf
+from obpevo import config as C, core, instances, integrity, methods, task as T, tuned_bf
 from obpevo.llm import BudgetExhausted, LoggedLLM, make_backend
 from obpevo.recorder import EvalRecorder
 
@@ -204,7 +204,7 @@ def run_tuned(cfg, m: dict, seed: int, train: list[dict], out: Path) -> dict:
                 score = core.score(r["rows"]) if r["status"] == "ok" else None
                 w.writerow([r["eval"], round(r["t_start"], 3), round(r["wall_s"], 3), h, r["status"],
                             "" if score is None else score, "" if score is None else -score,
-                            len(src), src.count("\n") + 1, r["error"][:200]])
+                            len(src), src.count("\n") + 1, r["error"][:200], integrity.flag_str(src)])
                 fe.flush()                                       # so progress can be read mid-run
                 fc.write(json.dumps(dict(eval=r["eval"], code_hash=h, status=r["status"], score=score,
                                          params=r["params"], program=src)) + "\n")
