@@ -24,3 +24,7 @@ sets:
   test_shape_k1.5: {n_instances: 10, n_items: 5000, capacity: 100, dist: weibull, shape: 1.5, scale: 45} # heavier-tailed item sizes
   test_shape_k5:  {n_instances: 10, n_items: 5000, capacity: 100, dist: weibull, shape: 5, scale: 45}    # tightly clustered item sizes
   test_uniform:   {n_instances: 10, n_items: 1000, capacity: 150, dist: uniform, low: 20, high: 100}     # OR-Library-like uniform items
+
+  # --- control: every item is over half a bin, so no two items share a bin and every rule must use exactly one
+  # bin per item. Any rule scoring differently from Best Fit here means a scoring bug, not a better rule.
+  test_control:   {n_instances: 10, n_items: 1000, capacity: 100, dist: uniform, low: 51, high: 100}
