@@ -13,10 +13,10 @@ sets:
   val:            {n_instances: 10, n_items: 1000, capacity: 100, dist: weibull, shape: 3, scale: 45}
 
   # --- held-out tests: one shift at a time, so failures can be attributed ---
-  test_id_5k:     {n_instances: 5, n_items: 5000, capacity: 100, dist: weibull, shape: 3, scale: 45}    # in-distribution (FunSearch/EoH standard)
-  test_size_10k:  {n_instances: 5, n_items: 10000, capacity: 100, dist: weibull, shape: 3, scale: 45}   # size shift only
-  test_cap500:    {n_instances: 5, n_items: 5000, capacity: 500, dist: weibull, shape: 3, scale: 45}    # capacity shift (EoH-style: same item sizes, bigger bins)
-  test_cap500_scaled: {n_instances: 5, n_items: 5000, capacity: 500, dist: weibull, shape: 3, scale_frac: 0.45}  # capacity x5 with items scaled too (scale-invariance check)
-  test_shape_k1.5: {n_instances: 5, n_items: 5000, capacity: 100, dist: weibull, shape: 1.5, scale: 45} # heavier-tailed item sizes
-  test_shape_k5:  {n_instances: 5, n_items: 5000, capacity: 100, dist: weibull, shape: 5, scale: 45}    # tightly clustered item sizes
-  test_uniform:   {n_instances: 5, n_items: 1000, capacity: 150, dist: uniform, low: 20, high: 100}     # OR-Library-like uniform items
+  test_id_5k:     {n_instances: 10, n_items: 5000, capacity: 100, dist: weibull, shape: 3, scale: 45}    # in-distribution (FunSearch/EoH standard)
+  test_size_10k:  {n_instances: 10, n_items: 10000, capacity: 100, dist: weibull, shape: 3, scale: 45}   # size shift only
+  test_cap500:    {n_instances: 10, n_items: 5000, capacity: 500, dist: weibull, shape: 3, scale: 45}    # capacity shift (EoH-style: same item sizes, bigger bins)
+  test_cap500_scaled: {n_instances: 10, n_items: 5000, capacity: 500, dist: weibull, shape: 3, scale_frac: 0.45}  # capacity x5 with items scaled too (scale-invariance check)
+  test_shape_k1.5: {n_instances: 10, n_items: 5000, capacity: 100, dist: weibull, shape: 1.5, scale: 45} # heavier-tailed item sizes
+  test_shape_k5:  {n_instances: 10, n_items: 5000, capacity: 100, dist: weibull, shape: 5, scale: 45}    # tightly clustered item sizes
+  test_uniform:   {n_instances: 10, n_items: 1000, capacity: 150, dist: uniform, low: 20, high: 100}     # OR-Library-like uniform items
