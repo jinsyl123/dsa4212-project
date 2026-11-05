@@ -11,10 +11,12 @@ Outputs: results/<experiment>/paired_stats.csv, one row per (rule, seed, set, re
     verdict                better / worse when the interval excludes 0 AND sign_p < alpha (0.05); tie when identical
                            on every instance; otherwise unclear. Both are required because a bootstrap interval over
                            a handful of instances is too narrow: with 5 instances, 4-1 can give an interval that
-                           excludes 0 while p = 0.125. With 5 instances nothing reaches p < 0.05 (5-0 gives 0.0625).
+                           excludes 0 while p = 0.125. With 10 instances per test set (#12), 10-0 gives p = 0.002
+                           and 9-1 gives 0.021; with 5, nothing could reach p < 0.05 (5-0 gives 0.0625).
 Each seed is compared on its own: runs of the same method can differ a lot, and a mean over seeds hides that.
 A reference with several seeds (tuned Best Fit) is averaged per instance first.
---metric excess_l2 compares excess over the L2 bound instead of L1 (needed where many items exceed half a bin).
+Excess is over the L2 bound by default (#12 decision 7), falling back to L1 for results without the L2 columns;
+--metric excess compares over L1 instead. Wins/ties/losses count bins, so only the pp columns depend on the bound.
 There is no correction for running many comparisons (rules x seeds x sets x references): treat single verdicts as
 descriptive and look for patterns across seeds and sets.
 """
@@ -81,15 +83,26 @@ def compare(df: pd.DataFrame, references=REFERENCES, n_boot: int = 10_000, metri
     return pd.DataFrame(rows)
 
 
-def main(config, references=None, n_boot=10_000, metric="excess", alpha=0.05, overrides=None, llm=None, budget=None,
+def default_metric(df: pd.DataFrame) -> str:
+    """Excess over L2, as the report uses on every set (#12 decision 7); L1 for older results without the column."""
+    return "excess_l2" if "excess_l2" in df else "excess"
+
+
+def main(config, references=None, n_boot=10_000, metric=None, alpha=0.05, overrides=None, llm=None, budget=None,
          experiment=None) -> pd.DataFrame:
     cfg = C.load(config, overrides, llm=llm, budget=budget, experiment=experiment)
     out = C.results_dir(cfg)
     src = out / "final_per_instance.csv"
     if not src.exists():
         raise FileNotFoundError(f"{src} not found: run evaluate_final.py with the same arguments first")
-    res = compare(pd.read_csv(src), references or REFERENCES, n_boot, metric, alpha).round(5)
-    name = "paired_stats.csv" if metric == "excess" else f"paired_stats_{metric}.csv"
+    df = pd.read_csv(src)
+    if metric is None:
+        metric = default_metric(df)
+        if metric == "excess":
+            print(f"[{cfg['experiment']}] no excess_l2 column: comparing over L1 (rerun evaluate_final.py for L2)")
+    res = compare(df, references or REFERENCES, n_boot, metric, alpha).round(5)
+    # the default comparison goes to paired_stats.csv; an explicit L1 run next to L2 results gets its own file
+    name = "paired_stats.csv" if metric != "excess" or "excess_l2" not in df else "paired_stats_excess.csv"
     res.to_csv(out / name, index=False)
     show = res[res.kind != "baseline"]
     print(f"[{cfg['experiment']}] {len(res)} comparisons on {metric} -> {out / name}")
@@ -104,7 +117,7 @@ if __name__ == "__main__":
     ap.add_argument("--config", required=True)
     ap.add_argument("--references", nargs="*", help=f"reference labels (default: {' '.join(REFERENCES)}, if present)")
     ap.add_argument("--n-boot", type=int, default=10_000, help="bootstrap resamples (default 10000)")
-    ap.add_argument("--metric", choices=METRICS, default="excess", help="excess over L1 (default) or the L2 bound")
+    ap.add_argument("--metric", choices=METRICS, help="excess_l2 (default when present) or excess (over L1)")
     ap.add_argument("--alpha", type=float, default=0.05, help="sign-test level a verdict also needs (default 0.05)")
     ap.add_argument("--llm", help="model name from configs/llms.yaml (default: the config's)")
     ap.add_argument("--budget", help="budget name from configs/budgets.yaml (default: the config's)")

@@ -84,6 +84,10 @@ class TestCompare(unittest.TestCase):
         with self.assertRaises(KeyError):
             P.compare(self.df.drop(columns="excess_l2"), metric="excess_l2")
 
+    def test_default_metric_is_l2_when_present(self):
+        self.assertEqual(P.default_metric(self.df), "excess_l2")
+        self.assertEqual(P.default_metric(self.df.drop(columns="excess_l2")), "excess")   # older results
+
     def test_missing_reference_skipped(self):
         res = P.compare(self.df[self.df.label != "tuned_bf"], n_boot=500)
         self.assertEqual(set(res.reference), {"best_fit"})
