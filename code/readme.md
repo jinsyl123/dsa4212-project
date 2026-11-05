@@ -65,6 +65,8 @@ This is LLM4AD's template, character for character; the search starts from it. E
 
 **The metric: excess over the lower bound.** For each instance, the lower bound is `ceil(total item size / capacity)`, the fewest bins any packing could possibly use. Excess = (bins used − lower bound) / lower bound, averaged over instances. **Lower is better.** Plain Best Fit scores 4.751% on our training set: the floor any evolved heuristic must beat. The stronger bar is a Best Fit with its parameters tuned under the same 300-evaluation budget (planned).
 
+**Which bound.** The lower bound above is Martello and Toth's L1. It is a bound, not the true minimum: where many items exceed half a bin it falls well short (on `test_scale65`, about 10%). The search scores on L1, as FunSearch and EoH do (on `train` L2 equals L1). Held-out results in the report are excess over the tighter L2 bound on every set (#12 decision 7); see §11, Lower bound.
+
 ---
 
 ## 2. What the pipeline guarantees
