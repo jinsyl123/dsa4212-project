@@ -105,7 +105,7 @@ configs/
   smoke.yaml             fake LLM, plumbing check
   pipecheck.yaml         real LLM, tiny budget
   pipecheck_claude.yaml  example of switching LLM in a config file
-  eoh_baseline.yaml      EoH, full budget, 3 seeds (main baseline)
+  eoh_baseline.yaml      EoH + tuned Best Fit, full budget, seeds 0–2 (main baseline)
   compare.yaml           EoH vs alternatives and ablations
   instances/v0.yaml      instance sets used for real runs (frozen at G2)
   instances/smoke.yaml   small instance sets for tests
@@ -386,7 +386,7 @@ r = bins - item
 return -r - penalty * ((r > lo) & (r < hi))      # lo=0, hi=0, penalty=0 is plain Best Fit
 ```
 
-The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1–100. Like an evolved program, the rule is never given the capacity. (In `funsearch` mode an evolved program could still read it from `max(bins)`, since an empty bin is always offered; this rule doesn't.) The tuner scores Best Fit first (every LLM method also starts from the Best Fit template), then `max_evals − 1` distinct random settings, on `train` only. It makes no LLM calls, takes about a minute per seed, and writes the same run files as an LLM method (with an empty `llm_calls.csv`), so steps 2 and 3 treat it like any other method. Its `summary.json` also records `best_params`. To change the ranges, use `params: { space: { lo: [0, 10], hi_max: 40, penalty: [1, 100] } }`.
+The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1–100. Like an evolved program, the rule is never given the capacity. (In `funsearch` mode an evolved program could still read it from `max(bins)`, since an empty bin is always offered; this rule doesn't.) The tuner scores Best Fit first (every LLM method also starts from the Best Fit template), then `max_evals − 1` distinct random settings, on `train` only. It makes no LLM calls, takes about 2.5 minutes per seed (300 tries), and writes the same run files as an LLM method (with an empty `llm_calls.csv`), so steps 2 and 3 treat it like any other method. Its `summary.json` also records `best_params`. To change the ranges, use `params: { space: { lo: [0, 10], hi_max: 40, penalty: [1, 100] } }`.
 
 **EoH's operators.** EoH creates new heuristics in four ways: **E1** (as different as possible from the parents), **E2** (new heuristic on the parents' shared idea), **M1** (modify one parent), **M2** (keep the idea, change its parameters). Roughly a spectrum from exploration (E1) to exploitation (M2). E2, M1 and M2 can be switched off (`use_e2_operator`, `use_m1_operator`, `use_m2_operator`); E1 cannot.
 
