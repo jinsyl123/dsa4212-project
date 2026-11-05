@@ -1,0 +1,30 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after adding the item to bins that have enough space, and assigns the lowest possible priority to bins that are too small.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "program": ""
+    },
+    {
+        "sample_order": 76,
+        "algorithm": "{The algorithm calculates priority by rewarding bins that match the power-of-two scale of the item while heavily penalizing bins that leave awkward, non-aligned leftover capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    with np.errstate(divide='ignore', invalid='ignore'):\n        remaining = bins - item\n        ratio = bins / item\n        alignment = -np.abs(np.log2(ratio) - np.round(np.log2(ratio)))\n        scores = np.where(remaining >= 0, alignment - (remaining / bins), -np.inf)\n    return scores\n\n",
+        "score": -0.043330699355770934,
+        "program": ""
+    },
+    {
+        "sample_order": 95,
+        "algorithm": "{The algorithm calculates priority by utilizing a trigonometric cosine wave to reward harmonic capacity ratios while penalizing the fractional waste relative to the bin size.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    with np.errstate(divide='ignore', invalid='ignore'):\n        remaining = bins - item\n        ratio = bins / item\n        harmonic_score = np.cos(2 * np.pi * ratio)\n        scores = np.where(bins >= item, harmonic_score / (1.0 + remaining), -np.inf)\n    return scores\n\n",
+        "score": -0.03788518920722452,
+        "program": ""
+    },
+    {
+        "sample_order": 196,
+        "algorithm": "{The new algorithm computes bin priorities by combining a linear fill-ratio penalty with a sine-based trigonometric modulation of the remaining capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    with np.errstate(divide='ignore', invalid='ignore'):\n        remaining = bins - item\n        penalty = -remaining / (item + 1e-8)\n        modulation = np.sin(np.pi * bins / (item + 1e-8))\n        scores = np.where(bins >= item, penalty + modulation, -np.inf)\n    return scores\n\n",
+        "score": -0.037190784650327144,
+        "program": ""
+    }
+]

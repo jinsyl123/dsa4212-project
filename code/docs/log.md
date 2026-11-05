@@ -71,3 +71,9 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Decision:** proposed replacing "prompt information + no-M2" with "empty-bin option (anyfit search, informed_rules) + training-data variety", 5 seeds per setting (Nic to confirm, #7).
 - **Why:** 3 of 6 OpenRouter seeds converge to Best Fit; the other 3 open fresh bins. For seeds 4/5 that carries both the gain and the k5 failure (blocking fresh bins removes it); seed 3's k1.5 failure stays with fresh bins blocked, so it has a different cause. No run points to M2.
 - **Affects:** #7, ablation configs.
+
+### 2026-11-04: LLM for the ablations; full run logs committed (Jin)
+
+- **Decision:** proposed keeping `openrouter-gemini-3.5-flash-lite` for every ablation run (Nic to confirm, #7). Run folders are now committed in full, and each run also saves every LLM prompt and response (`llm_calls.jsonl`).
+- **Why:** same model as the 6 baseline seeds (comparability); 0/1806 LLM errors vs 62/363 on the free tier; ~$0.17 per run. Full logs so every result can be traced to the programs and calls behind it (Nic, #7). Evidence for the per-seed explanations: `docs/baseline_findings.md`.
+- **Affects:** .gitignore, obpevo/llm.py, readme §10, #7.
