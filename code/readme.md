@@ -277,7 +277,7 @@ final_eval:
 | `parallel`                   | LLM calls / evaluations in parallel (lower `num_samplers` if you hit rate limits)                                                                                                                                                                                |
 | `evaluation.mode`            | `funsearch` (default, matches LLM4AD) or `anyfit` (see §11)                                                                                                                                                                                                      |
 | `evaluation.timeout_seconds` | per-candidate time limit; ≥ 30 on Windows                                                                                                                                                                                                                        |
-| `evaluation.prompt`          | `llm4ad` (default, LLM4AD's wording), `informed_rules` (how bins are offered: remaining capacities, empty bins included), `informed_dist` (the training distribution and capacity), or `informed` (both)                                                         |
+| `evaluation.prompt`          | `llm4ad` (default, LLM4AD's wording), `informed_rules` (task framing plus how bins are offered: "online 1D bin packing, minimise bins", remaining capacities, empty bins included; the default prompt says none of this), `informed_dist` (the training distribution and capacity), or `informed` (both)                                                         |
 | `evaluation.format_hint`     | `true` (default): append formatting rules to every prompt (§11)                                                                                                                                                                                                  |
 | `seeds`, `methods`           | runs = methods × seeds                                                                                                                                                                                                                                           |
 | `final_eval`                 | held-out sets and timeout for step 2                                                                                                                                                                                                                             |
@@ -357,7 +357,7 @@ On the free tier, `cost_usd` shows what the run _would_ cost on the paid tier, w
 | ReEvo                   | `reevo`             | also asks the LLM for written reflections (~1.8 calls per evaluation) |
 | FunSearch               | `funsearch`         |                                                                       |
 | (1+1)-EPS hill climbing | `hillclimb`         | pure exploitation: always improves on the current best                |
-| Random sampling         | `randsample`        | pure exploration, no selection: the control                           |
+| Random sampling         | `randsample`        | no evolution (LLM4AD's fixed FunSearch-style prompt every call); best on train kept: the control |
 | MCTS-AHD, HSEvo         | `mcts_ahd`, `hsevo` | registered, untested: experimental                                    |
 | Tuned Best Fit (no LLM) | `tuned_bf`          | the budget-matched baseline: Best Fit's 3 knobs, random search (below) |
 
@@ -401,9 +401,37 @@ The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1�
 | Model                             | `llm="gemini-3.8-flash"`                                                                                                                  |
 | Reasoning / temperature           | `llm={"name": "gemini-3.5-flash-lite", "extra": {"reasoning_effort": "medium"}}` or `{"name": ..., "temperature": 0.5}`                   |
 | Empty-bin rule                    | `evaluation: {mode: anyfit}`                                                                                                              |
+| Training-data variety             | `evaluation: {train_set: train_mixed}` (Weibull shapes 2 and 4; a set's `mix:` list alternates specs across its instances)               |
 | Budget                            | `budget="medium"` / `"full"` / `"large"`                                                                                                  |
 
 **Change one thing at a time** against a baseline with the same model, budget and seeds, and use at least 3 seeds per arm: LLM runs vary a lot between seeds.
+
+**The planned ablations (#7)** each have a config that inherits `eoh_baseline.yaml` (`base:`) and changes one setting. All use `openrouter-gemini-3.5-flash-lite`, the `full` budget and seeds 0–4, so the main baseline (seeds 0–5) is the comparison row.
+
+| Config                    | Changes                                   | Status (#7)        |
+| ------------------------- | ----------------------------------------- | ------------------ |
+| `abl_anyfit.yaml`         | empty bins hidden during search           | main               |
+| `abl_informed_rules.yaml` | prompt states the task and how bins are offered (incl. empty bins) | main               |
+| `abl_mixed_shapes.yaml`   | training on Weibull shapes 2 and 4        | main               |
+| `abl_informed_dist.yaml`  | prompt states the training distribution   | optional           |
+| `abl_informed.yaml`       | both of the above in the prompt           | optional           |
+| `abl_no_m2.yaml`          | EoH without M2                            | fallback           |
+| `control_randsample.yaml` | LLM4AD RandSample: same budget, fixed FunSearch-style prompt, no evolution | control            |
+
+Run one with a `check` budget first, then in full, then score it (no `--llm` needed: the model is set in the file):
+
+```bash
+python pipeline/run_experiment.py --config configs/abl_anyfit.yaml --budget check
+python pipeline/run_experiment.py --config configs/abl_anyfit.yaml
+python pipeline/evaluate_final.py --config configs/abl_anyfit.yaml
+python pipeline/summarise.py --config configs/abl_anyfit.yaml
+```
+
+Before the full runs:
+
+- **Branch:** run from a branch that includes #14, so every run saves each LLM prompt and response (`llm_calls.jsonl`). Commit the whole run folder afterwards.
+- **Order:** the three main settings first (`abl_anyfit`, `abl_informed_rules`, `abl_mixed_shapes`), then `control_randsample`. It has not run on OpenRouter yet and uses a different prompt (Best Fit as `priority_v0`, "complete `priority_v1`"), so its `check` run is a gate: look at `n_unique_programs` and `n_calls_not_evaluated` in `summary.json` before the 5 full seeds. The optional settings only if time allows.
+- **Credit:** about US$0.16–0.20 per run, 20 runs (3 main settings + control, 5 seeds each) ≈ US$3–4; budget ~US$5 for check runs and headroom. Check the OpenRouter balance first.
 
 ---
 
@@ -416,13 +444,14 @@ The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1�
 | `config.json`                 | resolved config, method kwargs used/dropped, library versions, exact prompt text added                                     |
 | `llm_calls.csv`               | one row per LLM call: tokens (`api` or `estimate`), latency, cost, status (with the provider's error message if it failed) |
 | `evals.csv`                   | one row per candidate: status (`ok` / `error` / `timeout` / `crash`), score, train excess, error message                   |
+| `llm_calls.jsonl`             | full prompt and response text of every LLM call (runs from 5 Nov on)                                                        |
 | `candidates.jsonl`            | every evaluated program                                                                                                    |
 | `per_instance.csv`            | every candidate × training instance: bins, lower bound, excess                                                             |
 | `best_program.py`             | best program by training score (ties go to the earliest)                                                                   |
 | `summary.json`                | counts, tokens, cost, stop reason, best result                                                                             |
 | `stdout.log`, `llm4ad_log_*/` | LLM4AD's own output                                                                                                        |
 
-**In git:** `summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` of each run (enough to rebuild every table and figure); the rest of each run folder stays local. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
+**In git:** every file of each run folder, so every evaluated program and LLM4AD's logs can be audited (`summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` alone are enough to rebuild every table and figure). Runs made before 4 Nov only have those four files committed, unless their full folders were added later. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
 
 **Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
 
