@@ -79,11 +79,24 @@ def evaluate_program(src: str, insts: list[dict], mode: str = "funsearch") -> li
     return core.evaluate(ns["priority"], insts, mode)
 
 
+def check_space(space: dict | None = None) -> dict:
+    """SPACE with `space`'s overrides applied. An unknown key raises, so a typo can't silently keep the defaults."""
+    unknown = sorted(set(space or {}) - set(SPACE))
+    if unknown:
+        raise ValueError(f"unknown tuned_bf space key(s) {unknown}; valid keys: {sorted(SPACE)}")
+    return {**SPACE, **(space or {})}
+
+
 def tune(train: list[dict], seed: int, max_evals: int, mode: str = "funsearch", space: dict | None = None):
-    """Score each knob setting on the training set, in order. Yields one record per try:
+    """Score each knob setting on the training set, in order. Returns an iterator with one record per try:
     eval (1-based), t_start, wall_s, params, program, status ("ok" / "error"), rows (per instance), error.
-    `space` overrides any of SPACE's ranges (config: params: {space: {hi_max: 30}})."""
-    for i, params in enumerate(sample(max_evals, seed, {**SPACE, **(space or {})}), start=1):
+    `space` overrides any of SPACE's ranges (config: params: {space: {hi_max: 30}}).
+    Bad arguments raise here, when tune() is called, before anything is scored."""
+    return _score_each(train, sample(max_evals, seed, check_space(space)), mode)
+
+
+def _score_each(train: list[dict], settings: list[dict], mode: str):
+    for i, params in enumerate(settings, start=1):
         src, t0 = program(**params), time.time()
         try:
             rows, status, err = evaluate_program(src, train, mode), "ok", ""

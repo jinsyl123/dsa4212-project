@@ -63,6 +63,13 @@ class TestTunedBestFit(unittest.TestCase):
         self.assertTrue(all(r["params"]["hi"] <= 12 and r["params"]["penalty"] == 5 for r in recs[1:]))
         self.assertTrue(all(r["params"]["lo"] <= tuned_bf.SPACE["lo"][1] for r in recs[1:]))   # default kept
 
+    def test_tune_bad_params_raise_before_scoring(self):
+        # both raise on the call itself, without iterating: nothing is scored with a misread config
+        with self.assertRaises(ValueError):
+            tuned_bf.tune(self.insts, seed=0, max_evals=5, space={"hi_maxx": 30})     # typo inside space:
+        with self.assertRaises(TypeError):
+            tuned_bf.tune(self.insts, seed=0, max_evals=5, hi_max=30)                # range key outside space:
+
     def test_tune_scores_best_fit_first(self):
         recs = list(tuned_bf.tune(self.insts, seed=0, max_evals=5))
         self.assertEqual([r["eval"] for r in recs], [1, 2, 3, 4, 5])

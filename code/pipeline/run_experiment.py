@@ -175,7 +175,8 @@ def run_one(cfg, m: dict, seed: int, train: list[dict], out: Path, verbose: bool
     return finalize(run_dir, meta)
 
 
-# Baselines tuned without an LLM, under the same max_evals as the LLM methods: method name -> generator of scored tries
+# Baselines tuned without an LLM, under the same max_evals as the LLM methods: method name -> function returning
+# an iterator of scored tries (it raises on bad params when called, before any try is scored)
 TUNERS = {"tuned_bf": tuned_bf.tune}
 
 
@@ -183,8 +184,11 @@ def run_tuned(cfg, m: dict, seed: int, train: list[dict], out: Path) -> dict:
     """Run a no-LLM tuner (e.g. tuned Best Fit) as one (method x seed) run. Writes the same files as an LLM run
     (llm_calls.csv with a header only), so evaluate_final and summarise treat it like any other method."""
     run_dir = out / m["label"] / f"seed{seed}"
-    reset_run_dir(run_dir)
     b, ev = cfg["budget"], cfg["evaluation"]
+    # Set up the tries before touching the run folder: a bad `params` (e.g. `hi_max: 30` outside `space:`, or an
+    # unknown key inside it) raises here, so no half-written run is left behind to be skipped as done next time
+    tries = TUNERS[m["name"]](train, seed, b["max_evals"], ev["mode"], **m["params"])
+    reset_run_dir(run_dir)
     meta = dict(experiment=cfg["experiment"], label=m["label"], method=m["name"], kind="tuned", seed=seed,
                 llm_name=None, llm_provider=None, llm_model=None, budget_name=b.get("name"), mode=ev["mode"],
                 train_set=ev["train_set"], n_train=len(train), max_evals=b["max_evals"], max_tokens=b["max_tokens"])
@@ -199,7 +203,7 @@ def run_tuned(cfg, m: dict, seed: int, train: list[dict], out: Path) -> dict:
         w = csv.writer(fe)
         w.writerow(EvalRecorder.FIELDS)
         try:
-            for r in TUNERS[m["name"]](train, seed, b["max_evals"], ev["mode"], **m["params"]):
+            for r in tries:
                 h, src = T.code_hash(r["program"]), r["program"]
                 score = core.score(r["rows"]) if r["status"] == "ok" else None
                 w.writerow([r["eval"], round(r["t_start"], 3), round(r["wall_s"], 3), h, r["status"],

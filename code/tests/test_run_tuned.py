@@ -45,6 +45,18 @@ class TestRunTuned(unittest.TestCase):
             exec((run / "best_program.py").read_text(), ns)
             self.assertAlmostEqual(-core.score(core.evaluate(ns["priority"], train)), s["best_train_excess"])
 
+    def test_bad_params_raise_before_writing(self):
+        import run_experiment
+        spec = dict(n_instances=2, n_items=[200, 300], capacity=100, dist="weibull", shape=3, scale=45)
+        train = instances.generate_set("t", spec, base_seed=0)
+        cfg = C.load("configs/smoke.yaml", budget={"max_evals": 5, "max_tokens": None, "max_minutes": 5})
+        for params, err in [({"hi_max": 30}, TypeError), ({"space": {"hi_maxx": 30}}, ValueError)]:
+            with self.subTest(params=params), tempfile.TemporaryDirectory() as tmp:
+                m = dict(name="tuned_bf", label="tuned_bf", params=params)
+                with self.assertRaises(err):
+                    run_experiment.run_tuned(cfg, m, 0, train, Path(tmp))
+                self.assertFalse((Path(tmp) / "tuned_bf").exists())   # no summary.json to be skipped as done
+
 
 if __name__ == "__main__":
     unittest.main()
