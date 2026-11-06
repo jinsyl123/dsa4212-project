@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm scores bins using an exponential decay function based on remaining capacity combined with a sigmoidal penalty for creating near-full fragmented gaps and a dynamic threshold for opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    max_cap = np.max(bins) if len(bins) > 0 else 1.0\n    is_empty = (bins == max_cap) & valid\n    \n    # Exponential decay scoring for tightness of fit\n    scores = np.where(valid, np.exp(-3.0 * (rem / max_cap)), -np.inf)\n    \n    # Penalize dangerous small gaps using a smooth penalty function\n    fragmentation_penalty = np.where((rem > 0) & (rem < 0.15), 1.5 * (1.0 - rem / 0.15), 0.0)\n    scores = scores - fragmentation_penalty\n    \n    # Assign a balanced priority to opening a new empty bin\n    scores = np.where(is_empty, 0.4, scores)\n    return scores\n\n",
+        "score": -0.046929506367233184
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those where the remaining capacity after adding the item is minimized, thereby tightly packing bins, while giving empty bins a neutral fallback score.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.where(rem >= 0, 1.0 / (1.0 + rem), -1.0)\n    return scores\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The new algorithm scores bins using a sine-based tightness reward, an adjusted exponential penalty for splinter gaps, and a modified threshold for opening empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    init_cap = np.max(bins)\n    is_empty = (bins == init_cap) & valid\n    \n    norm_rem = np.clip(rem / init_cap, 0.0, 1.0)\n    scores = np.where(valid, np.sin((1.0 - norm_rem) * np.pi / 2.0) - 2.0 * np.exp(-((rem - 0.08) ** 2) / 0.03), -np.inf)\n    \n    danger = valid & (rem > 0) & (rem < 0.20) & (~is_empty)\n    scores = np.where(danger, scores - 2.0, scores)\n    \n    scores = np.where(is_empty, 0.40 * np.sin((1.0 - item / init_cap) * np.pi / 2.0), scores)\n    return scores\n\n",
+        "score": -0.057754264348365655
+    },
+    {
+        "algorithm": "{\\The algorithm scores bins by applying a trigonometric cosine-based utility function over the remaining capacity, combined with an exponential penalty for small splinter gaps and a controlled threshold for opening empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    init_cap = np.max(bins)\n    is_empty = (bins == init_cap) & valid\n    \n    # Trigonometric core: reward tight fits using cosine scaling over normalized remaining capacity\n    norm_rem = np.clip(rem / init_cap, 0.0, 1.0)\n    scores = np.where(valid, np.cos(norm_rem * np.pi / 2.0) - 1.5 * np.exp(-((rem - 0.05) ** 2) / 0.02), -np.inf)\n    \n    # Moderate penalty for dangerous small gaps\n    danger = valid & (rem > 0) & (rem < 0.15) & (~is_empty)\n    scores = np.where(danger, scores - 1.5, scores)\n    \n    # Control empty bin usage\n    scores = np.where(is_empty, 0.25 * np.cos(item / init_cap * np.pi / 2.0), scores)\n    return scores\n\n",
+        "score": -0.05779638025133061
+    },
+    {
+        "algorithm": "{The algorithm scores bins using a polynomial residual-fit combined with a dynamic empty-bin penalty that scales inversely with the current number of active bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    max_cap = np.max(bins) if len(bins) > 0 else 1.0\n    is_empty = (bins == max_cap) & valid\n    used_bins = np.sum(bins < max_cap)\n    empty_penalty = 0.2 / (1.0 + used_bins)\n    scores = np.where(valid, 1.0 / (1.0 + rem**2), -np.inf)\n    scores = np.where(is_empty & (used_bins == 0), 1.0, scores)\n    scores = np.where(is_empty & (used_bins > 0), empty_penalty, scores)\n    return scores\n\n",
+        "score": -0.29609077408594237
+    },
+    {
+        "algorithm": "{The algorithm scores bins using a harmonic fit metric that rewards tight packing in partially filled bins while using a scaled constant penalty for opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    max_cap = np.max(bins) if len(bins) > 0 else 1.0\n    is_empty = (bins == max_cap) & valid\n    base_score = 1.0 / (1.0 + rem)\n    scores = np.where(valid, base_score, -np.inf)\n    scores = np.where(is_empty & (np.sum(bins > rem + item) == 0), 0.05, scores)\n    return scores\n\n",
+        "score": -0.31478960158262514
+    },
+    {
+        "algorithm": "{The algorithm scores bins using a piecewise polynomial function that rewards high capacity utilization while applying a steep penalty for excess wasted space and assigning a moderate score to empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    initial_bins = np.maximum(bins, 1e-9)\n    is_empty = np.isclose(bins, np.max(bins)) & (rem >= 0)\n    tightness = 1.0 - (rem / initial_bins)\n    scores = np.where(rem >= 0, tightness ** 3, -np.inf)\n    scores = np.where(is_empty & (scores < 0.5), 0.5, scores)\n    return scores\n\n",
+        "score": -0.6065356765642999
+    },
+    {
+        "algorithm": "{The algorithm scores valid bins using an exponential residual penalty combined with a dynamic threshold bonus for tight fits and a heavily discounted penalty for opening a new bin.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    max_cap = np.max(bins) if len(bins) > 0 else 1.0\n    is_empty = (bins == max_cap) & valid\n    base_score = np.exp(-rem)\n    tight_fit = (rem <= 0.1 * max_cap) & valid & ~is_empty\n    scores = np.where(valid, base_score + np.where(tight_fit, 0.5, 0.0), -np.inf)\n    scores = np.where(is_empty, 0.1 / max_cap, scores)\n    return scores\n\n",
+        "score": -0.6553034516852803
+    },
+    {
+        "algorithm": "{\\gdef\\algodesc{The algorithm scores bins using a harmonic inverse of the remaining capacity combined with a sigmoidal penalty for tight gaps and a dynamic threshold for empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.where(valid, 1.0 / (1.0 + rem), -np.inf)\n    fragmentation_penalty = valid & (rem > 0) & (rem < 0.15)\n    scores = np.where(fragmentation_penalty, scores - 1.5, scores)\n    is_empty = (bins == np.max(bins)) & valid & np.all(bins < np.max(bins) + 1e-9)\n    has_non_empty = np.any(bins < np.max(bins))\n    if has_non_empty:\n        scores = np.where((bins == np.max(bins)) & valid, 0.2, scores)\n    else:\n        scores = np.where(scores == np.max(scores), scores, scores)\n    return scores\n\n",
+        "score": -0.7861701551882894
+    },
+    {
+        "algorithm": "{\\The algorithm scores bins by combining a power-law decay of the remaining capacity with a smooth wastage penalty and a dynamic penalty for empty bins to favor tight, well-packed configurations.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    init_cap = np.max(bins)\n    is_empty = (bins == init_cap) & valid\n    scores = np.where(valid, np.power(rem + 1.0, -2.0) - 0.5 * np.exp(-((rem - 0.1) ** 2) / 0.05), -np.inf)\n    has_partially_filled = np.any(bins < init_cap)\n    scores = np.where(is_empty & has_partially_filled, 0.05, scores)\n    return scores\n\n",
+        "score": -0.8033404769138575
+    }
+]

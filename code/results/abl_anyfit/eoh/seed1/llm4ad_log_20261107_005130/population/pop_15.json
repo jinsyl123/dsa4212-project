@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm calculates priority by combining a polynomial utilization bonus with a trigonometric saturation penalty based on the ratio of the item to the bin capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid_mask = remaining >= 0\n    ratio = item / bins\n    utilization_bonus = (1.0 - remaining / bins) ** 3\n    saturation_penalty = np.cos(np.pi * 0.5 * np.clip(ratio, 0.0, 1.0))\n    score = utilization_bonus + saturation_penalty\n    return np.where(valid_mask, score, -np.inf)\n\n",
+        "score": -0.041018387958720995
+    },
+    {
+        "algorithm": "{The algorithm computes bin priorities using a polynomial fit of capacity utilization combined with a hyperbolic tangent scaling of the absolute slack to favor balanced filling.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid_mask = remaining >= 0\n    if not np.any(valid_mask):\n        return np.full_like(bins, -np.inf, dtype=float)\n    \n    utilization = 1.0 - (remaining / (bins + 1e-8))\n    utilization_score = utilization ** 3 - utilization ** 2\n    slack_penalty = np.tanh(remaining)\n    \n    return np.where(valid_mask, utilization_score - 0.5 * slack_penalty, -np.inf)\n\n",
+        "score": -0.04107825122130743
+    },
+    {
+        "algorithm": "{The algorithm calculates priority by rewarding bins that minimize leftover capacity while exponentially decaying the score based on the squared slack relative to the item size.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, 1.0 / (1.0 + remaining ** 2) + remaining / bins)\n\n",
+        "score": -0.04557363708453377
+    },
+    {
+        "algorithm": "{The algorithm prioritizes bins using an entropy-based measure of remaining capacities, rewarding states that maximize information diversity while penalizing overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid_mask = remaining >= 0\n    total_rem = np.sum(remaining[valid_mask]) + 1e-8\n    probs = np.where(valid_mask, remaining / total_rem, 0.0)\n    entropy = np.where((valid_mask) & (probs > 0), -probs * np.log(probs + 1e-12), 0.0)\n    tightness = np.where(valid_mask, 1.0 / (1.0 + remaining), -np.inf)\n    return np.where(valid_mask, entropy + tightness, -np.inf)\n\n",
+        "score": -0.04605701308550268
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by balancing remaining capacity with a variance-based crowding measure using the mean and standard deviation of post-allocation capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    mean_rem = np.mean(remaining[valid])\n    std_rem = np.std(remaining[valid])\n    spread = std_rem if std_rem > 0 else 1.0\n    scores = np.where(valid, -remaining - np.abs(remaining - mean_rem) / spread, -np.inf)\n    return scores\n\n",
+        "score": -0.04739311696410736
+    },
+    {
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after adding the item, penalizing bins that exceed capacity or become too full.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, -remaining)\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The algorithm prioritizes bins by combining a linear penalty for remaining capacity with a crowding measure based on the median absolute deviation of the post-allocation capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    med_rem = np.median(remaining[valid])\n    mad = np.median(np.abs(remaining[valid] - med_rem))\n    robust_spread = mad if mad > 0 else 1.0\n    scores = np.where(valid, -remaining - np.abs(remaining - med_rem) / robust_spread, -np.inf)\n    return scores\n\n",
+        "score": -0.048110147648943266
+    },
+    {
+        "algorithm": "{The algorithm prioritizes bins using a variance-scaled Euclidean distance measure of remaining capacities, favoring balanced load distributions while penalizing overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid_mask = remaining >= 0\n    mean_rem = np.mean(remaining[valid_mask]) if np.any(valid_mask) else 0.0\n    variance = np.var(remaining[valid_mask]) + 1e-8 if np.any(valid_mask) else 1.0\n    distance_penalty = np.where(valid_mask, -((remaining - mean_rem) ** 2) / variance, 0.0)\n    fill_reward = np.where(valid_mask, 1.0 / (1.0 + remaining), -np.inf)\n    return np.where(valid_mask, fill_reward + 0.1 * distance_penalty, -np.inf)\n\n",
+        "score": -0.048271238625835156
+    },
+    {
+        "algorithm": "{The algorithm prioritizes bins by combining an exponential fill reward with a median-deviation penalty of remaining capacities to achieve robust load balancing.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid_mask = remaining >= 0\n    if not np.any(valid_mask):\n        return np.full_like(bins, -np.inf, dtype=float)\n    median_rem = np.median(remaining[valid_mask])\n    mad = np.median(np.abs(remaining[valid_mask] - median_rem)) + 1e-8\n    robust_dev = np.where(valid_mask, -np.abs(remaining - median_rem) / mad, 0.0)\n    fill_reward = np.where(valid_mask, np.exp(-remaining), 0.0)\n    return np.where(valid_mask, fill_reward + 0.1 * robust_dev, -np.inf)\n\n",
+        "score": -0.04973427924602261
+    },
+    {
+        "algorithm": "{\\The algorithm prioritizes bins using an exponential decay of remaining capacity combined with an entropy-based dispersion penalty to promote load balancing and tight packing.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid_mask = remaining >= 0\n    if not np.any(valid_mask):\n        return np.full_like(bins, -np.inf, dtype=float)\n    \n    valid_rem = remaining[valid_mask]\n    entropy_term = -np.sum(valid_rem * np.log(valid_rem + 1e-8))\n    dispersion_penalty = np.where(valid_mask, -np.abs(remaining - np.mean(valid_rem)), 0.0)\n    tightness_reward = np.where(valid_mask, np.exp(-remaining), -np.inf)\n    \n    return np.where(valid_mask, tightness_reward + 0.05 * dispersion_penalty + 0.01 * entropy_term, -np.inf)\n\n",
+        "score": -0.050840816573063954
+    }
+]

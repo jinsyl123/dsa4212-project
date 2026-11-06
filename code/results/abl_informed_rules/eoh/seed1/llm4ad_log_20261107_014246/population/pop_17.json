@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm employs a Harmonic-inspired bin-partitioning strategy that scores bins based on how well the item aligns with preferred fractional thresholds of the bin capacity, promoting clustered utilization.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    original_capacities = bins[valid] - rem[valid] + item\n    fraction = rem[valid] / (original_capacities + 1e-7)\n    \n    scores[valid] = -np.abs(fraction - 0.5) + (1.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.028351917185784038
+    },
+    {
+        "algorithm": "{The algorithm employs a modified best-fit decreasing strategy that scores valid bins by heavily penalizing remaining capacity while favoring tighter utilization targets near half-full capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.5) + (3.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.0367458866351497
+    },
+    {
+        "algorithm": "{The algorithm uses an exponential decay function of the remaining capacity combined with a quadratic penalty around a specific golden-ratio residual fraction to optimize bin packing efficiency.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -((frac - 0.382) ** 2) + np.exp(-rem[valid])\n    return scores\n\n",
+        "score": -0.04431656007603718
+    },
+    {
+        "algorithm": "{\\nThe new algorithm utilizes an exponential decay function of the remaining capacity modulated by a cosine-based residual fraction preference to score bins smoothly.\\n}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = np.cos(frac * np.pi) + np.exp(-rem[valid])\n    return scores\n\n",
+        "score": -0.04642905493306809
+    },
+    {
+        "algorithm": "{The algorithm employs a threshold-based bin-partitioning strategy that scores bins inversely to their remaining capacity while prioritizing tighter fits near specific fractional utilization targets.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.3) + (2.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.046877121377498124
+    },
+    {
+        "algorithm": "{The algorithm uses an exponential decay function of the squared residual capacity to strongly prioritize tighter fits while penalizing excessive leftover space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    scores[valid] = np.exp(-2.0 * (rem[valid] ** 2))\n    return scores\n\n",
+        "score": -0.04727263454990295
+    },
+    {
+        "algorithm": "{The algorithm scores bins using a harmonic penalty of the residual capacity combined with a dynamic utilization threshold to promote load balancing across active bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    fit = rem >= 0\n    if not np.any(fit):\n        return scores\n    max_cap = np.max(bins)\n    used = max_cap - bins\n    utilization = used / max_cap\n    scores[fit] = (1.0 / (1.0 + rem[fit])) + (0.5 * utilization[fit])\n    empty_mask = (bins == max_cap) & fit\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = 0.1\n    return scores\n\n",
+        "score": -0.04747121809623241
+    },
+    {
+        "algorithm": "{The algorithm prioritizes bins using a modified Best-Fit-Decreasing strategy that favors bins leaving the smallest tight residual capacity while heavily penalizing excessively large leftover spaces to balance load and minimize total bins used.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    tightness = 1.0 / (rem[valid] + 1e-7)\n    fill_ratio = item / (bins[valid] + 1e-7)\n    scores[valid] = tightness + fill_ratio\n    return scores\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The algorithm scores valid bins by combining exponential decay of remaining capacity with a bonus for filling bins to specific quartile thresholds.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    cap = bins[valid]\n    r = rem[valid]\n    used = cap - r\n    util = used / (cap + 1e-7)\n    \n    scores[valid] = -np.exp(3.0 * r / (cap + 1e-7)) + np.sin(np.pi * util)\n    return scores\n\n",
+        "score": -0.0475350408696192
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins using a threshold-based capacity utilization score that favors tight fits and specific residual fractions.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.25) + (2.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.04753605209058772
+    }
+]
