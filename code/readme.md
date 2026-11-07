@@ -474,9 +474,11 @@ Before the full runs:
 | `kind`                      | `evolved` (LLM search) or `tuned` (no-LLM tuner such as `tuned_bf`); `final_summary.csv` also has `baseline`                                                                                        |
 | `best_params`               | `tuned_bf` runs only: the winning knob setting                                                                                                                                                      |
 | `n_calls_not_evaluated`     | calls with no evaluation: candidates still being scored when the budget hit, unparseable replies, ReEvo reflections. 1–3 is normal for EoH.                                                         |
-| `mean_excess` / `sd_excess` | held-out excess, averaged within each run, then mean ± sd across seeds                                                                                                                              |
-| `delta_vs_bf_pp`            | difference from Best Fit in percentage points; **negative = better**                                                                                                                                |
-| `win_vs_bf`                 | share of instances where the program used fewer bins than Best Fit                                                                                                                                  |
+| `mean_excess` / `sd_excess` | held-out excess over **L1**, averaged within each run, then mean ± sd across seeds. L1 is the papers' bound (FunSearch, EoH), kept for comparison |
+| `best_run` / `worst_run`    | lowest / highest per-run mean excess across seeds, over **L1** |
+| `delta_vs_bf_pp`            | difference from Best Fit in percentage points over **L1**; **negative = better** |
+| `*_l2` twins                | `mean_excess_l2`, `sd_excess_l2`, `best_run_l2`, `worst_run_l2`, `delta_vs_bf_pp_l2`: the same over **L2**. **The report uses these** (#12 decision 7); they equal L1 except on `test_scale65` and `test_control` |
+| `win_vs_bf`                 | share of instances where the program used fewer bins than Best Fit; counts bins, so the same under L1 and L2                                                                                                                                  |
 
 **Reading search progress.** Individual candidates go up and down; only the best-so-far matters. Programs that look different can pack identically (e.g. `item - bins` and `-(bins - item)`), so many candidates share exactly the same score. Use the diagnostic in §12 to tell a normal plateau from a search that isn't exploring.
 

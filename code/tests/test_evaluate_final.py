@@ -63,6 +63,35 @@ class TestFailedPrograms(unittest.TestCase):
                                     core.pack_anyfit(baselines.best_fit, i["items"], 100))
 
 
+class TestL2SummaryColumns(unittest.TestCase):
+    """Every excess-based summary column has an _l2 twin (#10 review): the report reads those (#12 decision 7)."""
+
+    def test_l2_twins_are_computed_from_l2(self):
+        import pandas as pd
+        spec = dict(n_instances=3, n_items=500, capacity=100, dist="weibull", shape=3, scale=65)  # L2 > L1 here
+        sets = {"t": instances.generate_set("t", spec, base_seed=0)}
+        df = evaluate_final.add_l2(pd.DataFrame(evaluate_final.run_baselines(sets)), sets)
+        self.assertTrue((df.lb_l2 > df.lb).any())                              # the case where the twins matter
+        s = evaluate_final.summarise(df).set_index("label")
+        per_run = df.groupby("label").excess_l2.mean()
+        for label in s.index:
+            with self.subTest(label=label):
+                self.assertAlmostEqual(s.loc[label, "best_run_l2"], per_run[label], 5)   # one run: min = max = mean
+                self.assertAlmostEqual(s.loc[label, "worst_run_l2"], per_run[label], 5)
+                self.assertAlmostEqual(s.loc[label, "delta_vs_bf_pp_l2"],
+                                       (per_run[label] - per_run["best_fit"]) * 100, 3)
+        self.assertEqual(s.loc["best_fit", "delta_vs_bf_pp_l2"], 0)
+        self.assertNotEqual(s.loc["next_fit", "delta_vs_bf_pp_l2"], s.loc["next_fit", "delta_vs_bf_pp"])
+
+    def test_old_files_without_l2_keep_working(self):
+        import pandas as pd
+        spec = dict(n_instances=2, n_items=200, capacity=100, dist="weibull", shape=3, scale=45)
+        sets = {"t": instances.generate_set("t", spec, base_seed=0)}
+        s = evaluate_final.summarise(pd.DataFrame(evaluate_final.run_baselines(sets)))
+        self.assertIn("delta_vs_bf_pp", s.columns)
+        self.assertFalse({"best_run_l2", "worst_run_l2", "delta_vs_bf_pp_l2"} & set(s.columns))
+
+
 class TestL2Table(unittest.TestCase):
     """summarise.py reports excess over L2 on every set, plus an L1 table only for sets where L1 differs."""
 
