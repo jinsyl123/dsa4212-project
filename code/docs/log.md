@@ -110,6 +110,12 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Update 2026-11-07 (#10 review, Jia Kang):** every excess-based column in `final_summary.csv` has an `_l2` twin (`best_run_l2`, `worst_run_l2`, `delta_vs_bf_pp_l2` added). Unsuffixed columns stay L1, so older files keep their meaning; `win_vs_bf` counts bins and needs none. The `evaluate_final.py` printout shows L2.
 - **Affects:** `core.py`, `evaluate_final.py`, `summarise.py` (held-out table and figure on L2, L1 table where it differs; backfills older results), tests, readme (lower bound).
 
+### 2026-11-04: paired statistics per seed (Jin)
+
+- **Decision:** `paired_stats.py` compares every rule with Best Fit and tuned Best Fit instance by instance: wins/ties/losses, two-sided sign test, mean difference with a 95% bootstrap interval, per seed. A verdict (better / worse) needs both the interval to exclude 0 and p < 0.05, since an interval over 5 values is too narrow (seed 2's 4–1 on `test_id_5k` gives an interval excluding 0 at p = 0.125). Reference rules with several seeds (tuned Best Fit) are averaged per instance. Excess is over the L2 bound by default (#12 decision 7, #10), `--metric excess` for L1.
+- **Why:** the plan's "instance-by-instance sign test vs best fit" and win rates (decision 14). Per seed, because 3 of 6 OpenRouter seeds tie Best Fit everywhere and the other 3 differ by ±1–2.6 pp, which a mean over seeds hides. On the baseline, seed 4 beats Best Fit on all 5 `test_id_5k` instances but the sign test can't go below p = 0.0625 with 5 instances (#12 proposes 10).
+- **Affects:** new `pipeline/paired_stats.py`, `results/*/paired_stats.csv`, readme §3 and §6.
+
 ### 2026-11-07: incomplete runs are rerun, not scored (Nic)
 
 - **Decision:** a run that ends early for an infrastructure reason (`budget:llm_errors`, `error`, interrupted) is rerun in full with `--force`; only complete runs (the evaluation budget reached) are scored. The failed attempt stays in git history.
