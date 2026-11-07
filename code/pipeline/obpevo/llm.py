@@ -8,6 +8,7 @@ the shared token / wall-clock budget, whatever the method does internally.
 from __future__ import annotations
 
 import csv
+import json
 import re
 import os
 import threading
@@ -349,6 +350,9 @@ class LoggedLLM(LLM):
         self.linked_budget = None
         with open(self.log_path, "w", newline="") as f:
             csv.writer(f).writerow(self.FIELDS)
+        # Full text of every call (prompt sent, response received), for auditing. Same row order as llm_calls.csv.
+        self.text_log_path = self.log_path.with_name("llm_calls.jsonl")
+        self.text_log_path.write_text("")
 
     def _check_budget(self):
         if self.linked_budget is not None and self.linked_budget.exhausted:
@@ -396,6 +400,8 @@ class LoggedLLM(LLM):
             ]
             with open(self.log_path, "a", newline="") as f:
                 csv.writer(f).writerow(row)
+            with open(self.text_log_path, "a") as f:
+                f.write(json.dumps(dict(call=call, status=status, prompt=prompt, response=text)) + "\n")
         with self.lock:
             self.fail_streak = 0 if status == "ok" else self.fail_streak + 1
             if self.fail_streak >= self.max_fail_streak and not self.exhausted:

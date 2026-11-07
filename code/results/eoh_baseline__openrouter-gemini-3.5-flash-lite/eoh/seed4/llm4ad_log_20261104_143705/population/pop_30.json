@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The new algorithm calculates priority by applying a trigonometric sine penalty based on the ratio of remaining capacity to the item size, while excluding invalid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = bins >= item\n    remaining = bins - item\n    scores = np.where(valid, -np.sin(np.pi * remaining / (item + 1e-8)) - (remaining / (item + 1e-8)), -np.inf)\n    return scores\n\n",
+        "score": -0.037190784650327144
+    },
+    {
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after adding the item to bins that have enough space, and negative infinity for bins that overflow.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The new algorithm computes bin priorities by combining an exponential decay penalty for unused capacity with a logarithmic reward for compactness, while disqualifying insufficient bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = bins >= item\n    remaining = bins - item\n    scores = np.where(valid, -np.exp(0.5 * remaining) + np.log(1.0 + remaining + 1e-8), -np.inf)\n    return scores\n\n",
+        "score": -0.049313596129294326
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by combining a linear penalty for remaining capacity with a square root bonus for tighter fits, while invalidating bins that are too small.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = bins >= item\n    remaining = bins - item\n    scores = np.where(valid, -0.5 * remaining + np.sqrt(remaining + 1e-8), -np.inf)\n    return scores\n\n",
+        "score": -0.05072421817555793
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by using a trigonometric cosine penalty based on the proportional utilization of the bin capacity, rewarding balanced fill rates while excluding invalid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = bins >= item\n    utilization = item / (bins + 1e-8)\n    scores = np.where(valid, -np.cos(np.pi * utilization) - utilization, -np.inf)\n    return scores\n\n",
+        "score": -0.05483139521708306
+    },
+    {
+        "algorithm": "{The new algorithm determines priority by applying a Gaussian-like negative squared error penalty on the difference between the remaining capacity and three times the item size, while masking out invalid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = bins >= item\n    remaining = bins - item\n    deviation = remaining - (3.0 * item)\n    scores = np.where(valid, -np.exp(-(deviation ** 2) / (item ** 2 + 1e-8)), -np.inf)\n    return scores\n\n",
+        "score": -0.05633924574757697
+    },
+    {
+        "algorithm": "{The algorithm calculates priority using a power-law decay penalty based on the ratio of remaining capacity to the item size, while assigning negative infinity to bins with insufficient space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    ratio = remaining / (item + 1e-8)\n    return np.where(valid, -np.power(ratio + 1.0, 2.0) - (1.0 / (np.power(remaining, 2.0) + 1e-8)), -np.inf)\n\n",
+        "score": -0.06426872948503123
+    },
+    {
+        "algorithm": "{The new algorithm computes priority using a power-law decay based on the ratio of remaining capacity to the item size, while assigning negative infinity to bins that cannot accommodate the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    ratio = remaining / (item + 1e-8)\n    return np.where(valid, -np.power(ratio + 1.0, 2.0) - (1.0 / (remaining + 1e-8)), -np.inf)\n\n",
+        "score": -0.0657300075504401
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by utilizing a trigonometric tangent penalty on the fill ratio to favor bins that achieve near-perfect utilization without overflowing.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    valid = bins >= item\n    fill_ratio = item / (bins + 1e-8)\n    scores = np.where(valid, -np.tan(np.pi * fill_ratio / 2.0) - (bins - item), -np.inf)\n    return scores\n\n",
+        "score": -0.06885977787559514
+    },
+    {
+        "algorithm": "{The new algorithm computes priority using an exponential decay penalty of the remaining capacity scaled by the item size, while assigning negative infinity to bins that lack sufficient space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    ratio = remaining / (item + 1e-8)\n    return np.where(valid, -np.exp(ratio) - (1.0 / np.sqrt(remaining + 1e-8)), -np.inf)\n\n",
+        "score": -0.07020469293797546
+    }
+]
