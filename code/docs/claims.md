@@ -30,11 +30,11 @@ Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1
 |---|---|
 | Comparison row | EoH baseline, seeds 0–5 (`eoh_baseline.yaml`) |
 | Seeds per setting | **Ablation 1 (A1a, A1b): 10 (seeds 0–9)**, as run (#7). A2 and the control: 5 (seeds 0–4). Every seed run in full is scored; none is dropped |
-| References | Best Fit, and tuned Best Fit retuned in the same setting (#8) |
+| References | Best Fit, and tuned Best Fit retuned in the same setting (#8), with the same seeds as the setting. A setting that changes neither `mode` nor the training set (A1b, control) leaves tuned Best Fit unchanged, so it uses the baseline's tuned Best Fit |
 | Sets | train, val (selection only, never reported as a test), and the test sets frozen in #12 |
 | Metric | excess over L2 (%) on every set (#12 decision 7, #10); fewer bins = better. Same as L1 except on `test_scale65` and `test_control`, so numbers stay comparable with FunSearch/EoH |
-| Per-seed verdict vs a reference | `paired_stats.py` (#13): **better / worse** only if the 95% bootstrap CI excludes 0 **and** sign-test p < 0.05; **tie** if identical on every instance; else **unclear** |
-| Setting-level effect | The number of seeds in each category (of 10 for Ablation 1, of 5 otherwise), next to the baseline's (of 6), tested with a two-sided Fisher exact test vs the baseline. Against the baseline's 3/6, **only 0/10 or 10/10 reach p < 0.05** (p = 0.036; 1/10 or 9/10 give 0.12). With 5 seeds nothing can (0/5 or 5/5 gives 0.18), so A2 and control seed counts are descriptive only. Otherwise significance comes only from the per-seed paired verdicts above. |
+| Per-seed verdict vs a reference | `paired_stats.py` (#13, scored with its code as of this freeze; if #13 changes before merging, rescore and note it in Amendments): **better / worse** only if the 95% bootstrap CI excludes 0 **and** sign-test p < 0.05; **tie** if identical on every instance; else **unclear** |
+| Setting-level effect | The number of seeds in each category (of 10 for Ablation 1, of 5 otherwise), next to the baseline's (of 6), tested with a two-sided Fisher exact test vs the baseline (2×2 table: seeds in that category vs the rest, this setting vs the baseline). Against the baseline's 3/6, **only 0/10 or 10/10 reach p < 0.05** (p = 0.036; 1/10 or 9/10 give 0.12). With 5 seeds nothing can (0/5 or 5/5 gives 0.18), so A2 and control seed counts are descriptive only. Otherwise significance comes only from the per-seed paired verdicts above. |
 | Mechanism measure | `fresh_given_room` from `diagnose.py` (#5): share of placements that open an empty bin while a used one has room. A seed is a **fresh-bin seed** if it is > 0.01 on train |
 | Held-out sets used for claims | **in-distribution:** `test_id_5k`; **shift:** `test_shape_k1.5`, `test_shape_k5`, plus the other #12 sets as secondary. `train` is reported but not a claim (it is the set searched on). `test_control` (#16) is a scoring check, not a claim: every rule must be exactly 0% over L2 there |
 | Integrity | `check_integrity.py` (#6): flagged programs reported, not dropped. Runs stopped early by an error are rerun in full, not scored (`docs/log.md`); a run that hit the budget mid-evaluation (`abl_anyfit` seed 4, 299 of 300) counts as complete |
@@ -69,6 +69,7 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
   - The anyfit-retuned tuned Best Fit is within ~0.1 pp of Best Fit.
 - **What counts as an effect:** per-seed **better** verdicts vs Best Fit on `test_id_5k`, and vs anyfit tuned Best Fit.
 - **If confirmed, we claim:** EoH finds gains that do not rely on opening empty bins, which a tuned 3-knob Best Fit does not. Removing the option also removes the k5 failure, so the option drives the failure, not the gain as a whole.
+- **If partly confirmed** (1–3 of 10 seeds better on `test_id_5k`): gains without fresh bins exist but are not reliable across seeds; report which seeds and what their rules do (`baseline_findings.md` style), and do not claim a setting-level gain.
 - **If not confirmed, we claim** (all seeds tie with or lose to Best Fit): the fresh-bin bet was the whole of EoH's advantage on this distribution. Without it, EoH rediscovers Best Fit. The brief counts this as evidence too ("rediscovering a known heuristic … can also provide evidence").
 - **What remains uncertain either way:** whether hiding empty bins changes what the LLM proposes or only what gets selected. Read a sample of `candidates.jsonl` to tell them apart.
 
@@ -83,7 +84,8 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
   - Hence more seeds better on train and `test_id_5k`, **and** more seeds worse on `test_shape_k5`.
 - **What counts as an effect:** the descriptive seed counts and median discovery eval, and per-seed verdicts on `test_id_5k` and `test_shape_k5`.
 - **If confirmed, we claim:** the fresh-bin habit comes partly from the prompt: the LLM exploits options it is told about, and that gain and that failure come together.
-- **If not confirmed, we claim:** the bet comes from selection pressure on this training set, not from what the LLM is told. Tuned Best Fit supports this reading, since it finds the bet with no prompt at all.
+- **If not confirmed, we claim** (fresh-bin seeds about the baseline's rate, 2–7 of 10): the bet comes from selection pressure on this training set, not from what the LLM is told. Tuned Best Fit supports this reading, since it finds the bet with no prompt at all.
+- **If the opposite happens** (0–1 of 10 fresh-bin seeds): telling the LLM about empty bins makes it treat them as a last resort, as Best Fit does, so the baseline's bet needed the LLM *not* to know the rule. Fewer seeds should then be worse on `test_shape_k5`.
 - **What remains uncertain either way:**
   - **Which addition caused it:** an effect can't be pinned on the empty-bin clause alone, since the task framing changed too. Claim "task framing + bin rules", not "telling it about empty bins".
   - **Seed counts:** with 10 seeds, 3/6 vs 8/10 or 9/10 can still be chance (p ≥ 0.12, see the shared rules). Only 0/10 or 10/10 counts as significant on its own.
