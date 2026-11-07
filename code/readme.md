@@ -257,12 +257,17 @@ final_eval:
     [
       val,
       test_id_5k,
+      test_size_1k,
       test_size_10k,
+      test_cap200,
       test_cap500,
       test_cap500_scaled,
+      test_scale25,
+      test_scale65,
       test_shape_k1.5,
       test_shape_k5,
       test_uniform,
+      test_control,
     ]
   timeout_seconds: 900
 ```
@@ -490,15 +495,20 @@ Before the full runs:
 | -------------------- | ----------------- | -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `train`              | 32 × 200–2000     | 100      | Weibull(3) × 45   | the only set the search sees                                                                                                                                 |
 | `val`                | 10 × 1000         | 100      | Weibull(3) × 45   | choosing between configurations (e.g. models, prompts); never seen by the search. Within a run, the best program is picked on training, as in the EoH papers |
-| `test_id_5k`         | 5 × 5000          | 100      | Weibull(3) × 45   | in-distribution (FunSearch/EoH standard)                                                                                                                     |
-| `test_size_10k`      | 5 × 10000         | 100      | Weibull(3) × 45   | size shift                                                                                                                                                   |
-| `test_cap500`        | 5 × 5000          | 500      | Weibull(3) × 45   | bigger bins, same items (BF/FF/EoH seed 0 within 0.1 pp; EoH free-tier seed 11 fails here, see §13)                                                                                                   |
-| `test_cap500_scaled` | 5 × 5000          | 500      | Weibull(3) × 225  | everything ×5: scale-invariance check                                                                                                                        |
-| `test_shape_k1.5`    | 5 × 5000          | 100      | Weibull(1.5) × 45 | wider spread of item sizes                                                                                                                                   |
-| `test_shape_k5`      | 5 × 5000          | 100      | Weibull(5) × 45   | tightly clustered item sizes                                                                                                                                 |
-| `test_uniform`       | 5 × 1000          | 150      | Uniform[20, 100]  | different distribution and capacity                                                                                                                          |
+| `test_id_5k`         | 10 × 5000         | 100      | Weibull(3) × 45   | in-distribution (FunSearch/EoH standard)                                                                                                                     |
+| `test_size_1k`       | 10 × 1000         | 100      | Weibull(3) × 45   | size shift (smaller); its own instances, since `val` is used to choose between runs                                                                          |
+| `test_size_10k`      | 10 × 10000        | 100      | Weibull(3) × 45   | size shift                                                                                                                                                   |
+| `test_cap200`        | 10 × 5000         | 200      | Weibull(3) × 45   | bigger bins, same items (midpoint of the 100 → 200 → 500 series)                                                                                             |
+| `test_cap500`        | 10 × 5000         | 500      | Weibull(3) × 45   | bigger bins, same items (BF/FF/EoH seed 0 within 0.1 pp; EoH free-tier seed 11 fails here, see §13)                                                                                                   |
+| `test_cap500_scaled` | 10 × 5000         | 500      | Weibull(3) × 225  | everything ×5: scale-invariance check                                                                                                                        |
+| `test_scale25`       | 10 × 5000         | 100      | Weibull(3) × 25   | smaller items (~22% of a bin; training ~40%)                                                                                                                 |
+| `test_scale65`       | 10 × 5000         | 100      | Weibull(3) × 65   | bigger items (~58% of a bin). 63% exceed half a bin, so read excess over L2 (#10)                                                                            |
+| `test_shape_k1.5`    | 10 × 5000         | 100      | Weibull(1.5) × 45 | wider spread of item sizes                                                                                                                                   |
+| `test_shape_k5`      | 10 × 5000         | 100      | Weibull(5) × 45   | tightly clustered item sizes                                                                                                                                 |
+| `test_uniform`       | 10 × 1000         | 150      | Uniform[20, 100]  | generated like OR-Library's binpack1–4: different distribution, capacity and size                                                                            |
+| `test_control`       | 10 × 1000         | 100      | Uniform[51, 100]  | control: every item is over half a bin, so every rule must use one bin per item; any difference is a scoring bug                                             |
 
-Each test set changes one thing from training, so a failure can be attributed to that change. The spec is frozen at G2: changing a set changes its data.
+Each test set changes one thing from training, so a failure can be attributed to that change. The exceptions are `test_cap500_scaled` (capacity and item sizes ×5 together, on purpose), `test_uniform` (distribution, capacity and size) and the control set. Every test set has 10 instances, so a rule that beats Best Fit on all of them is significant on the sign test (p = 0.002; with 5 it could not go below 0.0625). The spec is frozen (#12): changing a set changes its data.
 
 ---
 

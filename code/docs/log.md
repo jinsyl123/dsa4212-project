@@ -13,6 +13,13 @@ One entry per decision that affects results. Newest at the top. Link the config 
 
 ---
 
+### 2026-11-05: test sets frozen (Jia Kang)
+
+- **Decision:** every test set has 10 instances (was 5). Added `test_size_1k`, `test_cap200`, `test_scale25`, `test_scale65` and the control set `test_control`, and listed all of them in `final_eval.sets`. `train`, `train_mixed`, `val` and the seed are unchanged, and instances 0–4 of the existing test sets are identical to before (checked against the old data).
+- **Why:** with 5 instances no rule can beat Best Fit significantly on the sign test (best case p = 0.0625; with 10, p = 0.002). `test_cap200` fills the capacity series 100 → 200 → 500; `test_scale25`/`test_scale65` shift item size relative to the bin in both directions. `test_size_1k` needs its own instances because `val` chooses between runs. The control set catches scoring bugs: every item is over half a bin, so every rule must use one bin per item (all six OpenRouter seeds' best programs and Best Fit do). On `test_scale65` L1 is ~10% too low, so its excess is read over L2 (#10); on every other test set L2 = L1.
+- **Alternatives considered:** the real OR-Library files (binpack5–8) and Beyond the Hype's datasets (skipped); renaming `test_uniform` to `test_orlib_like` (kept: a set's seed comes from its name, so renaming changes its data).
+- **Affects:** `configs/instances/v0.yaml`; `final_eval.sets` in `eoh_baseline.yaml` and `compare.yaml` (the ablation configs inherit it); every `final_*.csv` once re-scored. Discussion: #12.
+
 ### 2026-11-04: ablation settings locked (Nic)
 
 - **Decision:** run the main settings `abl_anyfit`, `abl_informed_rules` and `abl_mixed_shapes`, plus the control `control_randsample`. Seeds 0–4 each, `openrouter-gemini-3.5-flash-lite`, budget `full` (300 evals). The comparison row is the EoH baseline, seeds 0–5. Optional if time allows: `abl_informed_dist`, `abl_informed`. Fallback: `abl_no_m2`.

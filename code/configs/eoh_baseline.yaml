@@ -23,11 +23,16 @@ final_eval:
     [
       val,
       test_id_5k,
+      test_size_1k,
       test_size_10k,
+      test_cap200,
       test_cap500,
       test_cap500_scaled,
+      test_scale25,
+      test_scale65,
       test_shape_k1.5,
       test_shape_k5,
       test_uniform,
+      test_control,
     ]
   timeout_seconds: 900
