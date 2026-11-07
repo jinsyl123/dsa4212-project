@@ -433,9 +433,10 @@ Run one with a `check` budget first, then in full, then score it (no `--llm` nee
 ```bash
 python pipeline/run_experiment.py --config configs/abl_anyfit.yaml --budget check
 python pipeline/run_experiment.py --config configs/abl_anyfit.yaml
-python pipeline/evaluate_final.py --config configs/abl_anyfit.yaml
-python pipeline/summarise.py --config configs/abl_anyfit.yaml
+bash pipeline/score.sh abl_anyfit           # all scoring steps, no LLM calls
 ```
+
+`score.sh` runs every scoring step in a fixed order: tuned Best Fit retuned in the setting, `evaluate_final`, `check_integrity`, `diagnose`, `paired_stats`, `summarise`. All of them are deterministic. To check that committed scores reproduce on your machine, run `bash pipeline/score.sh --check abl_anyfit abl_informed_rules`. It fails, listing the files, if any output differs from the commit.
 
 Before the full runs:
 
