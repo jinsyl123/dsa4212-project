@@ -65,6 +65,8 @@ This is LLM4AD's template, character for character; the search starts from it. E
 
 **The metric: excess over the lower bound.** For each instance, the lower bound is `ceil(total item size / capacity)`, the fewest bins any packing could possibly use. Excess = (bins used − lower bound) / lower bound, averaged over instances. **Lower is better.** Plain Best Fit scores 4.751% on our training set: the floor any evolved heuristic must beat. The stronger bar is **tuned Best Fit** (`tuned_bf`, §9): Best Fit with three knobs tuned, without an LLM, under the same 300-evaluation budget.
 
+**Which bound.** The lower bound above is Martello and Toth's L1. It is a bound, not the true minimum: where many items exceed half a bin it falls well short (on `test_scale65`, about 10%). The search scores on L1, as FunSearch and EoH do (on `train` L2 equals L1). Held-out results in the report are excess over the tighter L2 bound on every set (#12 decision 7); see §11, Lower bound.
+
 ---
 
 ## 2. What the pipeline guarantees
@@ -472,9 +474,11 @@ Before the full runs:
 | `kind`                      | `evolved` (LLM search) or `tuned` (no-LLM tuner such as `tuned_bf`); `final_summary.csv` also has `baseline`                                                                                        |
 | `best_params`               | `tuned_bf` runs only: the winning knob setting                                                                                                                                                      |
 | `n_calls_not_evaluated`     | calls with no evaluation: candidates still being scored when the budget hit, unparseable replies, ReEvo reflections. 1–3 is normal for EoH.                                                         |
-| `mean_excess` / `sd_excess` | held-out excess, averaged within each run, then mean ± sd across seeds                                                                                                                              |
-| `delta_vs_bf_pp`            | difference from Best Fit in percentage points; **negative = better**                                                                                                                                |
-| `win_vs_bf`                 | share of instances where the program used fewer bins than Best Fit                                                                                                                                  |
+| `mean_excess` / `sd_excess` | held-out excess over **L1**, averaged within each run, then mean ± sd across seeds. L1 is the papers' bound (FunSearch, EoH), kept for comparison |
+| `best_run` / `worst_run`    | lowest / highest per-run mean excess across seeds, over **L1** |
+| `delta_vs_bf_pp`            | difference from Best Fit in percentage points over **L1**; **negative = better** |
+| `*_l2` twins                | `mean_excess_l2`, `sd_excess_l2`, `best_run_l2`, `worst_run_l2`, `delta_vs_bf_pp_l2`: the same over **L2**. **The report uses these** (#12 decision 7); they equal L1 except on `test_scale65` and `test_control` |
+| `win_vs_bf`                 | share of instances where the program used fewer bins than Best Fit; counts bins, so the same under L1 and L2                                                                                                                                  |
 
 **Reading search progress.** Individual candidates go up and down; only the best-so-far matters. Programs that look different can pack identically (e.g. `item - bins` and `-(bins - item)`), so many candidates share exactly the same score. Use the diagnostic in §12 to tell a normal plateau from a search that isn't exploring.
 
@@ -491,7 +495,7 @@ Before the full runs:
 
 **Which convention each row uses.** Evolved programs are always scored in `evaluation.mode` (`funsearch` by default). The baseline rows in `final_summary.csv` use their classical AnyFit definitions, so Worst Fit is ~13% there but 148% in funsearch mode (on train). Best Fit and First Fit never open a fresh bin while a used bin has room, so the two conventions give them identical bins (`tests/test_diagnostics.py` checks the first part; the diagnostics summaries show identical scores on every set), so their rows compare directly. State this in the report. `pipeline/diagnose.py` rescores every program and baseline in both modes and reports `fresh_given_room`: the share of choices where a program put the item in an empty bin although a used bin had room.
 
-**Lower bound.** `ceil(sum(items) / capacity)` (Martello and Toth's L1), the bound used by FunSearch and EoH. It is not the true optimum, so part of every heuristic's excess is unavoidable.
+**Lower bound.** `ceil(sum(items) / capacity)` (Martello and Toth's L1), the bound used by FunSearch and EoH. It is not the true optimum, so part of every heuristic's excess is unavoidable. The search and `excess` always use L1, so our numbers stay comparable with the papers. `evaluate_final.py` also writes Martello and Toth's tighter L2 bound (`lb_l2`, `excess_l2` per instance; `mean_excess_l2` in `final_summary.csv`). L2 counts that two items over half a bin can never share one. It is there for `test_scale65` (issue #12), where 63% of items exceed half a bin: Best Fit is 10.2% over L1 but 0.4% over L2, so L1 would make every rule look far worse than it is. L2 is also tighter on the control set `test_control`, where every rule must be exactly 0% over L2. On every other test set L2 equals L1. The report uses excess over L2 on every set (#12 decision 7): `summarise.py`'s held-out table and test-set figure are on L2, and a second table shows L1 for the sets where it differs (found from the data), for comparison with the papers. Older results without the L2 columns are filled in by `summarise.py`, no need to rerun `evaluate_final.py`.
 
 **Formatting rules.** With `format_hint: true`, every prompt from every method ends with short rules: one complete function, the whole `def` line on one line, no helper functions, numpy only. LLM4AD's parser silently drops candidates with multi-line signatures and evolves the _wrong_ function when a helper comes first; the rules prevent both. The text is identical for all methods (fair), recorded in each `config.json`, and is our one deviation from LLM4AD's prompts. Mention it in the report.
 
