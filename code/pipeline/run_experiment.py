@@ -4,11 +4,13 @@ Usage:
     python pipeline/run_experiment.py --config configs/eoh_baseline.yaml --methods eoh --seeds 0 1
 Each run writes to results/<experiment>/<label>/seed<k>/ (see readme.md for the file list).
 Finished runs (with summary.json) are skipped unless --force is given.
+Methods in TUNERS (tuned_bf) use no LLM: they tune a baseline's knobs with the same max_evals.
 """
 from __future__ import annotations
 
 import argparse
 import contextlib
+import csv
 import json
 import logging
 import platform
@@ -25,7 +27,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from obpevo import config as C, instances, methods, task as T
+from obpevo import config as C, core, instances, integrity, methods, task as T, tuned_bf
 from obpevo.llm import BudgetExhausted, LoggedLLM, make_backend
 from obpevo.recorder import EvalRecorder
 
@@ -146,7 +148,7 @@ def run_one(cfg, m: dict, seed: int, train: list[dict], out: Path, verbose: bool
                     cfg["llm"]["price_in_per_1m"], cfg["llm"]["price_out_per_1m"], prompt_suffix=suffix)
     task = T.OBPTask(train, run_dir, ev["mode"], ev["timeout_seconds"], task_description(cfg))
 
-    meta = dict(experiment=cfg["experiment"], label=m["label"], method=m["name"], seed=seed,
+    meta = dict(experiment=cfg["experiment"], label=m["label"], method=m["name"], kind="evolved", seed=seed,
                 llm_name=cfg["llm"].get("name"), llm_provider=cfg["llm"].get("provider") or cfg["llm"].get("backend"),
                 llm_model=cfg["llm"]["model"], budget_name=b.get("name"), mode=ev["mode"],
                 train_set=ev["train_set"], n_train=len(train), max_evals=b["max_evals"], max_tokens=b["max_tokens"])
@@ -175,6 +177,71 @@ def run_one(cfg, m: dict, seed: int, train: list[dict], out: Path, verbose: bool
     return finalize(run_dir, meta)
 
 
+# Baselines tuned without an LLM, under the same max_evals as the LLM methods: method name -> function returning
+# an iterator of scored tries (it raises on bad params when called, before any try is scored)
+TUNERS = {"tuned_bf": tuned_bf.tune}
+
+
+def run_tuned(cfg, m: dict, seed: int, train: list[dict], out: Path) -> dict:
+    """Run a no-LLM tuner (e.g. tuned Best Fit) as one (method x seed) run. Writes the same files as an LLM run
+    (llm_calls.csv with a header only), so evaluate_final and summarise treat it like any other method."""
+    run_dir = out / m["label"] / f"seed{seed}"
+    b, ev = cfg["budget"], cfg["evaluation"]
+    # Set up the tries before touching the run folder: a bad `params` (e.g. `hi_max: 30` outside `space:`, or an
+    # unknown key inside it) raises here, so no half-written run is left behind to be skipped as done next time
+    tries = TUNERS[m["name"]](train, seed, b["max_evals"], ev["mode"], **m["params"])
+    reset_run_dir(run_dir)
+    meta = dict(experiment=cfg["experiment"], label=m["label"], method=m["name"], kind="tuned", seed=seed,
+                llm_name=None, llm_provider=None, llm_model=None, budget_name=b.get("name"), mode=ev["mode"],
+                train_set=ev["train_set"], n_train=len(train), max_evals=b["max_evals"], max_tokens=b["max_tokens"])
+    (run_dir / "config.json").write_text(json.dumps(dict(meta=meta, method_kwargs=m["params"], config=cfg,
+                                                         versions=versions()), indent=2, default=str))
+    (run_dir / "llm_calls.csv").write_text(",".join(LoggedLLM.FIELDS) + "\n")
+    per = run_dir / "per_instance"
+    per.mkdir(exist_ok=True)
+
+    t0, stop = time.time(), "budget:evals"                       # a tuner always uses its full evaluation budget
+    with open(run_dir / "evals.csv", "w", newline="") as fe, open(run_dir / "candidates.jsonl", "w") as fc:
+        w = csv.writer(fe)
+        w.writerow(EvalRecorder.FIELDS)
+        try:
+            for r in tries:
+                h, src = T.code_hash(r["program"]), r["program"]
+                score = core.score(r["rows"]) if r["status"] == "ok" else None
+                w.writerow([r["eval"], round(r["t_start"], 3), round(r["wall_s"], 3), h, r["status"],
+                            "" if score is None else score, "" if score is None else -score,
+                            len(src), src.count("\n") + 1, r["error"][:200], integrity.flag_str(src)])
+                fe.flush()                                       # so progress can be read mid-run
+                fc.write(json.dumps(dict(eval=r["eval"], code_hash=h, status=r["status"], score=score,
+                                         params=r["params"], program=src)) + "\n")
+                (per / f"{h}.json").write_text(json.dumps(dict(status=r["status"], score=score, rows=r["rows"]),
+                                                          default=float))
+                if b.get("max_minutes") and time.time() - t0 > 60 * b["max_minutes"]:
+                    stop = "budget:wall_clock"
+                    break
+        except Exception:
+            stop = "error"
+            (run_dir / "error.txt").write_text(traceback.format_exc())
+    meta.update(stop_reason=stop, wall_minutes=round((time.time() - t0) / 60, 2))
+    summary = finalize(run_dir, meta)
+    if summary["best_eval"] is not None:                         # record the winning knobs next to the program
+        cands = [json.loads(l) for l in (run_dir / "candidates.jsonl").read_text().splitlines()]
+        summary["best_params"] = next(c["params"] for c in cands if c["eval"] == summary["best_eval"])
+        (run_dir / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
+    return summary
+
+
+def write_runs_index(out: Path) -> pd.DataFrame:
+    """runs_index.csv: one row per finished run in `out` (its summary.json). Runs saved before `kind` was
+    recorded are LLM runs (tuned runs have always set it), so a missing kind reads as "evolved"."""
+    idx = pd.DataFrame([json.loads(p.read_text()) for p in sorted(out.glob("*/seed*/summary.json"))])
+    if len(idx):
+        kind = idx.pop("kind").fillna("evolved") if "kind" in idx else "evolved"
+        idx.insert(idx.columns.get_loc("method") + 1, "kind", kind)          # same place as in summary.json
+    idx.to_csv(out / "runs_index.csv", index=False)
+    return idx
+
+
 def main(config, methods=None, seeds=None, force=False, verbose=False, overrides=None,
          llm=None, budget=None, experiment=None) -> pd.DataFrame:
     """Run every (method x seed) in `config`; returns the runs index. Callable from a notebook.
@@ -195,15 +262,13 @@ def main(config, methods=None, seeds=None, force=False, verbose=False, overrides
         if (out / m["label"] / f"seed{s}" / "summary.json").exists() and not force:
             print(f"  skip {m['label']} seed{s} (done)")
             continue
-        r = run_one(cfg, m, s, train, out, verbose)
+        r = run_tuned(cfg, m, s, train, out) if m["name"] in TUNERS else run_one(cfg, m, s, train, out, verbose)
         best = "none" if r["best_train_excess"] is None else f"{r['best_train_excess']:.4f}"
         print(f"  {m['label']:>12} seed{s}: {r['n_evals']} evals ({r['n_ok']} ok, {r['n_error']} err, {r['n_timeout']} timeout) "
               f"| {r['n_llm_calls']} calls, {r['prompt_tokens'] + r['completion_tokens']:,} tokens | best train excess {best} "
               f"| {r['stop_reason']} | {r['wall_minutes']} min")
 
-    # index of all finished runs in this experiment
-    idx = pd.DataFrame([json.loads(p.read_text()) for p in sorted(out.glob("*/seed*/summary.json"))])
-    idx.to_csv(out / "runs_index.csv", index=False)
+    idx = write_runs_index(out)
     print(f"Wrote {out / 'runs_index.csv'} ({len(idx)} runs)")
     return idx
 
