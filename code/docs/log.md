@@ -21,6 +21,7 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Affects:** `configs/abl_*.yaml`, `configs/control_randsample.yaml`, `results/<setting>/`. Plan and evidence: #7. Claims frozen before scoring: #15.
 
 ### 2026-11-01: integrity checks on candidates, flag only (Jin)
+
 - **Decision:** `obpevo/integrity.py` parses every candidate with `ast` and records rule violations (non-numpy imports, randomness incl. `hash()`/`id()`/clock, `exec`/`eval`/`open`, numpy file I/O, dunder access, `global`, attribute assignment, module-level state, mutable defaults) in a new `integrity` column of `evals.csv`; `summary.json` gets `n_flagged` and `best_integrity`. `check_integrity.py` rescores each best program four times (usual order twice, one shuffled order twice), each in a fresh spawned process with its own hash and RNG seeds. Flagged programs are still scored and can still win.
 - **Why:** the brief asks to keep scoring outside the code being evolved. Flagging instead of dropping keeps every method's search unchanged (fair) and lets us report how often each rule is hit. All best programs committed at the time (25 Oct seed 0, OpenRouter seeds 0–2) are clean: no flags, 0 repeat and 0 shuffle mismatches on train and val.
 - **Limits (from an independent review):** LLM4AD keeps only the function body of each reply, so module-level rules rarely fire in our runs; an empty column means "no body-level violation". Static checks can be bypassed (e.g. a helper function mutating shared state); the rescoring catches such cases only if they change a bin count. Fresh spawned processes are needed because forked children share the parent's hash seed, which hid `hash()`-based nondeterminism in the first version.
@@ -28,6 +29,7 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Affects:** `evals.csv` (new column, at the end), `summary.json`, `results/*/integrity.csv`. No score changes.
 
 ### 2026-10-31: fresh-bin diagnostic, scores unchanged (Jin; updated 2026-11-04 after Nic's review)
+
 - **Decision:** `obpevo/diagnostics.py` + `diagnose.py` rescore best programs and the BF/FF/WF baselines in both packing modes and add `fresh_bin_rate` (share of items put in an empty bin while a used bin had room). Separate from `core.py`; tests check it packs identically to `core.py` in both modes.
 - **Why:** tests the explanation for EoH seed 0's k=5 failure. Seed 0 (`eoh_baseline_25oct`) opens a fresh bin in ~36% of choices on train (57% on k=5); BF/FF never do. In anyfit mode k=5 excess falls 38.9% → 8.1%, but EoH also loses most of its in-distribution lead (train 3.79% → 4.34%, BF 4.75%). Seed 11 (`eoh_freetier_seed11`, a separate run: free Gemini, different date, older pipeline, 62 of 363 calls hit 429s but all 300 evals ran) opens fresh bins less (~9%), gains less (train 4.48%), has no k=5 failure but fails on `test_cap500` (6.12% vs BF 0.50%); in anyfit it matches BF on every set. The OpenRouter seeds 0–2 never open a fresh bin (`fresh_given_room` = 0 everywhere), so funsearch = anyfit for them, and they have no failure. In our five runs, the failures come only from programs that open fresh bins; the OpenRouter programs never do. The anyfit comparison shows what these programs do, not why some runs learn it (the two groups also differ in provider, pipeline version and date).
 - **Seed 11's mechanism (Nic):** its score is `cos(π · remaining / (1.618 · item))`. Cosine repeats, so the score peaks at an exact fit and again whenever ~3.2×, 6.5×, … the item is left over. For a 45-unit item: exact fit +1.00, 146 left +1.00, an empty capacity-500 bin (455 left) +0.71, above many partly filled bins. At capacity 100 this rarely matters; at 500 empty bins often hit a peak. An example of an LLM heuristic that scores well in training for reasons unrelated to bin packing (the hard-coded golden ratio).
@@ -37,6 +39,7 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Update 2026-11-04:** OpenRouter seeds 3–5 (same setup) do open fresh bins, and seed 3 has a failure that is not a fresh-bin failure. See "ablation plan revised after seeds 3–5" below and readme §13.
 
 ### 2026-10-31: failed held-out instances scored as Next Fit (Jin)
+
 - **Decision:** in `evaluate_final`, an instance where a program errors or times out gets Next Fit's excess instead of `NaN`; `status` and `failed_frac` still record the failure.
 - **Why:** `NaN` drops out of the mean, so a program that fails often would look better than one that runs everywhere. Next Fit is worse than every sensible heuristic (it never beats Best Fit on any v0 instance), so a failure is not rewarded relative to any program worth reporting. It is not a strict floor: in funsearch mode a valid program that always opens a new bin uses more bins than Next Fit. No current run has failures, so no reported number changes.
 - **Alternatives considered:** leave `NaN` and report `failed_frac` only (mean still flattering); a fixed penalty (arbitrary scale).
@@ -84,3 +87,10 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Decision:** proposed keeping `openrouter-gemini-3.5-flash-lite` for every ablation run (Nic to confirm, #7). Run folders are now committed in full, and each run also saves every LLM prompt and response (`llm_calls.jsonl`).
 - **Why:** same model as the 6 baseline seeds (comparability); 0/1806 LLM errors vs 62/363 on the free tier; ~$0.17 per run. Full logs so every result can be traced to the programs and calls behind it (Nic, #7). Evidence for the per-seed explanations: `docs/baseline_findings.md`.
 - **Affects:** .gitignore, obpevo/llm.py, readme §10, #7.
+
+### 2026-11-07: incomplete runs are rerun, not scored (Nic)
+
+- **Decision:** a run that ends early for an infrastructure reason (`budget:llm_errors`, `error`, interrupted) is rerun in full with `--force`; only complete runs (the evaluation budget reached) are scored. The failed attempt stays in git history.
+- **Why:** the stop has nothing to do with the method; the rule is applied whatever the rerun scores.
+- **Applied to:** `abl_informed_rules` seed 6 (first attempt: 54 evals, network failure; kept in commit `1ef5ac5`).
+- **Affects:** `results/abl_informed_rules/eoh/seed6/`.

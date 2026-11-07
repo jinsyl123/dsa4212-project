@@ -1,46 +1,46 @@
-[2026-11-07 03:45:14] profile.py(258) : ====================================================================
-[2026-11-07 03:45:14] profile.py(259) : LLM Parameters
-[2026-11-07 03:45:14] profile.py(260) : --------------------------------------------------------------------
-[2026-11-07 03:45:14] profile.py(261) :   - LLM: LoggedLLM
-[2026-11-07 03:45:14] profile.py(264) :   - do_auto_trim: True
-[2026-11-07 03:45:14] profile.py(264) :   - debug_mode: False
-[2026-11-07 03:45:14] profile.py(264) :   - prompt_suffix: Formatting rules for your reply:
+[2026-11-07 12:23:59] profile.py(258) : ====================================================================
+[2026-11-07 12:23:59] profile.py(259) : LLM Parameters
+[2026-11-07 12:23:59] profile.py(260) : --------------------------------------------------------------------
+[2026-11-07 12:23:59] profile.py(261) :   - LLM: LoggedLLM
+[2026-11-07 12:23:59] profile.py(264) :   - do_auto_trim: True
+[2026-11-07 12:23:59] profile.py(264) :   - debug_mode: False
+[2026-11-07 12:23:59] profile.py(264) :   - prompt_suffix: Formatting rules for your reply:
 - If you are asked to describe the algorithm, write that description as one sentence on a single line inside braces {}, before the code.
 - Write the code as ONE complete Python function in a single ```python code block, keeping the function name requested above.
 - Put the whole `def` line, including all arguments, on a single line starting at the beginning of the line.
 - Use only numpy (imported as np) and Python built-ins. Do not define helper functions; put all logic inside the one function.
 - Do not add example usage, tests, or explanations after the code.
 - If you are asked only for hints or reflections, reply in plain text without code.
-[2026-11-07 03:45:14] profile.py(264) :   - backend: <obpevo.llm.OpenAICompatLLM object at 0x0000015C002B55A0>
-[2026-11-07 03:45:14] profile.py(264) :   - log_path: C:\Users\nicho\Documents\github\dsa4212-project\code\results\abl_informed_rules\eoh\seed6\llm_calls.csv
-[2026-11-07 03:45:14] profile.py(264) :   - max_tokens: 1500000
-[2026-11-07 03:45:14] profile.py(264) :   - deadline: 1794001514.235259
-[2026-11-07 03:45:14] profile.py(264) :   - price_in: 3e-07
-[2026-11-07 03:45:14] profile.py(264) :   - price_out: 2.5e-06
-[2026-11-07 03:45:14] profile.py(264) :   - lock: <unlocked _thread.lock object at 0x0000015C7F0A9440>
-[2026-11-07 03:45:14] profile.py(264) :   - calls: 0
-[2026-11-07 03:45:14] profile.py(264) :   - tokens: 0
-[2026-11-07 03:45:14] profile.py(264) :   - cost: 0.0
-[2026-11-07 03:45:14] profile.py(264) :   - exhausted: None
-[2026-11-07 03:45:14] profile.py(264) :   - fail_streak: 0
-[2026-11-07 03:45:14] profile.py(264) :   - max_fail_streak: 5
-[2026-11-07 03:45:14] profile.py(264) :   - linked_budget: <obpevo.recorder.EvalRecorder object at 0x0000015C0027B400>
-[2026-11-07 03:45:14] profile.py(264) :   - text_log_path: C:\Users\nicho\Documents\github\dsa4212-project\code\results\abl_informed_rules\eoh\seed6\llm_calls.jsonl
-[2026-11-07 03:45:14] profile.py(265) : ====================================================================
-[2026-11-07 03:45:14] profile.py(266) : Problem Parameters
-[2026-11-07 03:45:14] profile.py(267) : --------------------------------------------------------------------
-[2026-11-07 03:45:14] profile.py(268) :   - Problem: OBPTask
-[2026-11-07 03:45:14] profile.py(271) :   - task_description: Online 1D bin packing: items arrive one at a time and must be placed immediately; the goal is to minimise the number of bins used. Implement a function that scores the bins the current item fits into (remaining capacities, including empty bins); the item goes to the highest-scoring bin.
-[2026-11-07 03:45:14] profile.py(271) :   - use_numba_accelerate: False
-[2026-11-07 03:45:14] profile.py(271) :   - use_protected_div: False
-[2026-11-07 03:45:14] profile.py(271) :   - protected_div_delta: 1e-05
-[2026-11-07 03:45:14] profile.py(271) :   - random_seed: None
-[2026-11-07 03:45:14] profile.py(271) :   - timeout_seconds: 60
-[2026-11-07 03:45:14] profile.py(271) :   - exec_code: True
-[2026-11-07 03:45:14] profile.py(271) :   - safe_evaluate: True
-[2026-11-07 03:45:14] profile.py(271) :   - daemon_eval_process: False
-[2026-11-07 03:45:14] profile.py(271) :   - fork_proc: auto
-[2026-11-07 03:45:14] profile.py(271) :   - instances: [{'id': 'train_000', 'capacity': 100, 'items': array([49, 30, 51, ..., 35, 25, 58])}, {'id': 'train_001', 'capacity': 100, 'items': array([24, 30, 43, ..., 36, 41, 62])}, {'id': 'train_002', 'capacity': 100, 'items': array([27, 55, 35, ..., 51, 29, 65])}, {'id': 'train_003', 'capacity': 100, 'items': array([54, 58, 17, ..., 66, 48, 25])}, {'id': 'train_004', 'capacity': 100, 'items': array([13, 26, 51, 74, 42, 35, 37, 47, 26, 25, 34, 59, 44, 31, 49, 32, 44,
+[2026-11-07 12:23:59] profile.py(264) :   - backend: <obpevo.llm.OpenAICompatLLM object at 0x000002D653C7F5E0>
+[2026-11-07 12:23:59] profile.py(264) :   - log_path: C:\Users\nicho\Documents\github\dsa4212-project\code\results\abl_informed_rules\eoh\seed6\llm_calls.csv
+[2026-11-07 12:23:59] profile.py(264) :   - max_tokens: 1500000
+[2026-11-07 12:23:59] profile.py(264) :   - deadline: 1794032638.8483107
+[2026-11-07 12:23:59] profile.py(264) :   - price_in: 3e-07
+[2026-11-07 12:23:59] profile.py(264) :   - price_out: 2.5e-06
+[2026-11-07 12:23:59] profile.py(264) :   - lock: <unlocked _thread.lock object at 0x000002D6557C4B40>
+[2026-11-07 12:23:59] profile.py(264) :   - calls: 0
+[2026-11-07 12:23:59] profile.py(264) :   - tokens: 0
+[2026-11-07 12:23:59] profile.py(264) :   - cost: 0.0
+[2026-11-07 12:23:59] profile.py(264) :   - exhausted: None
+[2026-11-07 12:23:59] profile.py(264) :   - fail_streak: 0
+[2026-11-07 12:23:59] profile.py(264) :   - max_fail_streak: 5
+[2026-11-07 12:23:59] profile.py(264) :   - linked_budget: <obpevo.recorder.EvalRecorder object at 0x000002D6558AF550>
+[2026-11-07 12:23:59] profile.py(264) :   - text_log_path: C:\Users\nicho\Documents\github\dsa4212-project\code\results\abl_informed_rules\eoh\seed6\llm_calls.jsonl
+[2026-11-07 12:23:59] profile.py(265) : ====================================================================
+[2026-11-07 12:23:59] profile.py(266) : Problem Parameters
+[2026-11-07 12:23:59] profile.py(267) : --------------------------------------------------------------------
+[2026-11-07 12:23:59] profile.py(268) :   - Problem: OBPTask
+[2026-11-07 12:23:59] profile.py(271) :   - task_description: Online 1D bin packing: items arrive one at a time and must be placed immediately; the goal is to minimise the number of bins used. Implement a function that scores the bins the current item fits into (remaining capacities, including empty bins); the item goes to the highest-scoring bin.
+[2026-11-07 12:23:59] profile.py(271) :   - use_numba_accelerate: False
+[2026-11-07 12:23:59] profile.py(271) :   - use_protected_div: False
+[2026-11-07 12:23:59] profile.py(271) :   - protected_div_delta: 1e-05
+[2026-11-07 12:23:59] profile.py(271) :   - random_seed: None
+[2026-11-07 12:23:59] profile.py(271) :   - timeout_seconds: 60
+[2026-11-07 12:23:59] profile.py(271) :   - exec_code: True
+[2026-11-07 12:23:59] profile.py(271) :   - safe_evaluate: True
+[2026-11-07 12:23:59] profile.py(271) :   - daemon_eval_process: False
+[2026-11-07 12:23:59] profile.py(271) :   - fork_proc: auto
+[2026-11-07 12:23:59] profile.py(271) :   - instances: [{'id': 'train_000', 'capacity': 100, 'items': array([49, 30, 51, ..., 35, 25, 58])}, {'id': 'train_001', 'capacity': 100, 'items': array([24, 30, 43, ..., 36, 41, 62])}, {'id': 'train_002', 'capacity': 100, 'items': array([27, 55, 35, ..., 51, 29, 65])}, {'id': 'train_003', 'capacity': 100, 'items': array([54, 58, 17, ..., 66, 48, 25])}, {'id': 'train_004', 'capacity': 100, 'items': array([13, 26, 51, 74, 42, 35, 37, 47, 26, 25, 34, 59, 44, 31, 49, 32, 44,
        46, 21, 40, 60, 64, 28, 44, 36, 31, 35, 67, 29, 44, 53, 36, 44, 32,
        20, 29, 59, 14, 54, 32, 28, 24, 22, 54, 36, 39, 34, 53, 48, 38, 15,
        15, 67, 28, 24, 31, 68, 61, 33,  9, 56, 16, 16, 13, 17, 53, 49, 31,
@@ -275,26 +275,26 @@
        41, 53, 29, 30,  5, 56, 38, 49, 21, 34, 41, 33, 41, 41,  4, 71, 37,
        60, 46, 47, 48, 27, 83, 45, 63, 33, 41, 40, 40, 42, 51, 51, 22, 29,
        54, 24])}]
-[2026-11-07 03:45:14] profile.py(271) :   - mode: funsearch
-[2026-11-07 03:45:14] profile.py(271) :   - out_dir: C:\Users\nicho\Documents\github\dsa4212-project\code\results\abl_informed_rules\eoh\seed6\per_instance
-[2026-11-07 03:45:14] profile.py(273) : ====================================================================
-[2026-11-07 03:45:14] profile.py(274) : Method Parameters
-[2026-11-07 03:45:14] profile.py(275) : --------------------------------------------------------------------
-[2026-11-07 03:45:14] profile.py(276) :   - Method: EoH
-[2026-11-07 03:45:14] profile.py(280) :   - _max_generations: None
-[2026-11-07 03:45:14] profile.py(280) :   - _max_sample_nums: 300
-[2026-11-07 03:45:14] profile.py(280) :   - _pop_size: 10
-[2026-11-07 03:45:14] profile.py(280) :   - _selection_num: 2
-[2026-11-07 03:45:14] profile.py(280) :   - _use_e2_operator: True
-[2026-11-07 03:45:14] profile.py(280) :   - _use_m1_operator: True
-[2026-11-07 03:45:14] profile.py(280) :   - _use_m2_operator: True
-[2026-11-07 03:45:14] profile.py(280) :   - _num_samplers: 2
-[2026-11-07 03:45:14] profile.py(280) :   - _num_evaluators: 2
-[2026-11-07 03:45:14] profile.py(280) :   - _resume_mode: False
-[2026-11-07 03:45:14] profile.py(280) :   - _debug_mode: False
-[2026-11-07 03:45:14] profile.py(280) :   - _multi_thread_or_process_eval: thread
-[2026-11-07 03:45:14] profile.py(280) :   - _function_to_evolve_name: priority
-[2026-11-07 03:45:14] profile.py(280) :   - _tot_sample_nums: 0
-[2026-11-07 03:45:14] profile.py(280) :   - _initial_sample_nums_max: 20
-[2026-11-07 03:45:14] profile.py(280) :   - _evaluation_executor: <concurrent.futures.thread.ThreadPoolExecutor object at 0x0000015C002F8A30>
-[2026-11-07 03:45:14] profile.py(282) : =====================================================================
+[2026-11-07 12:23:59] profile.py(271) :   - mode: funsearch
+[2026-11-07 12:23:59] profile.py(271) :   - out_dir: C:\Users\nicho\Documents\github\dsa4212-project\code\results\abl_informed_rules\eoh\seed6\per_instance
+[2026-11-07 12:23:59] profile.py(273) : ====================================================================
+[2026-11-07 12:23:59] profile.py(274) : Method Parameters
+[2026-11-07 12:23:59] profile.py(275) : --------------------------------------------------------------------
+[2026-11-07 12:23:59] profile.py(276) :   - Method: EoH
+[2026-11-07 12:23:59] profile.py(280) :   - _max_generations: None
+[2026-11-07 12:23:59] profile.py(280) :   - _max_sample_nums: 300
+[2026-11-07 12:23:59] profile.py(280) :   - _pop_size: 10
+[2026-11-07 12:23:59] profile.py(280) :   - _selection_num: 2
+[2026-11-07 12:23:59] profile.py(280) :   - _use_e2_operator: True
+[2026-11-07 12:23:59] profile.py(280) :   - _use_m1_operator: True
+[2026-11-07 12:23:59] profile.py(280) :   - _use_m2_operator: True
+[2026-11-07 12:23:59] profile.py(280) :   - _num_samplers: 2
+[2026-11-07 12:23:59] profile.py(280) :   - _num_evaluators: 2
+[2026-11-07 12:23:59] profile.py(280) :   - _resume_mode: False
+[2026-11-07 12:23:59] profile.py(280) :   - _debug_mode: False
+[2026-11-07 12:23:59] profile.py(280) :   - _multi_thread_or_process_eval: thread
+[2026-11-07 12:23:59] profile.py(280) :   - _function_to_evolve_name: priority
+[2026-11-07 12:23:59] profile.py(280) :   - _tot_sample_nums: 0
+[2026-11-07 12:23:59] profile.py(280) :   - _initial_sample_nums_max: 20
+[2026-11-07 12:23:59] profile.py(280) :   - _evaluation_executor: <concurrent.futures.thread.ThreadPoolExecutor object at 0x000002D653D8AFE0>
+[2026-11-07 12:23:59] profile.py(282) : =====================================================================

@@ -1,4 +1,4 @@
-# eval 47, train excess 0.04629
+# eval 275, train excess 0.04512
 
 import numpy as np
 
@@ -11,10 +11,9 @@ def priority(item: float, bins: np.ndarray) -> np.ndarray:
         Array of same size as bins with priority score of each bin.
     """
     rem = bins - item
-    scores = np.where(rem >= 0, 1.0 / (1.0 + rem / item), -np.inf)
-    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0
-    empty_mask = (bins == max_cap) & (rem >= 0)
-    if np.any(empty_mask):
-        scores[np.argmax(empty_mask)] = 0.5
+    valid = rem >= 0
+    indices = np.arange(len(bins), dtype=float) + 1.0
+    used = 1.0 - (rem / np.maximum(bins, 1e-8))
+    scores = np.where(valid, (used ** 2) / (rem + 0.05) - 0.05 * indices, -np.inf)
     return scores
 

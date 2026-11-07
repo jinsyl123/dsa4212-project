@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The new algorithm scores eligible bins using a polynomial decay of remaining capacity combined with a logarithmic penalty on the bin index to balance tight fits and earlier placements.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, 1.0 / (1.0 + rem**2) - 0.02 * np.log(indices + 1), -np.inf)\n    return scores\n\n",
+        "score": -0.045486404837132566
+    },
+    {
+        "algorithm": "{The new algorithm scores eligible bins by combining an exponential decay of the remaining capacity with a quadratic penalty on the bin index to heavily favor fuller and earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, np.exp(-0.5 * rem) - 0.01 * (indices ** 2), -np.inf)\n    return scores\n\n",
+        "score": -0.04569845076328216
+    },
+    {
+        "algorithm": "{The new algorithm scores bins using a power-law penalty on remaining capacity combined with an exponential bonus for utilizing earlier bins to achieve tight packing and low fragmentation.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, 1.0 / (np.power(rem, 1.5) + 1e-4) + 0.1 * np.exp(-0.1 * indices), -np.inf)\n    return scores\n\n",
+        "score": -0.04570132916649494
+    },
+    {
+        "algorithm": "{The new algorithm scores eligible bins using an exponential decay of remaining capacity combined with an inverse square root penalty on the bin index to prioritize tightly fitting and earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, np.exp(-rem) - 0.1 / np.sqrt(indices), -np.inf)\n    return scores\n\n",
+        "score": -0.045751057105988355
+    },
+    {
+        "algorithm": "{The new algorithm scores eligible bins by balancing an inverse power of the remaining capacity with a linear penalty on the bin index to favor tighter fits and earlier placement.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, 1.0 / (rem + 0.1) - 0.05 * indices, -np.inf)\n    return scores\n\n",
+        "score": -0.04576241065783822
+    },
+    {
+        "algorithm": "{The new algorithm scores eligible bins by using an inverse power function of the remaining capacity combined with a linear penalty on the bin index to prioritize tighter fits and earlier placement.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, 1.0 / (1.0 + rem) - 0.05 * indices, -np.inf)\n    return scores\n\n",
+        "score": -0.045857641123206346
+    },
+    {
+        "algorithm": "{The new algorithm scores eligible bins using a power-law decay of remaining capacity combined with a linear penalty on the bin index to favor fuller and earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, (rem + 1.0) ** (-1.5) - 0.05 * indices, -np.inf)\n    return scores\n\n",
+        "score": -0.04586339238854705
+    },
+    {
+        "algorithm": "{The new algorithm scores bins using an exponential decay of remaining capacity combined with a logarithmic penalty on the bin index to prioritize tightly packed and earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, np.exp(-rem) - 0.02 * np.log(indices), -np.inf)\n    return scores\n\n",
+        "score": -0.04592370241746891
+    },
+    {
+        "algorithm": "{The new algorithm scores eligible bins by combining an exponential decay of remaining capacity with a scaled penalty for the bin's index to favor tighter fits and earlier placements.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, np.exp(-rem) - 0.01 * indices, -np.inf)\n    return scores\n\n",
+        "score": -0.04596428683305333
+    },
+    {
+        "algorithm": "{The new algorithm scores bins using a square-root penalty on remaining capacity combined with a linear positional bonus to encourage packing into earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    indices = np.arange(len(bins)) + 1\n    scores = np.where(valid, 1.0 / (np.sqrt(rem) + 1e-4) - 0.05 * indices, -np.inf)\n    return scores\n\n",
+        "score": -0.04598746687644874
+    }
+]
