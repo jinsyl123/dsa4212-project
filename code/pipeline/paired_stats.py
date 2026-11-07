@@ -14,9 +14,12 @@ Outputs: results/<experiment>/paired_stats.csv, one row per (rule, seed, set, re
                            excludes 0 while p = 0.125. With 10 instances per test set (#12), 10-0 gives p = 0.002
                            and 9-1 gives 0.021; with 5, nothing could reach p < 0.05 (5-0 gives 0.0625).
 Each seed is compared on its own: runs of the same method can differ a lot, and a mean over seeds hides that.
-A reference with several seeds (tuned Best Fit) is averaged per instance first.
+A reference with several seeds (tuned Best Fit) is averaged per instance first, so against it wins/ties/losses
+compare with that seed-averaged excess, not with one real packing: a rule identical to one tuned seed rarely shows
+as a tie. Against a single-seed reference (Best Fit) they count bins.
 Excess is over the L2 bound by default (#12 decision 7), falling back to L1 for results without the L2 columns;
---metric excess compares over L1 instead. Wins/ties/losses count bins, so only the pp columns depend on the bound.
+--metric excess compares over L1 instead. Against a single-seed reference only the pp columns depend on the bound.
+An instance the reference wasn't scored on is left out of that comparison (n drops), with a warning.
 There is no correction for running many comparisons (rules x seeds x sets x references): treat single verdicts as
 descriptive and look for patterns across seeds and sets.
 """
@@ -71,6 +74,9 @@ def compare(df: pd.DataFrame, references=REFERENCES, n_boot: int = 10_000, metri
         for (kind, label, seed, set_name), g in df[df.label != ref_label].groupby(["kind", "label", "seed", "set"]):
             g = g.set_index(["set", "instance"]).sort_index()
             d = (g[metric] - ref.reindex(g.index)).dropna().to_numpy() * 100          # percentage points
+            if len(d) < len(g):
+                print(f"warning: {ref_label} lacks {len(g) - len(d)} of {len(g)} instances that {label} seed {seed} "
+                      f"was scored on in {set_name}; compared on n={len(d)} (rerun evaluate_final.py for both)")
             wins, losses = int((d < 0).sum()), int((d > 0).sum())
             lo, hi = bootstrap_ci(d, n_boot)
             p = sign_test(wins, losses)

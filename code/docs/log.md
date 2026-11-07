@@ -1,6 +1,6 @@
 # Decision log
 
-One entry per decision that affects results. Newest at the top. Link the config and the results folder.
+One entry per decision that affects results. Link the config and the results folder. Order: the entries down to 2026-10-25 are newest first; from "2026-10-31: LLM4AD version" on, new entries go at the bottom.
 
 ## Template
 
