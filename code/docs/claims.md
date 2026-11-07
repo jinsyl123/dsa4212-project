@@ -30,7 +30,7 @@ Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1
 |---|---|
 | Comparison row | EoH baseline, seeds 0–5 (`eoh_baseline.yaml`) |
 | Seeds per setting | **Ablation 1 (A1a, A1b): 10 (seeds 0–9)**, as run (#7). A2 and the control: 5 (seeds 0–4). Every seed run in full is scored; none is dropped |
-| References | Best Fit, and tuned Best Fit retuned in the same setting (#8), with the same seeds as the setting. A setting that changes neither `mode` nor the training set (A1b, control) leaves tuned Best Fit unchanged, so it uses the baseline's tuned Best Fit |
+| References | Best Fit, and tuned Best Fit retuned in the same setting (#8), with the same seeds as the setting. A setting that changes neither `mode` nor the training set (A1b, control) leaves tuned Best Fit unchanged: it is still retuned in its own folder, and seeds 0–5 must match the baseline's exactly (a determinism check) |
 | Sets | train, val (selection only, never reported as a test), and the test sets frozen in #12 |
 | Metric | excess over L2 (%) on every set (#12 decision 7, #10); fewer bins = better. Same as L1 except on `test_scale65` and `test_control`, so numbers stay comparable with FunSearch/EoH |
 | Per-seed verdict vs a reference | `paired_stats.py` (#13, scored with its code as of this freeze; if #13 changes before merging, rescore and note it in Amendments): **better / worse** only if the 95% bootstrap CI excludes 0 **and** sign-test p < 0.05; **tie** if identical on every instance; else **unclear** |
