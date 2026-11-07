@@ -1,0 +1,23 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm calculates priority as the remaining capacity after adding the item, assigning negative infinity to bins that cannot fit the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, remaining, -np.inf)\n\n",
+        "score": -0.13197905097018092,
+        "program": ""
+    },
+    {
+        "sample_order": 2,
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after adding the item to bins that have enough space, and negative infinity for bins that overflow.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "program": ""
+    },
+    {
+        "sample_order": 223,
+        "algorithm": "{The new algorithm computes priority using a sinusoidal oscillation based on the ratio of remaining capacity to total bin capacity, assigning negative infinity to bins that cannot accommodate the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    ratio = remaining / (bins + 1e-8)\n    return np.where(remaining >= 0, np.cos(2 * np.pi * ratio), -np.inf)\n\n",
+        "score": -0.04618449252264014,
+        "program": ""
+    }
+]
