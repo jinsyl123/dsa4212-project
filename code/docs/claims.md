@@ -5,7 +5,8 @@ and what we will conclude whichever way it goes. Once this file is merged, it is
 dated **Amendments** entry at the bottom, never as edits above. The report checks its claims against this file.
 
 Team agreement: "Freeze test sets **and the claim we'll make for each outcome** before the main searches"
-(decisions doc, "Agreed by default"). Owner: Jia Kang (claims doc). Written by: ___. Frozen on: ___.
+(decisions doc, "Agreed by default"). Owner: Jia Kang (claims doc). Written by: Jin. Frozen on: ___ (the day #15 merges).
+Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1 run was scored; the commit timestamp is the record.
 
 ## What the course asks for (why this file exists)
 
@@ -28,15 +29,15 @@ Team agreement: "Freeze test sets **and the claim we'll make for each outcome** 
 | Item | Rule |
 |---|---|
 | Comparison row | EoH baseline, seeds 0–5 (`eoh_baseline.yaml`) |
-| Seeds per setting | 5 (seeds 0–4) |
+| Seeds per setting | **Ablation 1 (A1a, A1b): 10 (seeds 0–9)**, as run (#7). A2 and the control: 5 (seeds 0–4). Every seed run in full is scored; none is dropped |
 | References | Best Fit, and tuned Best Fit retuned in the same setting (#8) |
 | Sets | train, val (selection only, never reported as a test), and the test sets frozen in #12 |
 | Metric | excess over L2 (%) on every set (#12 decision 7, #10); fewer bins = better. Same as L1 except on `test_scale65` and `test_control`, so numbers stay comparable with FunSearch/EoH |
 | Per-seed verdict vs a reference | `paired_stats.py` (#13): **better / worse** only if the 95% bootstrap CI excludes 0 **and** sign-test p < 0.05; **tie** if identical on every instance; else **unclear** |
-| Setting-level effect | Descriptive only: the number of seeds (of 5) in each category, next to the baseline's (of 6). Even the most extreme split, 3/6 vs 0/5 or 5/5, gives Fisher p = 0.18, so **seed counts are never called significant**. Significance comes only from the per-seed paired verdicts above. |
+| Setting-level effect | The number of seeds in each category (of 10 for Ablation 1, of 5 otherwise), next to the baseline's (of 6), tested with a two-sided Fisher exact test vs the baseline. Against the baseline's 3/6, **only 0/10 or 10/10 reach p < 0.05** (p = 0.036; 1/10 or 9/10 give 0.12). With 5 seeds nothing can (0/5 or 5/5 gives 0.18), so A2 and control seed counts are descriptive only. Otherwise significance comes only from the per-seed paired verdicts above. |
 | Mechanism measure | `fresh_given_room` from `diagnose.py` (#5): share of placements that open an empty bin while a used one has room. A seed is a **fresh-bin seed** if it is > 0.01 on train |
 | Held-out sets used for claims | **in-distribution:** `test_id_5k`; **shift:** `test_shape_k1.5`, `test_shape_k5`, plus the other #12 sets as secondary. `train` is reported but not a claim (it is the set searched on). `test_control` (#16) is a scoring check, not a claim: every rule must be exactly 0% over L2 there |
-| Integrity | `check_integrity.py` (#6): flagged programs reported, not dropped |
+| Integrity | `check_integrity.py` (#6): flagged programs reported, not dropped. Runs stopped early by an error are rerun in full, not scored (`docs/log.md`); a run that hit the budget mid-evaluation (`abl_anyfit` seed 4, 299 of 300) counts as complete |
 
 **Baseline to compare against** (EoH, 6 seeds, `baseline_findings.md`): 3/6 fresh-bin seeds (3, 4, 5). Seeds 0–2
 behave like Best Fit (2 exactly; seed 2 Best Fit for small gaps, else First Fit). Seeds 4/5 beat Best Fit on train
@@ -62,7 +63,7 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **Question:** can EoH still beat Best Fit without the fresh-bin bet?
 - **Hypothesis and why:** part of EoH's gain does not need fresh bins. When seeds 4/5 are rescored with empty bins blocked, about half the train gain remains (4.31 vs Best Fit 4.75), and the k5 failure disappears (8.18 vs 8.25). Tuned Best Fit keeps almost none of its gain (4.65), so a 3-knob family cannot find this part, but an LLM might.
 - **Prediction:**
-  - At least 2 of 5 seeds are **better** than Best Fit on `test_id_5k`, by about 0.3–0.5 pp (half the baseline's ~1 pp).
+  - At least 4 of 10 seeds are **better** than Best Fit on `test_id_5k`, by about 0.3–0.5 pp (half the baseline's ~1 pp).
   - **No** seed is worse than Best Fit on `test_shape_k5` (the fresh-bin failure cannot happen).
   - Failures of seed 3's kind (k1.5) can still appear: they do not come from fresh bins.
   - The anyfit-retuned tuned Best Fit is within ~0.1 pp of Best Fit.
@@ -77,7 +78,7 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **Question:** does knowing that empty bins are among the options change how often evolved rules open them?
 - **Hypothesis and why:** the default LLM4AD prompt never mentions empty bins, so the baseline found the bet by accident in 3/6 seeds. Saying so explicitly makes it easier to target: **more** fresh-bin seeds, found **earlier**. (The opposite is possible: an LLM told about empty bins may treat them as a last resort, as Best Fit does.)
 - **Prediction:**
-  - At least 4 of 5 fresh-bin seeds (baseline 3/6).
+  - At least 8 of 10 fresh-bin seeds (baseline 3/6).
   - The best rule is found earlier than the baseline's eval ~200.
   - Hence more seeds better on train and `test_id_5k`, **and** more seeds worse on `test_shape_k5`.
 - **What counts as an effect:** the descriptive seed counts and median discovery eval, and per-seed verdicts on `test_id_5k` and `test_shape_k5`.
@@ -85,7 +86,7 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **If not confirmed, we claim:** the bet comes from selection pressure on this training set, not from what the LLM is told. Tuned Best Fit supports this reading, since it finds the bet with no prompt at all.
 - **What remains uncertain either way:**
   - **Which addition caused it:** an effect can't be pinned on the empty-bin clause alone, since the task framing changed too. Claim "task framing + bin rules", not "telling it about empty bins".
-  - **Seed counts:** with 5 seeds, a 3/6 vs 4/5 difference can be chance (see the shared rules). This setting can only give strong evidence if the counts end up at 0/5 or 5/5.
+  - **Seed counts:** with 10 seeds, 3/6 vs 8/10 or 9/10 can still be chance (p ≥ 0.12, see the shared rules). Only 0/10 or 10/10 counts as significant on its own.
 
 ## A2. Training-data variety (`abl_mixed_shapes.yaml`)
 
