@@ -4,15 +4,17 @@ Budget per run: {'max_evals': 300, 'max_tokens': 1500000, 'max_minutes': 120, 'n
 
 ## Search runs
 
-| label | runs | evals/run | ok % | error % | timeout % | LLM calls/run | tokens/run | cost USD (total) | minutes/run | best train excess % (mean ± sd) |
+| label | runs | evals/run | ok % | error % | timeout % | LLM calls/run | tokens/run | cost USD (total) | minutes/run | best train excess % (mean Â± sd) |
 |---|---|---|---|---|---|---|---|---|---|---|
-| eoh | 3 | 300.0 | 99.0 | 1.0 | 0.0 | 301.0 | 198138 | 0.493 | 16.81 | 4.670 ± 0.141 |
+| eoh | 6 | 300.0 | 99.1 | 0.9 | 0.0 | 301.0 | 203849 | 1.037 | 11.67 | 4.342 Â± 0.491 |
+| tuned_bf | 6 | 300.0 | 100.0 | 0.0 | 0.0 | 0.0 | 0 | 0.0 | 2.78 | 2.414 Â± 0.051 |
 
-## Held-out sets: excess over lower bound (%), mean ± sd across seeds
+## Held-out sets: excess over lower bound (%), mean Â± sd across seeds
 
 | label | val | test_id_5k | test_size_10k | test_cap500 | test_cap500_scaled | test_shape_k1.5 | test_shape_k5 | test_uniform |
 |---|---|---|---|---|---|---|---|---|
-| eoh | 4.63 ± 0.17 | 4.11 ± 0.10 | 3.93 ± 0.03 | 0.50 ± 0.00 | 4.48 ± 0.07 | 1.32 ± 0.02 | 8.27 ± 0.03 | 4.97 ± 0.17 |
+| eoh | 4.26 Â± 0.59 | 3.70 Â± 0.65 | 3.61 Â± 0.57 | 0.55 Â± 0.08 | 4.05 Â± 0.73 | 1.72 Â± 1.08 | 8.73 Â± 1.65 | 4.50 Â± 0.57 |
+| tuned_bf | 2.40 Â± 0.10 | 1.66 Â± 0.12 | 1.38 Â± 0.20 | 0.49 Â± 0.02 | 5.22 Â± 0.06 | 2.07 Â± 0.97 | 29.22 Â± 2.20 | 3.22 Â± 0.28 |
 | first_fit | 5.23 | 4.55 | 4.27 | 0.50 | 4.80 | 1.58 | 8.45 | 5.57 |
 | best_fit | 4.73 | 4.17 | 3.95 | 0.50 | 4.44 | 1.34 | 8.25 | 5.07 |
 | worst_fit | 13.34 | 13.14 | 13.01 | 2.34 | 13.72 | 12.27 | 12.95 | 14.46 |

@@ -35,12 +35,15 @@ def _sample_items(rng: np.random.Generator, n: int, cap: int, spec: dict) -> np.
 
 
 def generate_set(set_name: str, spec: dict, base_seed: int) -> list[dict]:
+    """`mix: [{shape: 2}, {shape: 4}]` makes a mixed set: instance k uses the spec updated with mix[k % len(mix)]."""
     rng = np.random.default_rng(_set_seed(base_seed, set_name))
-    n_spec, cap = spec["n_items"], int(spec["capacity"])
+    mix = spec.get("mix") or [{}]
     out = []
     for k in range(int(spec["n_instances"])):
+        s = {**spec, **mix[k % len(mix)]}
+        n_spec, cap = s["n_items"], int(s["capacity"])
         n = int(rng.integers(n_spec[0], n_spec[1] + 1)) if isinstance(n_spec, list) else int(n_spec)
-        out.append(dict(id=f"{set_name}_{k:03d}", capacity=cap, items=_sample_items(rng, n, cap, spec)))
+        out.append(dict(id=f"{set_name}_{k:03d}", capacity=cap, items=_sample_items(rng, n, cap, s)))
     return out
 
 
@@ -57,15 +60,39 @@ def load_set(path: Path) -> list[dict]:
             for k, (i, c) in enumerate(zip(z["ids"], z["capacities"]))]
 
 
+def _as_json(x):
+    """Spec as it is stored in spec.json, so a fresh YAML spec and the saved copy compare equal."""
+    return json.loads(json.dumps(x))
+
+
+def _built_spec(out_dir: Path) -> dict | None:
+    """The spec the data in out_dir was built from, or None if unknown (data built before spec.json existed)."""
+    f = out_dir / "spec.json"
+    return json.loads(f.read_text()) if f.exists() else None
+
+
+def spec_changed(spec_file: Path, out_dir: Path) -> bool:
+    import yaml
+    built = _built_spec(out_dir)
+    return built is not None and built != _as_json(yaml.safe_load(Path(spec_file).read_text()))
+
+
 def build_all(spec_file: Path, out_dir: Path, force: bool = False) -> pd.DataFrame:
     """Generate every set in a spec file into out_dir and write a manifest of basic statistics."""
     import yaml
     cfg = yaml.safe_load(Path(spec_file).read_text())
+    built = _built_spec(out_dir)
     rows = []
     for name, spec in cfg["sets"].items():
         path = out_dir / f"{name}.npz"
-        insts = load_set(path) if path.exists() and not force else generate_set(name, spec, cfg.get("seed", 0))
-        if force or not path.exists():
+        # a set whose spec changed since it was built is regenerated, so scoring never uses data from an old spec
+        stale = path.exists() and built is not None and (
+            built.get("sets", {}).get(name) != _as_json(spec) or built.get("seed", 0) != cfg.get("seed", 0))
+        if stale:
+            print(f"[instances] {name}: spec changed since it was built, regenerating {path}")
+        regen = force or stale or not path.exists()
+        insts = generate_set(name, spec, cfg.get("seed", 0)) if regen else load_set(path)
+        if regen:
             save_set(insts, path)
         for i in insts:
             rows.append(dict(set=name, instance=i["id"], n_items=len(i["items"]), capacity=i["capacity"],

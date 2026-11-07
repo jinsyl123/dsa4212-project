@@ -21,6 +21,7 @@ methods:
   - { name: hillclimb } # (1+1)-EPS baseline
   - { name: reevo, params: { pop_size: 4 } }
   - { name: funsearch }
+  - { name: tuned_bf } # no-LLM budget-matched baseline
 
 final_eval:
   sets: [val, test_id, test_cap500, test_shape_k5]
