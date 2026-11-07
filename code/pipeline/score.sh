@@ -14,6 +14,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+py="${PYTHON:-$(command -v python || command -v python3)}"   # override with PYTHON=/path/to/python
 check=0
 if [[ "${1:-}" == "--check" ]]; then check=1; shift; fi
 [[ $# -gt 0 ]] || { echo "usage: bash pipeline/score.sh [--check] <setting> [<setting> ...]"; exit 2; }
@@ -22,12 +23,12 @@ for s in "$@"; do
     cfg="configs/$s.yaml"
     [[ -f "$cfg" ]] || { echo "no such config: $cfg"; exit 2; }
     echo "=== $s"
-    python pipeline/run_experiment.py  --config "$cfg" --methods tuned_bf
-    python pipeline/evaluate_final.py  --config "$cfg"
-    python pipeline/check_integrity.py --config "$cfg"
-    python pipeline/diagnose.py        --config "$cfg"
-    python pipeline/paired_stats.py    --config "$cfg"
-    python pipeline/summarise.py       --config "$cfg"
+    "$py" pipeline/run_experiment.py  --config "$cfg" --methods tuned_bf
+    "$py" pipeline/evaluate_final.py  --config "$cfg"
+    "$py" pipeline/check_integrity.py --config "$cfg"
+    "$py" pipeline/diagnose.py        --config "$cfg"
+    "$py" pipeline/paired_stats.py    --config "$cfg"
+    "$py" pipeline/summarise.py       --config "$cfg"
 done
 
 if [[ $check -eq 1 ]]; then
