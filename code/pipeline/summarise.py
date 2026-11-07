@@ -76,15 +76,18 @@ def load_runs(out: Path) -> pd.DataFrame:
             continue  # (e.g. API quota): nothing to plot
         ev = ev.sort_values("eval")
         calls = pd.read_csv(d / "llm_calls.csv").sort_values("t_start")
-        ev = pd.merge_asof(
-            ev.sort_values("t_start"),
-            calls[["t_start", "cum_tokens"]],
-            on="t_start",
-            direction="backward",
-        ).sort_values(
-            "eval"
-        )  # tokens spent when this eval started
-        ev["cum_tokens"] = ev.cum_tokens.fillna(0)
+        if calls.empty:  # no LLM (e.g. tuned Best Fit)
+            ev["cum_tokens"] = 0
+        else:
+            ev = pd.merge_asof(
+                ev.sort_values("t_start"),
+                calls[["t_start", "cum_tokens"]],
+                on="t_start",
+                direction="backward",
+            ).sort_values(
+                "eval"
+            )  # tokens spent when this eval started
+            ev["cum_tokens"] = ev.cum_tokens.fillna(0)
         ev["best_so_far"] = ev.train_excess.cummin().ffill() * 100  # % over lower bound
         frames.append(ev.assign(label=s["label"], seed=s["seed"]))
     if not frames:
@@ -106,11 +109,21 @@ def _save(fig, path: Path):
 def plot_convergence(
     runs: pd.DataFrame, cfg, bf_train: float, xcol: str, xlabel: str, path: Path
 ):
+    labels = [
+        m["label"] for m in cfg["methods"] if m["label"] in set(runs.label)
+    ]  # config order
+    no_llm = [
+        l
+        for l in labels
+        if xcol == "cum_tokens" and runs.loc[runs.label == l, xcol].max() == 0
+    ]
+    runs = runs[~runs.label.isin(no_llm)]  # nothing to draw on a token axis
+    if runs.empty:
+        print(f"  skip {path.name}: no run used LLM tokens")
+        return
     fig, ax = plt.subplots(figsize=(6.4, 3.6))
     col, ends = colours(cfg), []
-    for label in [
-        m["label"] for m in cfg["methods"] if m["label"] in set(runs.label)
-    ]:  # config order
+    for label in [l for l in labels if l not in no_llm]:
         g = runs[runs.label == label]
         grid = (
             np.linspace(0, g[xcol].max(), 200)
@@ -168,10 +181,12 @@ def plot_convergence(
     ax.set_ylabel("Best training excess over\nlower bound so far (%)")
     ax.set_title("Search progress on training instances", loc="left")
     ax.legend(loc="upper right", ncols=min(len(ends), 5), fontsize=8, handlelength=1.5)
+    note = f" Not shown (no LLM tokens): {', '.join(no_llm)}." if no_llm else ""
     fig.text(
         0.01,
         -0.04,
-        "Line: median across seeds. Band: range across seeds. Y-axis clipped at 2x Best Fit.",
+        "Line: median across seeds. Band: range across seeds. Y-axis clipped at 2x Best Fit."
+        + note,
         color=MUTED,
         fontsize=7.5,
     )
@@ -180,7 +195,7 @@ def plot_convergence(
 
 def plot_test_sets(final: pd.DataFrame, cfg, path: Path):
     """Small multiples: one panel per held-out set, change in excess vs Best Fit (pp) per method and seed."""
-    ev = final[final.kind == "evolved"]
+    ev = final[final.kind != "baseline"]  # evolved and tuned programs
     per_run = (
         ev.groupby(["label", "set", "seed"])
         .agg(excess=("excess", "mean"))

@@ -119,7 +119,7 @@ def main(config, sets=None, workers=None, overrides=None, llm=None, budget=None,
     for summ in sorted(out.glob("*/seed*/summary.json")):
         s, prog = json.loads(summ.read_text()), summ.parent / "best_program.py"
         if prog.exists():
-            jobs += [dict(kind="evolved", label=s["label"], method=s["method"], seed=s["seed"], set=sn,
+            jobs += [dict(kind=s.get("kind", "evolved"), label=s["label"], method=s["method"], seed=s["seed"], set=sn,
                           program=prog.read_text()) for sn in set_names]
     print(f"[{cfg['experiment']}] {len(jobs)} program x set jobs on {set_names}")
 
