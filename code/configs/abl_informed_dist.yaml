@@ -1,0 +1,6 @@
+# Ablation 1 (#7), optional: the prompt states the training item distribution (Weibull shape/scale, capacity).
+base: configs/eoh_baseline.yaml
+experiment: abl_informed_dist
+llm: openrouter-gemini-3.5-flash-lite
+seeds: [0, 1, 2, 3, 4]
+evaluation: { prompt: informed_dist }

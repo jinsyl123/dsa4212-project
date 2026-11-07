@@ -13,6 +13,20 @@ One entry per decision that affects results. Newest at the top. Link the config 
 
 ---
 
+### 2026-11-05: test sets frozen (Jia Kang)
+
+- **Decision:** every test set has 10 instances (was 5). Added `test_size_1k`, `test_cap200`, `test_scale25`, `test_scale65` and the control set `test_control`, and listed all of them in `final_eval.sets`. `train`, `train_mixed`, `val` and the seed are unchanged, and instances 0–4 of the existing test sets are identical to before (checked against the old data).
+- **Why:** with 5 instances no rule can beat Best Fit significantly on the sign test (best case p = 0.0625; with 10, p = 0.002). `test_cap200` fills the capacity series 100 → 200 → 500; `test_scale25`/`test_scale65` shift item size relative to the bin in both directions. `test_size_1k` needs its own instances because `val` chooses between runs. The control set catches scoring bugs: every item is over half a bin, so every rule must use one bin per item (all six OpenRouter seeds' best programs and Best Fit do). On `test_scale65` L1 is ~10% too low, so its excess is read over L2 (#10); on every other test set L2 = L1.
+- **Alternatives considered:** the real OR-Library files (binpack5–8) and Beyond the Hype's datasets (skipped); renaming `test_uniform` to `test_orlib_like` (kept: a set's seed comes from its name, so renaming changes its data).
+- **Affects:** `configs/instances/v0.yaml`; `final_eval.sets` in `eoh_baseline.yaml` and `compare.yaml` (the ablation configs inherit it); every `final_*.csv` once re-scored. Discussion: #12.
+
+### 2026-11-04: ablation settings locked (Nic)
+
+- **Decision:** run the main settings `abl_anyfit`, `abl_informed_rules` and `abl_mixed_shapes`, plus the control `control_randsample`. Seeds 0–4 each, `openrouter-gemini-3.5-flash-lite`, budget `full` (300 evals). The comparison row is the EoH baseline, seeds 0–5. Optional if time allows: `abl_informed_dist`, `abl_informed`. Fallback: `abl_no_m2`.
+- **Why:** the baseline shows the gain and the k5 failure both come from opening fresh bins (seeds 4/5), plus one failure from training on a single shape (seed 3, k1.5). Ablation 1 tests the empty-bin option; Ablation 2 tests training variety; randsample tests whether search adds anything. 5 seeds because half the baseline seeds collapse to Best Fit.
+- **Alternatives considered:** no-M2 as a main setting (no run points to M2), thoughts on/off (EoH Table 6 already covers it), a budget sweep (would be a third ablation).
+- **Affects:** `configs/abl_*.yaml`, `configs/control_randsample.yaml`, `results/<setting>/`. Plan and evidence: #7. Claims frozen before scoring: #15.
+
 ### 2026-11-01: integrity checks on candidates, flag only (Jin)
 - **Decision:** `obpevo/integrity.py` parses every candidate with `ast` and records rule violations (non-numpy imports, randomness incl. `hash()`/`id()`/clock, `exec`/`eval`/`open`, numpy file I/O, dunder access, `global`, attribute assignment, module-level state, mutable defaults) in a new `integrity` column of `evals.csv`; `summary.json` gets `n_flagged` and `best_integrity`. `check_integrity.py` rescores each best program four times (usual order twice, one shuffled order twice), each in a fresh spawned process with its own hash and RNG seeds. Flagged programs are still scored and can still win.
 - **Why:** the brief asks to keep scoring outside the code being evolved. Flagging instead of dropping keeps every method's search unchanged (fair) and lets us report how often each rule is hit. All best programs committed at the time (25 Oct seed 0, OpenRouter seeds 0–2) are clean: no flags, 0 repeat and 0 shuffle mismatches on train and val.
@@ -65,6 +79,13 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Decision:** inner folder renamed code/code → code/pipeline; informed prompt split into informed_rules / informed_dist / informed; best program still selected on training (val chooses between configurations).
 - **Why:** PR review (Jin): attribution of prompt effects, comparability with the EoH papers.
 - **Affects:** pipeline/, task.py, readme §6, §11, §13.
+
+### 2026-11-03: tuned Best Fit baseline (Jia Kang)
+
+- **Decision:** the budget-matched baseline `tuned_bf` is Best Fit plus a penalty for leaving a small gap: score = −r − penalty·[lo < r < hi], with r the space left in a bin after packing. Three integer knobs (`lo` 0–10, `hi` lo+2–40, `penalty` 1–100) in item units, tuned by random search on `train`: Best Fit first, then 299 distinct random settings, i.e. the same 300 scored tries as an EoH run. Seeds 0–5, like EoH (3–5 added on 5 Nov, after EoH's).
+- **Why:** beating plain Best Fit is weak evidence (decision #13). Any score strictly decreasing in r packs exactly like Best Fit, so the sliver penalty is the smallest change that can differ. It is the strategy the FunSearch paper describes for several of its discovered heuristics (illustrated with its OR-dataset heuristic, Fig. 6). The knobs are in absolute units, and neither the rule nor an evolved program is given the capacity (in funsearch mode an evolved program could read it from max(bins)). Random search is the plainest tuner, so its result is a floor for what tuning alone achieves.
+- **Alternatives considered:** a 4th knob gating the penalty by item size (no better in an 80-try pilot: 2.68% vs 2.55% train excess); matching EoH on wall-clock time (unfair: EoH waits on the API) or dollars (tuning is free); a stronger tuner (TPE, grid), which would only raise the bar.
+- **Affects:** `obpevo/tuned_bf.py`, `run_experiment.py`, `evaluate_final.py`, `summarise.py`, `configs/eoh_baseline.yaml`, `configs/smoke.yaml`; results in results/eoh_baseline\_\_openrouter-gemini-3.5-flash-lite/tuned_bf (readme §13).
 
 ### 2026-11-04: ablation plan revised after seeds 3–5 (Jin)
 
