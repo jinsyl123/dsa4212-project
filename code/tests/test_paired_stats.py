@@ -1,4 +1,6 @@
 """Paired comparison against reference rules. Run: python -m unittest tests.test_paired_stats"""
+import contextlib
+import io
 import sys
 import unittest
 from pathlib import Path
@@ -91,6 +93,15 @@ class TestCompare(unittest.TestCase):
     def test_missing_reference_skipped(self):
         res = P.compare(self.df[self.df.label != "tuned_bf"], n_boot=500)
         self.assertEqual(set(res.reference), {"best_fit"})
+
+    def test_missing_reference_instances_warn(self):
+        # the reference lacks two instances: they are left out (n drops) and a warning names the gap
+        df = self.df[~((self.df.label == "best_fit") & self.df.instance.isin(["i0", "i1"]))]
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            res = P.compare(df, references=["best_fit"], n_boot=500)
+        self.assertEqual(self._row(res, 1, "best_fit").n, self._row(P.compare(self.df, references=["best_fit"], n_boot=500), 1, "best_fit").n - 2)
+        self.assertIn("lacks 2 of", out.getvalue())
 
     def test_sets_kept_apart(self):
         df = pd.concat([self.df, pd.DataFrame(_rows("best_fit", "baseline", -1, [0.1] * 10, set_name="t")
