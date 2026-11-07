@@ -112,8 +112,8 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **Prediction:**
   - Most seeds end at Best Fit or a near copy.
   - At most 1 of 5 fresh-bin seeds (baseline 3/6).
-  - No seed better than the best EoH seeds on `test_id_5k`.
-- **What counts as an effect:** seed counts and per-seed verdicts vs Best Fit, and each seed's paired difference vs EoH's best seeds on `test_id_5k`.
+  - No seed better than the best EoH seeds on `test_id_5k` (compared descriptively: mean excess side by side).
+- **What counts as an effect:** seed counts and per-seed verdicts vs Best Fit and tuned Best Fit; EoH's best seeds descriptively (mean excess on `test_id_5k` side by side), since `paired_stats.py` can't pair across settings (#13).
 - **If confirmed, we claim:** evolution, not the LLM's prior alone, finds the rules that beat Best Fit (including the fresh-bin bet).
 - **If not confirmed, we claim:** best-of-300 sampling matches EoH, so its gains come from the LLM's prior plus selection on train, not from evolution. That is a negative result worth reporting.
 - **What remains uncertain either way:**
@@ -130,3 +130,14 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 ## Amendments
 
 Dated entries only, each with the reason. Nothing above changes after the freeze.
+
+### 2026-11-07, after Ablation 1 was scored (Jia Kang's review of #15 and #13)
+
+Written after the A1 results were seen. None of these changes a prediction, or which outcome a result maps to.
+
+1. **Seed count (line 32).** Ablation 1 went from 5 to 10 seeds on 7 Nov: @lottomonster ran seeds 0–9 (#7), and the team scores every complete run. `docs/log.md` ("2026-11-04: ablation settings locked") still says seeds 0–4; this entry supersedes it for A1. The A1 predictions were rescaled from 5 to 10 seeds on 7 Nov (commit `87516b5`), after the runs but before any scoring.
+2. **Fresh-bin seed (line 38).** It is the measured definition: `fresh_given_room` > 0.01 on train. By that definition the baseline has 3/6 (seeds 3, 4, 5). `baseline_findings.md` explains seed 3's behaviour by an accidental skip window, so only seeds 4/5 place the bet deliberately (2/6). Seed counts in this file use the measured 3/6.
+3. **A1b wording (line 86).** "If confirmed, we claim" reads as a significant result, but under the shared rules only 10/10 fresh-bin seeds would be significant vs 3/6 (8/10 or 9/10 give p ≥ 0.12). Read 8/10 or 9/10 as **consistent with** that claim. Moot for A1b's result (6/10 fresh-bin seeds: not confirmed).
+4. **Control comparison (line 116).** `paired_stats.py` can't compare a seed with another setting's per-seed results (#13). The control's verdicts are vs Best Fit and tuned Best Fit only, and EoH's best seeds are compared descriptively (means side by side). Edited above, since the control has not run.
+5. **Baseline numbers on the frozen sets.** The baseline paragraph quotes the pre-#16 test sets. On the frozen sets (excess over L2, `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/`): Best Fit is 4.08% on `test_id_5k`, 1.35% on `test_shape_k1.5` and 8.32% on `test_shape_k5`. Seeds 4/5 are 2.88% on `test_id_5k` but 10.81% on k5; seed 3 is 3.90% on k1.5 (6.32% on k5). Train numbers are unchanged. The tuned Best Fit "4.65% with empty bins blocked" came from rescoring the funsearch-tuned knobs; retuned in anyfit (A1a), tuned Best Fit gets 3.90–4.00% on train.
+6. **Tuned Best Fit reference (#13 review, point 2).** `paired_stats.py` compares each rule with tuned Best Fit averaged per instance over its seeds, not with each tuned seed. This is how A1 was scored. If #13 changes it, A1 is rescored and noted here.
