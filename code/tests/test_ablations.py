@@ -65,9 +65,10 @@ class TestAblationConfigs(unittest.TestCase):
         no_m2 = self._load("abl_no_m2")["methods"]
         self.assertEqual([m["label"] for m in no_m2], ["eoh_no_m2"])
         self.assertFalse(no_m2[0]["params"]["use_m2_operator"])
+        # tuned_bf is the no-LLM reference, retuned in the control's own folder like the baseline's
         self.assertEqual(
             [m["name"] for m in self._load("control_randsample")["methods"]],
-            ["randsample"],
+            ["randsample", "tuned_bf"],
         )
 
 
