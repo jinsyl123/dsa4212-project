@@ -71,6 +71,17 @@ class TestAblationConfigs(unittest.TestCase):
             ["randsample", "tuned_bf"],
         )
 
+    def test_strong_model_changes_only_the_llm(self):
+        # Ablation 2 (proposed on #7): the full model of the same generation, same reasoning effort and token cap
+        cfg = self._load("abl_strong_model")
+        self.assertEqual(cfg["llm"]["model"], "google/gemini-3.5-flash")
+        self.assertEqual(cfg["llm"]["provider"], self.base["llm"]["provider"])
+        for k in ("extra", "max_tokens"):
+            self.assertEqual(cfg["llm"].get(k), self.base["llm"].get(k), k)
+        for k in ("budget", "methods", "evaluation", "final_eval", "instances"):
+            self.assertEqual(cfg[k], self.base[k], k)
+        self.assertEqual(cfg["seeds"], list(range(10)))
+
 
 class TestMixedSet(unittest.TestCase):
     def test_alternates_components(self):
