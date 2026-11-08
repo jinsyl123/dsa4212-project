@@ -6,7 +6,7 @@ dated **Amendments** entry at the bottom, never as edits above. The report check
 
 Team agreement: "Freeze test sets **and the claim we'll make for each outcome** before the main searches"
 (decisions doc, "Agreed by default"). Owner: Jia Kang (claims doc). Written by: Jin. Frozen on: ___ (the day #15 merges).
-Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1 run was scored; the commit timestamp is the record.
+Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1 run was scored; the commit timestamp is the record. A1 was then scored before this file was frozen: see Amendments, 7 Nov.
 
 ## What the course asks for (why this file exists)
 
@@ -29,12 +29,12 @@ Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1
 | Item | Rule |
 |---|---|
 | Comparison row | EoH baseline, seeds 0–5 (`eoh_baseline.yaml`) |
-| Seeds per setting | **Ablation 1 (A1a, A1b): 10 (seeds 0–9)**, as run (#7). A2 and the control: 5 (seeds 0–4). Every seed run in full is scored; none is dropped |
+| Seeds per setting | **Ablation 1 (A1a, A1b) and the control: 10 (seeds 0–9)**, as run (#7). A2: 5 (seeds 0–4). Every seed run in full is scored; none is dropped |
 | References | Best Fit, and tuned Best Fit retuned in the same setting (#8), with the same seeds as the setting. A setting that changes neither `mode` nor the training set (A1b, control) leaves tuned Best Fit unchanged: it is still retuned in its own folder, and seeds 0–5 must match the baseline's exactly (a determinism check) |
 | Sets | train, val (selection only, never reported as a test), and the test sets frozen in #12 |
 | Metric | excess over L2 (%) on every set (#12 decision 7, #10); fewer bins = better. Same as L1 except on `test_scale65` and `test_control`, so numbers stay comparable with FunSearch/EoH |
 | Per-seed verdict vs a reference | `paired_stats.py` (#13, scored with its code as of this freeze; if #13 changes before merging, rescore and note it in Amendments): **better / worse** only if the 95% bootstrap CI excludes 0 **and** sign-test p < 0.05; **tie** if identical on every instance; else **unclear** |
-| Setting-level effect | The number of seeds in each category (of 10 for Ablation 1, of 5 otherwise), next to the baseline's (of 6), tested with a two-sided Fisher exact test vs the baseline (2×2 table: seeds in that category vs the rest, this setting vs the baseline). Against the baseline's 3/6, **only 0/10 or 10/10 reach p < 0.05** (p = 0.036; 1/10 or 9/10 give 0.12). With 5 seeds nothing can (0/5 or 5/5 gives 0.18), so A2 and control seed counts are descriptive only. Otherwise significance comes only from the per-seed paired verdicts above. |
+| Setting-level effect | The number of seeds in each category (of 10 for Ablation 1 and the control, of 5 for A2), next to the baseline's (of 6), tested with a two-sided Fisher exact test vs the baseline (2×2 table: seeds in that category vs the rest, this setting vs the baseline). Against the baseline's 3/6, **only 0/10 or 10/10 reach p < 0.05** (p = 0.036; 1/10 or 9/10 give 0.12). With 5 seeds nothing can (0/5 or 5/5 gives 0.18), so A2's seed counts are descriptive only. Otherwise significance comes only from the per-seed paired verdicts above. |
 | Mechanism measure | `fresh_given_room` from `diagnose.py` (#5): share of placements that open an empty bin while a used one has room. A seed is a **fresh-bin seed** if it is > 0.01 on train |
 | Held-out sets used for claims | **in-distribution:** `test_id_5k`; **shift:** `test_shape_k1.5`, `test_shape_k5`, plus the other #12 sets as secondary. `train` is reported but not a claim (it is the set searched on). `test_control` (#16) is a scoring check, not a claim: every rule must be exactly 0% over L2 there |
 | Integrity | `check_integrity.py` (#6): flagged programs reported, not dropped. Runs stopped early by an error are rerun in full, not scored (`docs/log.md`); a run that hit the budget mid-evaluation (`abl_anyfit` seed 4, 299 of 300) counts as complete |
@@ -111,7 +111,7 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **Hypothesis and why:** evolution helps. In the baseline, the rules that beat Best Fit appeared late (eval ~200 of 300, seeds 3–5), after many generations. Seeds 0 and 1 found Best Fit at eval 1 and never improved, so the LLM's first guess is Best Fit.
 - **Prediction:**
   - Most seeds end at Best Fit or a near copy.
-  - At most 1 of 5 fresh-bin seeds (baseline 3/6).
+  - At most 2 of 10 fresh-bin seeds (baseline 3/6). Only 0/10 is significant on its own (p = 0.036); 1/10 or 2/10 is **consistent with** the prediction.
   - No seed better than the best EoH seeds on `test_id_5k` (compared descriptively: mean excess side by side).
 - **What counts as an effect:** seed counts and per-seed verdicts vs Best Fit and tuned Best Fit; EoH's best seeds descriptively (mean excess on `test_id_5k` side by side), since `paired_stats.py` can't pair across settings (#13).
 - **If confirmed, we claim:** evolution, not the LLM's prior alone, finds the rules that beat Best Fit (including the fresh-bin bet).
@@ -119,7 +119,7 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **What remains uncertain either way:**
   - **Search vs prompt:** randsample changes the prompt too, so "no evolution" and "different prompt" are confounded. Report it as "LLM4AD RandSample", not "EoH without search".
   - **Unique programs:** a fixed prompt may return many duplicates (EoH's 300 evals hold 160–220 unique ones). Report unique programs per run next to the result.
-  - **The check run is a gate:** if its replies mostly fail to parse or repeat, fix that before the 5 seeds.
+  - **The check run is a gate:** if its replies mostly fail to parse or repeat, fix that before the 10 seeds.
 
 ## Optional settings (fill in only if they will be run)
 
@@ -135,9 +135,20 @@ Dated entries only, each with the reason. Nothing above changes after the freeze
 
 Written after the A1 results were seen. None of these changes a prediction, or which outcome a result maps to.
 
-1. **Seed count (line 32).** Ablation 1 went from 5 to 10 seeds on 7 Nov: @lottomonster ran seeds 0–9 (#7), and the team scores every complete run. `docs/log.md` ("2026-11-04: ablation settings locked") still says seeds 0–4; this entry supersedes it for A1. The A1 predictions were rescaled from 5 to 10 seeds on 7 Nov (commit `87516b5`), after the runs but before any scoring.
+1. **Seed count (line 32).** Ablation 1 went from 5 to 10 seeds on 7 Nov: @lottomonster ran seeds 0–9 (#7), and the team scores every complete run. The configs and tests changed in `e3009aa` (on `ablation-runs`, reaching `pipeline` with #19); the control followed in `b14e98b`, which also adds its `docs/log.md` entry ("2026-11-07: control runs 10 seeds"). `docs/log.md` has no matching entry for A1 yet, so "2026-11-04: ablation settings locked" still reads seeds 0–4 until one is added on `ablation-runs`. The A1 predictions were rescaled from 5 to 10 seeds on 7 Nov (commit `87516b5`), after the runs but before any scoring.
 2. **Fresh-bin seed (line 38).** It is the measured definition: `fresh_given_room` > 0.01 on train. By that definition the baseline has 3/6 (seeds 3, 4, 5). `baseline_findings.md` explains seed 3's behaviour by an accidental skip window, so only seeds 4/5 place the bet deliberately (2/6). Seed counts in this file use the measured 3/6.
 3. **A1b wording (line 86).** "If confirmed, we claim" reads as a significant result, but under the shared rules only 10/10 fresh-bin seeds would be significant vs 3/6 (8/10 or 9/10 give p ≥ 0.12). Read 8/10 or 9/10 as **consistent with** that claim. Moot for A1b's result (6/10 fresh-bin seeds: not confirmed).
 4. **Control comparison (line 116).** `paired_stats.py` can't compare a seed with another setting's per-seed results (#13). The control's verdicts are vs Best Fit and tuned Best Fit only, and EoH's best seeds are compared descriptively (means side by side). Edited above, since the control has not run.
 5. **Baseline numbers on the frozen sets.** The baseline paragraph quotes the pre-#16 test sets. On the frozen sets (excess over L2, `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/`): Best Fit is 4.08% on `test_id_5k`, 1.35% on `test_shape_k1.5` and 8.32% on `test_shape_k5`. Seeds 4/5 are 2.88% on `test_id_5k` but 10.81% on k5; seed 3 is 3.90% on k1.5 (6.32% on k5). Train numbers are unchanged. The tuned Best Fit "4.65% with empty bins blocked" came from rescoring the funsearch-tuned knobs; retuned in anyfit (A1a), tuned Best Fit gets 3.90–4.00% on train.
 6. **Tuned Best Fit reference (#13 review, point 2).** `paired_stats.py` compares each rule with tuned Best Fit averaged per instance over its seeds, not with each tuned seed. This is how A1 was scored. If #13 changes it, A1 is rescored and noted here.
+
+### 2026-11-08, before the control was scored (@lottomonster's review of #15)
+
+The control has run (seeds 0–9, `b14e98b`, `99452e2`, `f3dfa94`) but has not been scored. Point 1 changes text above; none of the points changes an Ablation 1 prediction or which outcome an A1 result maps to.
+
+1. **Control: 10 seeds (lines 32, 37, 114, 122).** The control runs seeds 0–9 (`docs/log.md`, "2026-11-07: control runs 10 seeds"). Edited above, as in Amendment 4, since it has not been scored: the seeds and Fisher rows, "at most 1 of 5" → "at most 2 of 10" fresh-bin seeds, and "the 5 seeds" → "the 10 seeds". Against the baseline's 3/6, 0/10 gives p = 0.036, 1/10 gives 0.12 and 2/10 gives 0.30, so only 0/10 is significant on its own.
+2. **A1b "found earlier" (line 83).** No definition of "found" was written before scoring. It is reported descriptively, and the definition used is stated next to the result as one chosen after scoring.
+3. **What "better" needs with 10 instances.** Under #13's rule, **better** or **worse** needs the sign test at p < 0.05, so with 10 instances per set: at least 9 wins if all 10 differ (8 of 10 gives p = 0.11), 8 of 9, or every instance when only 6–8 differ; with 5 or fewer non-tied instances no verdict can be better or worse. So **unclear** often means a small effect, not no effect.
+4. **No multiple-comparisons correction.** Verdicts are not corrected across rules × seeds × sets × references (#13's caveat). A single per-seed verdict is descriptive; claims rest on seed counts and on patterns that repeat across seeds and sets.
+5. **A1a tuned Best Fit (line 69).** Retuned in anyfit, tuned Best Fit gets 3.90–4.00% on train (Amendment 5), against the prediction "within ~0.1 pp of Best Fit". The prediction is left as written; if held-out agrees, the report shows it as a miss.
+6. **Scoring start time (Amendment 1).** Commit times show when results were saved, not when scoring ran. Checked: the scoring script (`score.sh`) was first committed at 14:02 on 7 Nov, and the earliest scoring output on disk (`abl_anyfit/tuned_bf/seed0`) is from 13:57, both after the A1 predictions were committed (`67b478c`, 13:55). No A1 scoring ran before 13:55.
