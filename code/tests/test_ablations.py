@@ -42,7 +42,7 @@ class TestAblationConfigs(unittest.TestCase):
                 self.assertEqual(cfg["evaluation"], expected)
 
     def test_shared_settings(self):
-        names = list(ABLATIONS) + ["abl_no_m2", "abl_mixed_capacities", "control_randsample"]
+        names = list(ABLATIONS) + ["abl_no_m2", "abl_mixed_caps_informed", "control_randsample"]
         cfgs = {n: self._load(n) for n in names}
         self.assertEqual(
             len({c["experiment"] for c in cfgs.values()}), len(names)
@@ -56,7 +56,7 @@ class TestAblationConfigs(unittest.TestCase):
                 expected = (
                     list(range(10))
                     if cfg["experiment"]
-                    in ("abl_anyfit", "abl_informed_rules", "abl_mixed_shapes", "abl_mixed_capacities", "control_randsample")
+                    in ("abl_anyfit", "abl_informed_rules", "abl_mixed_shapes", "abl_mixed_caps_informed", "control_randsample")
                     else list(range(5))
                 )
                 self.assertEqual(cfg["seeds"], expected)
@@ -82,26 +82,13 @@ class TestAblationConfigs(unittest.TestCase):
             self.assertEqual(cfg[k], self.base[k], k)
         self.assertEqual(cfg["seeds"], list(range(10)))
 
-    def test_mixed_capacities_changes_only_the_training_set_from_a1b(self):
+    def test_mixed_caps_informed_changes_only_the_training_set_from_a1b(self):
         # Ablation 2b (#7): A1b's setup; its comparison row is abl_informed_rules (claims, #15)
-        cfg, a1b = self._load("abl_mixed_capacities"), self._load("abl_informed_rules")
+        cfg, a1b = self._load("abl_mixed_caps_informed"), self._load("abl_informed_rules")
         self.assertEqual(cfg["evaluation"], {**a1b["evaluation"], "train_set": "train_mixed_cap"})
-        for k in ("llm", "budget", "final_eval", "instances", "seeds"):
+        # methods too: tuned Best Fit keeps its default knob ranges, so it differs from A1b's only in the training set
+        for k in ("llm", "budget", "methods", "final_eval", "instances", "seeds"):
             self.assertEqual(cfg[k], a1b[k], k)
-        eoh, tbf = cfg["methods"]
-        self.assertEqual(eoh, a1b["methods"][0])
-        self.assertEqual(tbf["name"], "tuned_bf")
-        # only the penalty range is widened, so the fresh-bin bet is reachable at capacity 300 (docs/log.md, 9 Nov)
-        from obpevo import tuned_bf
-        space = tuned_bf.check_space(tbf["params"]["space"])
-        self.assertEqual({k: v for k, v in space.items() if k != "penalty"},
-                         {k: v for k, v in tuned_bf.SPACE.items() if k != "penalty"})
-        self.assertEqual(list(space["penalty"]), [1, 300])
-        # the empty bin (score -(300 - item)) beats a penalised used bin (score -r - penalty) when r + penalty > 300 - item;
-        # for a mean item (~40) and the largest penalised gap (hi_max - 1) that needs penalty > 222, out of reach at 100
-        need = 300 - 40 - (space["hi_max"] - 1)
-        self.assertGreater(space["penalty"][1], need)
-        self.assertLess(tuned_bf.SPACE["penalty"][1], need)
 
 
 class TestMixedSet(unittest.TestCase):
