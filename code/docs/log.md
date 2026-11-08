@@ -122,3 +122,11 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Decision:** `control_randsample` runs seeds 0–9 (10), like Ablation 1's main settings.
 - **Why:** the control is compared with both ablations; with 10 seeds its seed counts are on the same footing as A1a/A1b, and the Fisher rule in #15 can reach p < 0.05 (only at 0/10 or 10/10 vs the baseline's 3/6).
 - **Affects:** `configs/control_randsample.yaml`, `tests/test_ablations.py`; results in `results/control_randsample/`.
+
+### 2026-11-07: Ablation 1 runs 10 seeds; optional rows dropped (Nic)
+
+- **Decision:** Ablation 1 runs `abl_anyfit` and `abl_informed_rules` with seeds 0–9 (10 each), instead of 0–4. `abl_informed_dist` and `abl_informed` are not run. Supersedes the seed count in "2026-11-04: ablation settings locked" for A1.
+- **Why:** about half of the baseline seeds converge to Best Fit (3 of 6), so 5 seeds per setting leaves 2–3 informative runs, too few to compare how often runs open fresh bins. Dropping the optional rows keeps the cost about the same (20 runs, ~$4) while doubling the seeds where the questions are.
+- **When:** decided and committed on 7 Nov before the A1 runs started (`e3009aa`, configs and test); this entry was meant to go in with that commit and was added later.
+- **Alternatives considered:** 5 seeds per setting plus both optional rows (same cost, less power on the main question).
+- **Affects:** `configs/abl_anyfit.yaml`, `configs/abl_informed_rules.yaml`, `tests/test_ablations.py`; results in `results/abl_anyfit/`, `results/abl_informed_rules/`.
