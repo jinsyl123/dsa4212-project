@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{This algorithm computes priority using a smooth bell-shaped Gaussian function centered around a small target remaining capacity, while strictly penalizing any negative remaining capacity with a quadratic drop-off.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target_slack = 0.1\n    sigma = 0.2\n    valid_score = np.exp(-((remaining - target_slack) ** 2) / (2 * sigma ** 2))\n    invalid_score = -10.0 * (remaining ** 2)\n    return np.where(remaining >= 0, valid_score, invalid_score)\n\n",
+        "score": -0.04706486555523959
+    },
+    {
+        "algorithm": "{This algorithm computes priority using a modified symmetric piecewise function that heavily penalizes overflow, moderately rewards filling bins near a larger optimal remaining capacity, and strictly discourages leaving massive empty space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_slack = 0.15\n    return np.where(remaining >= 0, 1.5 - 1.5 * np.tanh(np.abs(remaining - optimal_slack) * 3.0), -5.0 * np.abs(remaining))\n\n",
+        "score": -0.04706956866912132
+    },
+    {
+        "algorithm": "{This algorithm computes priority using an inverted piecewise function that heavily favors tight fits, applies a flat moderate score to medium remaining capacities, and steeply penalizes both infeasible placements and excessive slack.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    scores = np.empty_like(remaining, dtype=float)\n    \n    infeasible = remaining < 0\n    tight = (remaining >= 0) & (remaining < 0.1)\n    ideal = (remaining >= 0.1) & (remaining <= 0.4)\n    loose = remaining > 0.4\n    \n    scores[infeasible] = -50.0\n    scores[tight] = 50.0 - 100.0 * remaining[tight]\n    scores[ideal] = 0.5\n    scores[loose] = np.maximum(-10.0, 0.5 - 2.0 * (remaining[loose] - 0.4))\n    \n    return scores\n\n",
+        "score": -0.047189951188144785
+    },
+    {
+        "algorithm": "{This algorithm calculates priority using a modified symmetric Gaussian-like bell curve centered around a larger optimal remaining capacity with a steep linear penalty for overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_slack = 0.1\n    return np.where(remaining >= 0, np.exp(-((remaining - optimal_slack) ** 2) * 10.0), -5.0 * np.abs(remaining))\n\n",
+        "score": -0.04736894710031783
+    },
+    {
+        "algorithm": "{\\This algorithm computes priority using a smooth Gaussian-like bell curve centered on the ideal remaining capacity, naturally penalizing both tight fits and excessive slack without piecewise boundaries.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    infeasible = remaining < 0\n    \n    # Target ideal remaining capacity is around 0.175 (middle of [0.05, 0.3])\n    ideal_center = 0.175\n    sigma = 0.1\n    \n    # Gaussian-based smooth scoring\n    scores = np.exp(-((remaining - ideal_center) ** 2) / (2 * (sigma ** 2)))\n    \n    # Heavy penalty for infeasible bins\n    scores[infeasible] = -10.0 + remaining[infeasible]\n    \n    return scores\n\n",
+        "score": -0.047374841196711315
+    },
+    {
+        "algorithm": "{This algorithm uses a smooth bell-shaped Gaussian function centered around an optimal remaining capacity to reward well-balanced bins while exponentially penalizing overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal = 0.3\n    sigma = 0.25\n    score = np.where(\n        remaining < 0,\n        -500.0 * np.exp(remaining),\n        np.exp(-((remaining - optimal) ** 2) / (2 * sigma ** 2))\n    )\n    return score\n\n",
+        "score": -0.047581564172567384
+    },
+    {
+        "algorithm": "{This algorithm calculates priority using an exponential decay function based on squared deviations from a target remaining capacity while applying a steep linear penalty for bin overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target_slack = 0.2\n    return np.where(remaining >= 0, np.exp(-((remaining - target_slack) ** 2) * 4.0), -10.0 * np.square(remaining))\n\n",
+        "score": -0.04772368290957639
+    },
+    {
+        "algorithm": "{This algorithm computes priority using an asymmetric piecewise function that penalizes overflow, strongly rewards filling bins near a tighter optimal remaining capacity, and gently discourages leaving excessive empty space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_slack = 0.05\n    return np.where(remaining >= 0, 1.0 - np.tanh(np.abs(remaining - optimal_slack) * 5.0), -2.0 * np.abs(remaining))\n\n",
+        "score": -0.04783616648176968
+    },
+    {
+        "algorithm": "{This algorithm computes priority using a Gaussian bell curve centered on a target remaining capacity, rewarding bins that achieve a specific ideal slack space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_slack = 0.1\n    return np.where(remaining >= 0, np.exp(-((remaining - optimal_slack) ** 2) / 0.2), -np.abs(remaining))\n\n",
+        "score": -0.047843314093223704
+    },
+    {
+        "algorithm": "{{This \\ algorithm \\ calculates \\ the \\ priority \\ of \\ adding \\ an \\ item \\ to \\ each \\ bin \\ based \\ on \\ the \\ remaining \\ capacity \\ after \\ insertion, \\ favoring \\ bins \\ that \\ result \\ in \\ the \\ tightest \\ fit.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, 1.0 / (remaining + 1e-7), -np.inf)\n\n",
+        "score": -0.04808555648413241
+    }
+]

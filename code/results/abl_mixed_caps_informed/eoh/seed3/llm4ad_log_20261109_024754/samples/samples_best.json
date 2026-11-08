@@ -1,0 +1,30 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm prioritizes bins using a modified Best-Fit Decreasing heuristic that favors bins with the tightest remaining capacity after placement, while penalizing the creation of new empty bins unless necessary.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if np.any(valid):\n        scores[valid] = 1.0 / (rem[valid] + 1e-7)\n    empty_mask = (bins == 1.0) & (bins >= item)\n    if np.any(empty_mask) and not np.any(valid & (bins < 1.0)):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = np.max(scores[valid]) + 1.0 if np.any(valid) else 0.0\n    return scores\n\n",
+        "score": -0.0295663556157795,
+        "program": ""
+    },
+    {
+        "sample_order": 50,
+        "algorithm": "{The algorithm uses an exponential decay function based on the squared leftover capacity for active bins while applying a steep constant penalty for opening a new empty bin.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.full_like(bins, -1.0, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    \n    is_empty = (bins == 1.0)\n    used_valid = valid & (~is_empty)\n    empty_valid = valid & is_empty\n    \n    if np.any(used_valid):\n        scores[used_valid] = np.exp(-(rem[used_valid] ** 2) * 4.0)\n        \n    if np.any(empty_valid):\n        first_empty_idx = np.argmax(empty_valid)\n        scores[first_empty_idx] = 0.15\n        \n    return scores\n\n",
+        "score": -0.029267642593964402,
+        "program": ""
+    },
+    {
+        "sample_order": 126,
+        "algorithm": "{The algorithm scores feasible bins using a power-law function of the remaining capacity to reward tight packing while applying a distinct preference threshold for the active bin.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.where(rem >= 0, 1.0 / (1.0 + rem**2), -np.inf)\n    if scores.size > 0:\n        if rem[-1] >= 0:\n            scores[-1] += 0.5 / (1.0 + abs(bins[-1] - 1.0))\n        else:\n            scores[-1] = 0.1\n    return scores\n\n",
+        "score": -0.028982178871070255,
+        "program": ""
+    },
+    {
+        "sample_order": 295,
+        "algorithm": "{The algorithm evaluates bins using a Gaussian-like bell curve centered around an ideal remaining capacity to balance tight packing and load distribution, while smoothly penalizing newly opened bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.where(rem >= 0, np.exp(-((rem - 0.1) ** 2) / 0.05), -np.inf)\n    empty_idx = np.where((bins == 1.0) & (rem >= 0))[0]\n    if empty_idx.size > 0:\n        first_empty = empty_idx[0]\n        non_empty_valid = np.any((bins < 1.0) & (rem >= 0))\n        if not non_empty_valid:\n            scores[first_empty] = 1.0\n        else:\n            scores[first_empty] = -0.5\n    return scores\n\n",
+        "score": -0.028969468053887552,
+        "program": ""
+    }
+]
