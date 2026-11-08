@@ -82,7 +82,6 @@ class TestAblationConfigs(unittest.TestCase):
             self.assertEqual(cfg[k], self.base[k], k)
         self.assertEqual(cfg["seeds"], list(range(10)))
 
-
     def test_mixed_capacities_changes_only_the_training_set_from_a1b(self):
         # Ablation 2b (#7): A1b's setup; its comparison row is abl_informed_rules (claims, #15)
         cfg, a1b = self._load("abl_mixed_capacities"), self._load("abl_informed_rules")
@@ -98,7 +97,11 @@ class TestAblationConfigs(unittest.TestCase):
         self.assertEqual({k: v for k, v in space.items() if k != "penalty"},
                          {k: v for k, v in tuned_bf.SPACE.items() if k != "penalty"})
         self.assertEqual(list(space["penalty"]), [1, 300])
-        self.assertGreater(space["penalty"][1], 300 - 45 - space["hi_max"])  # empty bin r ~ 300 - item > used r + penalty
+        # the empty bin (score -(300 - item)) beats a penalised used bin (score -r - penalty) when r + penalty > 300 - item;
+        # for a mean item (~40) and the largest penalised gap (hi_max - 1) that needs penalty > 222, out of reach at 100
+        need = 300 - 40 - (space["hi_max"] - 1)
+        self.assertGreater(space["penalty"][1], need)
+        self.assertLess(tuned_bf.SPACE["penalty"][1], need)
 
 
 class TestMixedSet(unittest.TestCase):
