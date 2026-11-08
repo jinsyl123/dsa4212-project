@@ -180,3 +180,31 @@ The control has run (seeds 0–9, `b14e98b`, `99452e2`, `f3dfa94`) but has not b
 1. **A2 alternative (section above).** Proposed on #7: a stronger LLM instead of mixed shapes, because A1 and the control left "no LLM rule beats tuned Best Fit in distribution" as the main open question, and the new failures are capacity failures, which mixed shapes (capacity 100 throughout) cannot test. Written before any A2 run; adopted only if the team agrees on #7, then logged in `docs/log.md`.
 2. **Optional settings.** `abl_informed_dist` and `abl_informed` were dropped on 7 Nov (`docs/log.md`, `a2b668e`); `abl_no_m2` is not planned.
 3. **Amendment 1** now cites the A1 log entry (`a2b668e`).
+
+### 2026-11-09, A1 predictions for the secondary sets (in retrospect)
+
+Added 9 Nov, in retrospect. Predictions for the secondary sets were left out by mistake when A1 was registered. These continue the hypotheses above. They were written after A1 and the control were scored, so they are not pre-registered and do not count as confirmations. They follow from the A1a and A1b hypotheses, `baseline_findings.md` and the set definitions in `configs/instances/v0.yaml`, and were not adjusted to match the results.
+
+Counts are per-seed verdicts against Best Fit, out of 10 seeds. "Mostly unclear or tie" means at most 2 seeds better.
+
+**A1a (empty bins hidden).** The fresh-bin failure cannot happen, so any loss comes from how a rule chooses among used bins (seed 3's kind).
+
+| Sets | Expectation | Why |
+|---|---|---|
+| `test_size_1k`, `test_size_10k` | At least 4 better, none worse | Same item distribution as `test_id_5k`; only the length changes |
+| `test_uniform` | Fewer better than on `test_id_5k`; at most 2 worse | Different item distribution and capacity, so gains fitted to Weibull items carry over only partly |
+| `test_cap200`, `test_cap500` | Mostly unclear or tie; at most 2 worse | Bigger bins hold more items, so gaps fill easily and rules differ less |
+| `test_cap500_scaled` | Fewer better than on `test_id_5k`; at most 2 worse | Same item-to-bin ratio, but rules with fixed constants (baseline seeds 2 and 3) do not scale |
+| `test_scale25` | Mostly unclear or tie; at most 2 worse | Small items fill gaps easily |
+| `test_scale65` | Mostly unclear or tie; at most 2 worse | 63% of items exceed half a bin, so few placements are real choices |
+
+**A1b (bin rules in the prompt).** The hypothesis is more fresh-bin seeds, with the gain and the failure coming together. The bet pays off only when later small items fill the gaps.
+
+| Sets | Expectation | Why |
+|---|---|---|
+| `test_size_1k`, `test_size_10k` | More than half better, as on `test_id_5k` | Same item distribution; only the length changes |
+| `test_uniform` | More seeds better than worse | Spread-out sizes, so later small items fill the gaps, as in training |
+| `test_cap200`, `test_cap500` | Mostly unclear or tie; fewer worse than on `test_shape_k5` | Many items per bin, so gaps fill and an extra opened bin costs little |
+| `test_cap500_scaled` | Fewer better than on `test_id_5k`; at most as many worse as on `test_shape_k5` | Same item-to-bin ratio, so rules based on ratios keep the gain and rules with fixed constants lose it |
+| `test_scale25` | Mostly unclear or tie; fewer worse than on `test_shape_k5` | Small items fill the gaps, so the bet costs little |
+| `test_scale65` | More seeds worse than on `test_id_5k` | Few small items are left to fill the gaps, as on `test_shape_k5` |
