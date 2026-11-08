@@ -165,11 +165,11 @@ A **collapse** is a mean excess more than 100 pp above Best Fit on a set. In A1b
 - **What remains uncertain either way:**
   - **Conditional on the prompt:** the result holds for the informed prompt only. If time allows, A2b on the baseline prompt would give a 2×2 (prompt × training capacities) and show whether the fix depends on the prompt.
   - **Item sizes are fixed at scale 45:** training has no variety in item size, so `test_cap500_scaled` is only a check.
-  - **Tuned Best Fit's ranges:** the default ranges assume capacity 100 (`tuned_bf.py`), where a penalty of at most 100 cannot make an empty bin win at capacity 300. In A2b the penalty range is widened to 1..300 (`lo` and `hi` unchanged), so the tuner can place the fresh-bin bet at both capacities; whether it does is measured, not assumed (Amendment, 9 Nov, point 4).
+  - **Tuned Best Fit's ranges:** its knob ranges assume capacity 100 (`tuned_bf.py`), so at capacity 300 its penalty cannot make an empty bin win.
 
-## A3 (optional). Stronger LLM, same budget (`abl_strong_model.yaml`)
+## A2 (proposed alternative, 8 Nov). Stronger LLM, same budget (`abl_strong_model.yaml`)
 
-**Status: optional, run only if time allows after A2 (#7, 9 Nov); otherwise future work.** First proposed on 8 Nov as a replacement for the mixed-shapes A2; the team kept training-data variety as A2 instead. Every prediction below was written before any `abl_strong_model` run; the only run so far is a 12-evaluation `pipecheck` (setup check, small instances, not scored).
+**Status: draft, proposed on #7 after A1 and the control were scored. It replaces the mixed-shapes A2 above only if @lottomonster and @JiaKangL agree, and must be committed before any `abl_strong_model` run.** Every prediction below is written before any A2 run; the only A2 run so far is a 12-evaluation `pipecheck` (setup check, small instances, not scored).
 
 - **Changes from baseline:** the LLM only: `google/gemini-3.5-flash` instead of `google/gemini-3.5-flash-lite` (same generation, same reasoning effort `low`, same 8192-token cap). Everything else as `eoh_baseline.yaml`: `funsearch` mode, default LLM4AD prompt, 300 evaluations, train on `train`, the frozen test sets. 10 seeds (0–9).
 - **Question:** is "no LLM rule beats tuned Best Fit on `test_id_5k`" (0 of 36 seeds across the baseline, A1a, A1b and the control, #18) a limit of the model, or a ceiling for this search and rule family within 300 evaluations?
@@ -279,5 +279,3 @@ Edited above, as in Amendment 4, since A2 has not run.
 1. **Seeds and Fisher rows.** A2 runs 10 seeds (#7), so A2's seed counts are no longer descriptive only.
 2. **Ablation 2 is one ablation with two settings** (#7): A2a mixed shapes, and the new A2b mixed capacities. A2a uses the baseline setup and compares against the baseline. A2b uses the A1b setup (informed prompt) and compares against A1b, seeds 0–9, because the capacity collapse appears only there. This changes the earlier rule that every setting is one change from the baseline: A2b is one change from A1b. Every held-out set is a claim set for both.
 3. **A2a wording.** The sets at shapes 1.5 and 5 are outside the training range of shapes 2 to 4, so they test extrapolation. The earlier text said interpolation.
-4. **A2b: tuned Best Fit's penalty range is 1..300** (`configs/abl_mixed_capacities.yaml`, `docs/log.md` 9 Nov, `f8a95ea` on `ablation-runs`). With the default 1..100, an empty bin at capacity 300 (~260 left) can never win, so the reference could not place the fresh-bin bet in half the training set while the LLM rules can (they read the capacity from `max(bins)`). `lo` and `hi` are unchanged: they measure gaps in item units, and item sizes are the same in both halves. Scaling every knob ×3 was rejected for that reason. Decided before any A2b run or tuning; the tuned Best Fit prediction above is unchanged.
-5. **A3.** The stronger-model section (8 Nov) is relabelled optional A3 (#7).
