@@ -11,7 +11,7 @@ Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1
 ## What the course asks for (why this file exists)
 
 - **Experimental design, 35%:** "breadth and depth, controlled comparisons, and follow-up on findings"
-  (Assignment guidelines, Marking). Each setting below changes one thing from the baseline.
+  (Assignment guidelines, Marking). Each setting below changes one thing from its comparison row (the baseline, except A2b: A1b).
 - **Analysis, 20%:** "evidence-based conclusions, discussion of limitations". Fill in **What remains
   uncertain** for every setting.
 - **Negative results count:** "A carefully investigated negative result can earn high marks" (guidelines),
@@ -28,15 +28,15 @@ Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1
 
 | Item | Rule |
 |---|---|
-| Comparison row | EoH baseline, seeds 0–5 (`eoh_baseline.yaml`) |
-| Seeds per setting | **Ablation 1 (A1a, A1b) and the control: 10 (seeds 0–9)**, as run (#7). A2: 5 (seeds 0–4). Every seed run in full is scored; none is dropped |
+| Comparison row | EoH baseline, seeds 0–5 (`eoh_baseline.yaml`). Exception: A2b compares against A1b, seeds 0–9 (`abl_informed_rules.yaml`) |
+| Seeds per setting | **Every setting: 10 (seeds 0–9)**: Ablation 1 (A1a, A1b) and the control as run (#7), Ablation 2 (A2a, A2b) as agreed on #7. Every seed run in full is scored; none is dropped |
 | References | Best Fit, and tuned Best Fit retuned in the same setting (#8), with the same seeds as the setting. A setting that changes neither `mode` nor the training set (A1b, control) leaves tuned Best Fit unchanged: it is still retuned in its own folder, and seeds 0–5 must match the baseline's exactly (a determinism check) |
 | Sets | train, val (selection only, never reported as a test), and the test sets frozen in #12 |
 | Metric | excess over L2 (%) on every set (#12 decision 7, #10); fewer bins = better. Same as L1 except on `test_scale65` and `test_control`, so numbers stay comparable with FunSearch/EoH |
 | Per-seed verdict vs a reference | `paired_stats.py` (#13, scored with its code as of this freeze; if #13 changes before merging, rescore and note it in Amendments): **better / worse** only if the 95% bootstrap CI excludes 0 **and** sign-test p < 0.05; **tie** if identical on every instance; else **unclear** |
-| Setting-level effect | The number of seeds in each category (of 10 for Ablation 1 and the control, of 5 for A2), next to the baseline's (of 6), tested with a two-sided Fisher exact test vs the baseline (2×2 table: seeds in that category vs the rest, this setting vs the baseline). Against the baseline's 3/6, **only 0/10 or 10/10 reach p < 0.05** (p = 0.036; 1/10 or 9/10 give 0.12). With 5 seeds nothing can (0/5 or 5/5 gives 0.18), so A2's seed counts are descriptive only. Otherwise significance comes only from the per-seed paired verdicts above. |
+| Setting-level effect | The number of seeds in each category (of 10), next to the baseline's (of 6), tested with a two-sided Fisher exact test vs the baseline (2×2 table: seeds in that category vs the rest, this setting vs the baseline). Against the baseline's 3/6, **only 0/10 or 10/10 reach p < 0.05** (p = 0.036; 1/10 or 9/10 give 0.12). A2b is tested against A1b (of 10): against 5/10, only 0/10 reaches p < 0.05 (p = 0.033; 1/10 gives 0.14), and against 4/10 no count below it does (0/10 gives 0.087). Otherwise significance comes only from the per-seed paired verdicts above. |
 | Mechanism measure | `fresh_given_room` from `diagnose.py` (#5): share of placements that open an empty bin while a used one has room. A seed is a **fresh-bin seed** if it is > 0.01 on train |
-| Held-out sets used for claims | **in-distribution:** `test_id_5k`; **shift:** `test_shape_k1.5`, `test_shape_k5`, plus the other #12 sets as secondary. `train` is reported but not a claim (it is the set searched on). `test_control` (#16) is a scoring check, not a claim: every rule must be exactly 0% over L2 there |
+| Held-out sets used for claims | **in-distribution:** `test_id_5k`; **shift:** `test_shape_k1.5`, `test_shape_k5`, plus the other #12 sets as secondary. For Ablation 2 (A2a, A2b), every held-out set is a claim set. `train` is reported but not a claim (it is the set searched on). `test_control` (#16) is a scoring check, not a claim: every rule must be exactly 0% over L2 there |
 | Integrity | `check_integrity.py` (#6): flagged programs reported, not dropped. Runs stopped early by an error are rerun in full, not scored (`docs/log.md`); a run that hit the budget mid-evaluation (`abl_anyfit` seed 4, 299 of 300) counts as complete |
 
 **Baseline to compare against** (EoH, 6 seeds, `baseline_findings.md`): 3/6 fresh-bin seeds (3, 4, 5). Seeds 0–2
@@ -90,19 +90,82 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
   - **Which addition caused it:** an effect can't be pinned on the empty-bin clause alone, since the task framing changed too. Claim "task framing + bin rules", not "telling it about empty bins".
   - **Seed counts:** with 10 seeds, 3/6 vs 8/10 or 9/10 can still be chance (p ≥ 0.12, see the shared rules). Only 0/10 or 10/10 counts as significant on its own.
 
-## A2. Training-data variety (`abl_mixed_shapes.yaml`)
+## Ablation 2. Training-data variety
+
+One ablation, two settings (#7). Both change only the training data, on the lite model with 300 evaluations and 10 seeds. **A2a** starts from the baseline setup and compares against the EoH baseline, because its target failures (k1.5, k5) are baseline failures. **A2b** starts from the A1b setup (informed prompt) and compares against A1b, seeds 0–9, because the capacity collapse appears only there. Both were written after A1 and the control were scored and before any A2 run, so A1's results informed them. Counts are per-seed verdicts against Best Fit.
+
+Counts on the frozen sets (`paired_stats.csv` in each setting's results folder):
+
+| Set | EoH baseline better / worse (of 6) | A1b better / worse (of 10) | Tuned Best Fit better / worse (of 6) |
+|---|---|---|---|
+| `test_id_5k` | 3 / 0 | 10 / 0 | 6 / 0 |
+| `test_size_1k` | 2 / 0 | 3 / 0 | 6 / 0 |
+| `test_size_10k` | 3 / 0 | 9 / 0 | 6 / 0 |
+| `test_uniform` | 3 / 0 | 4 / 0 | 6 / 0 |
+| `test_cap200` | 0 / 1 | 0 / 5 | 3 / 0 |
+| `test_cap500` | 0 / 1 | 0 / 5 | 0 / 0 |
+| `test_cap500_scaled` | 2 / 1 | 5 / 1 | 0 / 6 |
+| `test_scale25` | 0 / 1 | 1 / 5 | 2 / 2 |
+| `test_scale65` | 0 / 1 | 0 / 0 | 0 / 0 |
+| `test_shape_k1.5` | 2 / 1 | 2 / 0 | 2 / 4 |
+| `test_shape_k5` | 1 / 2 | 2 / 1 | 0 / 6 |
+
+A **collapse** is a mean excess more than 100 pp above Best Fit on a set. In A1b that is 5 of 10 seeds on `test_cap500` (0, 2, 3, 4, 9) and 4 of 10 on `test_cap200` and `test_scale25` (0, 2, 3, 9). Seed 4 is worse on those two by only about 0.7 pp.
+
+## A2a. Mixed shapes (`abl_mixed_shapes.yaml`)
 
 - **Changes from baseline:** `evaluation: {train_set: train_mixed}`. Same sizes and capacity, with half the instances at Weibull shape 2 and half at shape 4. Test shapes 1.5 and 5 stay out.
 - **Question:** do the k1.5 / k5 failures come from training on a single item-size shape?
 - **Hypothesis and why:** the fresh-bin bet pays off only when later small items fill the gaps, which holds for shape 3 but not for clustered sizes (k5: 9% single-item bins). Shape-4 training instances are clustered enough to punish the bet during search, so selection should prefer rules that hold up across shapes. Seed 3's skip window fitted shape 3 by accident and would be scored on two shapes instead.
 - **Prediction:**
-  - Fewer seeds worse than Best Fit on `test_shape_k5` or `test_shape_k1.5` (baseline: 3 of 6 lose on one of them).
-  - Smaller gains on `test_id_5k` than the baseline's best seeds: about 0–0.5 pp, against ~1 pp.
+  - Fewer seeds worse than Best Fit on `test_shape_k5` or `test_shape_k1.5`: at most 3 of 10 (baseline: 3 of 6 lose on one of them).
+  - Smaller gains on `test_id_5k` than the baseline's best seeds: about 0–0.5 pp, against ~1 pp, with at most 5 of 10 seeds better.
   - `fresh_given_room` lower on average.
-- **What counts as an effect:** per-seed **worse** verdicts on k1.5 and k5 vs Best Fit and vs `train_mixed`-retuned tuned Best Fit, compared with the baseline's.
+  - On the other held-out sets:
+
+    | Sets | Expectation (of 10) | Why |
+    |---|---|---|
+    | `test_size_1k`, `test_size_10k` | At most 5 better, at most 1 worse | Same item distribution as `test_id_5k`, so the same smaller gain |
+    | `test_uniform` | At most 1 worse | Mixing shapes adds variety in item size, and the baseline has none worse |
+    | `test_cap200`, `test_cap500`, `test_cap500_scaled` | At most 3 worse | The training capacity is unchanged, so no reason to move far from the baseline's 1 of 6 |
+    | `test_scale25`, `test_scale65` | At most 3 worse | The training scale is unchanged, so no reason to move far from the baseline's 1 of 6 |
+- **What counts as an effect:** per-seed **worse** verdicts on k1.5 and k5 vs Best Fit and vs `train_mixed`-retuned tuned Best Fit, compared with the baseline's, and the same verdicts on the other held-out sets.
 - **If confirmed, we claim:** the shape-shift failures come from training on one shape. A more varied training set trades some in-distribution gain for robustness.
 - **If not confirmed, we claim:** the failures don't come from the training shape alone. The rule family or the search picks fragile rules even when the training data covers more than one shape.
-- **What remains uncertain either way:** shapes 2 and 4 bracket the training shape but not the test shapes (1.5, 5), so this tests interpolation, not extrapolation. Mixing also changes the average training difficulty.
+- **What remains uncertain either way:** shapes 2 and 4 bracket the original training shape (3) but not the test shapes (1.5, 5), so the shape sets test extrapolation beyond the training range. Mixing also changes the average training difficulty.
+
+## A2b. Mixed capacities (`abl_mixed_capacities.yaml`, to be built)
+
+- **Changes from A1b:** the training set only, with the informed prompt kept (`evaluation: {prompt: informed_rules}`). Half the instances are at capacity 100 and half at capacity 300, otherwise as `train` (Weibull shape 3, scale 45, so the same item sizes in both halves). The test sets are unchanged. This is one change from A1b and two from the baseline.
+- **Question:** does A1b's capacity collapse come from training on a single capacity?
+- **Hypothesis and why:** all five collapsing A1b seeds read the capacity through `max(bins)` and score empty bins separately from used ones. Calibrated at capacity 100, the empty bin then wins almost every time at larger capacities, so each item opens a new bin. The search scores mean relative excess per instance (`core.py`), so a rule that collapses at capacity 300 is heavily penalised in training and selection should remove it. Capacity 300 also moves the mean item from ~40% to ~13% of a bin, so `test_cap200` and `test_scale25` (~20–22%) sit inside the training range, while `test_cap500` (~8%) and `test_scale65` (~58%) sit outside it.
+- **Prediction:**
+  - **Collapses:** 0 of 10 on `test_cap200` and `test_scale25` (A1b: 4 of 10 each), and at most 2 of 10 on `test_cap500` (A1b: 5 of 10).
+  - **Fresh-bin seeds:** at most 6 of 10 (A1b: 6 of 10).
+  - **Per-seed verdicts against Best Fit:**
+
+    | Sets | Position | Expectation (of 10) | Why |
+    |---|---|---|---|
+    | `test_id_5k`, `test_size_10k` | Capacity 100 | At least 5 better, none worse, with a smaller mean gain than A1b | Only half of training is at this capacity, so gains fitted to it shrink |
+    | `test_size_1k` | Capacity 100 | At most 1 worse | Same item distribution, but small differences are harder to detect |
+    | `test_uniform` | Item ~40% of a bin | At most 1 worse | Inside the training range |
+    | `test_cap200`, `test_scale25` | Inside the range | At most 1 worse (A1b: 5) | Training covers this item-to-bin range |
+    | `test_cap500` | Outside the range | At most 2 worse (A1b: 5) | Outside what training covers, so some seeds may still fail |
+    | `test_scale65` | Outside the range | At most 2 worse (A1b: 0) | The mean item is a larger share of the bin than in either half of training |
+    | `test_cap500_scaled` | Capacity outside, ratio as at 100 | At most 2 worse (A1b: 1) | A check: items scale with the bin, which training does not cover |
+    | `test_shape_k1.5`, `test_shape_k5` | Shape unchanged | At most 3 worse on one of them (A1b: 1) | Mixing capacities does not touch shape |
+
+  - **Tuned Best Fit** (retuned on this training set): still worse than Best Fit on `test_cap500_scaled` in at least 8 of 10 seeds (10 of 10 with A1b's copy). Its knobs are absolute and training has no variety in item size, so that failure should stay.
+- **What counts as an effect:** collapse counts and per-seed verdicts on every held-out set, vs Best Fit and vs the tuned Best Fit retuned in this setting, next to A1b's. Report what each best program does with empty bins (`baseline_findings.md` style).
+- **If confirmed, we claim:** under the informed prompt, A1b's capacity collapse comes from training on one capacity. Training on two removes it inside the trained range, at some cost in gain at capacity 100.
+- **If not confirmed, we claim:**
+  - **Collapses remain on `test_cap200` or `test_scale25`:** the collapse does not come from the training capacity alone. The prompt or the rule family produces fragile rules even when training punishes them.
+  - **Collapses are gone inside the range but stay on `test_cap500`:** the rules fit the trained capacities, not capacity in general.
+  - **Seeds are worse on capacity 100 sets than predicted:** the search trades away the in-distribution gain to survive capacity 300.
+- **What remains uncertain either way:**
+  - **Conditional on the prompt:** the result holds for the informed prompt only. If time allows, A2b on the baseline prompt would give a 2×2 (prompt × training capacities) and show whether the fix depends on the prompt.
+  - **Item sizes are fixed at scale 45:** training has no variety in item size, so `test_cap500_scaled` is only a check.
+  - **Tuned Best Fit's ranges:** its knob ranges assume capacity 100 (`tuned_bf.py`), so at capacity 300 its penalty cannot make an empty bin win.
 
 ## A2 (proposed alternative, 8 Nov). Stronger LLM, same budget (`abl_strong_model.yaml`)
 
@@ -208,3 +271,11 @@ Counts are per-seed verdicts against Best Fit, out of 10 seeds. "Mostly unclear 
 | `test_cap500_scaled` | Fewer better than on `test_id_5k`; at most as many worse as on `test_shape_k5` | Same item-to-bin ratio, so rules based on ratios keep the gain and rules with fixed constants lose it |
 | `test_scale25` | Mostly unclear or tie; fewer worse than on `test_shape_k5` | Small items fill the gaps, so the bet costs little |
 | `test_scale65` | More seeds worse than on `test_id_5k` | Few small items are left to fill the gaps, as on `test_shape_k5` |
+
+### 2026-11-09, Ablation 2 predictions (before any A2 run)
+
+Edited above, as in Amendment 4, since A2 has not run.
+
+1. **Seeds and Fisher rows.** A2 runs 10 seeds (#7), so A2's seed counts are no longer descriptive only.
+2. **Ablation 2 is one ablation with two settings** (#7): A2a mixed shapes, and the new A2b mixed capacities. A2a uses the baseline setup and compares against the baseline. A2b uses the A1b setup (informed prompt) and compares against A1b, seeds 0–9, because the capacity collapse appears only there. This changes the earlier rule that every setting is one change from the baseline: A2b is one change from A1b. Every held-out set is a claim set for both.
+3. **A2a wording.** The sets at shapes 1.5 and 5 are outside the training range of shapes 2 to 4, so they test extrapolation. The earlier text said interpolation.
