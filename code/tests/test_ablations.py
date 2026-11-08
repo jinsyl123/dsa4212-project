@@ -42,7 +42,7 @@ class TestAblationConfigs(unittest.TestCase):
                 self.assertEqual(cfg["evaluation"], expected)
 
     def test_shared_settings(self):
-        names = list(ABLATIONS) + ["abl_no_m2", "control_randsample"]
+        names = list(ABLATIONS) + ["abl_no_m2", "abl_mixed_capacities", "control_randsample"]
         cfgs = {n: self._load(n) for n in names}
         self.assertEqual(
             len({c["experiment"] for c in cfgs.values()}), len(names)
@@ -52,11 +52,11 @@ class TestAblationConfigs(unittest.TestCase):
                 self.assertEqual(cfg["llm"]["model"], "google/gemini-3.5-flash-lite")
                 self.assertEqual(cfg["llm"]["provider"], "openrouter")
                 self.assertEqual(cfg["budget"]["max_evals"], 300)
-                # Ablation 1's main settings and the control run 10 seeds (docs/log.md, 7 Nov); every other setting runs 5
+                # Ablations 1 and 2 and the control run 10 seeds (docs/log.md, 7 and 9 Nov); the dropped rows keep 5
                 expected = (
                     list(range(10))
                     if cfg["experiment"]
-                    in ("abl_anyfit", "abl_informed_rules", "control_randsample")
+                    in ("abl_anyfit", "abl_informed_rules", "abl_mixed_shapes", "abl_mixed_capacities", "control_randsample")
                     else list(range(5))
                 )
                 self.assertEqual(cfg["seeds"], expected)
@@ -81,6 +81,24 @@ class TestAblationConfigs(unittest.TestCase):
         for k in ("budget", "methods", "evaluation", "final_eval", "instances"):
             self.assertEqual(cfg[k], self.base[k], k)
         self.assertEqual(cfg["seeds"], list(range(10)))
+
+
+    def test_mixed_capacities_changes_only_the_training_set_from_a1b(self):
+        # Ablation 2b (#7): A1b's setup; its comparison row is abl_informed_rules (claims, #15)
+        cfg, a1b = self._load("abl_mixed_capacities"), self._load("abl_informed_rules")
+        self.assertEqual(cfg["evaluation"], {**a1b["evaluation"], "train_set": "train_mixed_cap"})
+        for k in ("llm", "budget", "final_eval", "instances", "seeds"):
+            self.assertEqual(cfg[k], a1b[k], k)
+        eoh, tbf = cfg["methods"]
+        self.assertEqual(eoh, a1b["methods"][0])
+        self.assertEqual(tbf["name"], "tuned_bf")
+        # only the penalty range is widened, so the fresh-bin bet is reachable at capacity 300 (docs/log.md, 9 Nov)
+        from obpevo import tuned_bf
+        space = tuned_bf.check_space(tbf["params"]["space"])
+        self.assertEqual({k: v for k, v in space.items() if k != "penalty"},
+                         {k: v for k, v in tuned_bf.SPACE.items() if k != "penalty"})
+        self.assertEqual(list(space["penalty"]), [1, 300])
+        self.assertGreater(space["penalty"][1], 300 - 45 - space["hi_max"])  # empty bin r ~ 300 - item > used r + penalty
 
 
 class TestMixedSet(unittest.TestCase):
@@ -114,6 +132,20 @@ class TestMixedSet(unittest.TestCase):
             s["shape"] for n, s in sets.items() if n.startswith("test_shape")
         }
         self.assertFalse(train_shapes & test_shapes)
+
+    def test_train_mixed_cap_alternates_capacity_with_the_same_items(self):
+        import yaml
+
+        sets = yaml.safe_load((ROOT / "configs" / "instances" / "v0.yaml").read_text())["sets"]
+        insts = instances.generate_set("train_mixed_cap", sets["train_mixed_cap"], base_seed=0)
+        self.assertEqual(len(insts), 32)
+        self.assertEqual([i["capacity"] for i in insts], [100, 300] * 16)
+        for cap in (100, 300):
+            items = np.concatenate([i["items"] for i in insts if i["capacity"] == cap])
+            self.assertAlmostEqual(items.mean(), 40.2, delta=1.0)  # Weibull(3) * 45 in both halves
+        # every other key matches train, so the capacity is the only change
+        rest = {k: v for k, v in sets["train_mixed_cap"].items() if k != "mix"}
+        self.assertEqual(rest, sets["train"])
 
     def test_missing_set_is_built(self):
         # a laptop with data/ already built must still get sets added to the spec later

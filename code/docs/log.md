@@ -130,3 +130,12 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **When:** decided and committed on 7 Nov before the A1 runs started (`e3009aa`, configs and test); this entry was meant to go in with that commit and was added later.
 - **Alternatives considered:** 5 seeds per setting plus both optional rows (same cost, less power on the main question).
 - **Affects:** `configs/abl_anyfit.yaml`, `configs/abl_informed_rules.yaml`, `tests/test_ablations.py`; results in `results/abl_anyfit/`, `results/abl_informed_rules/`.
+
+### 2026-11-09: Ablation 2 = A2a mixed shapes + A2b mixed capacities, 10 seeds each; A3 optional (Jin)
+
+- **Decision:** Ablation 2 has two settings, both changing only the training data, 10 seeds (0–9) each. **A2a** `abl_mixed_shapes` (baseline setup, compared with the baseline). **A2b** `abl_mixed_capacities` (A1b's informed prompt, trained on `train_mixed_cap`: capacities 100 and 300, item scale 45 in both halves; compared with `abl_informed_rules`). The stronger model (`abl_strong_model`) becomes optional A3. Agreed on #7 (Jia Kang, 9 Nov); predictions in #15 before any A2 run.
+- **Why A2b builds on A1b:** the capacity collapse it tests appears only there (5/10 seeds on cap500, 4/10 on cap200 and scale25); the baseline has none, so on the baseline setup A2b could only show "nothing breaks". Cost: the result holds for the informed prompt only (#15).
+- **Tuned Best Fit's penalty range in A2b: 1..300 (default 1..100).** An empty bin at capacity 300 leaves ~260, so with penalty ≤ 100 the tuner can never place the fresh-bin bet in half the training set, while the LLM rules can (they read the capacity from `max(bins)`). `lo` and `hi` stay: they measure gaps in item units, and item sizes don't change. Same 300 tries over a 3× larger space (112,200 settings vs 37,400).
+- **Alternatives considered:** keep 1..100 (handicaps the reference in half the training set); scale every knob ×3, as the `tuned_bf.py` docstring suggests for a new capacity (that rule assumes items scale with the bin, which they don't here).
+- **Check:** pipecheck of `abl_mixed_capacities` (seed 99, `check` budget, eoh only): 12/12 evals ok, informed prompt confirmed, 32 training instances. Not scored.
+- **Affects:** `configs/abl_mixed_shapes.yaml`, `configs/abl_mixed_capacities.yaml`, `configs/instances/v0.yaml` (`train_mixed_cap`; no other set changes), `tests/test_ablations.py`; #15.
