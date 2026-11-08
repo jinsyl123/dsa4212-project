@@ -104,6 +104,28 @@ reason (an accidental skip window). Tuned Best Fit: train 2.4 under `funsearch`,
 - **If not confirmed, we claim:** the failures don't come from the training shape alone. The rule family or the search picks fragile rules even when the training data covers more than one shape.
 - **What remains uncertain either way:** shapes 2 and 4 bracket the training shape but not the test shapes (1.5, 5), so this tests interpolation, not extrapolation. Mixing also changes the average training difficulty.
 
+## A2 (proposed alternative, 8 Nov). Stronger LLM, same budget (`abl_strong_model.yaml`)
+
+**Status: draft, proposed on #7 after A1 and the control were scored. It replaces the mixed-shapes A2 above only if @lottomonster and @JiaKangL agree, and must be committed before any `abl_strong_model` run.** Every prediction below is written before any A2 run; the only A2 run so far is a 12-evaluation `pipecheck` (setup check, small instances, not scored).
+
+- **Changes from baseline:** the LLM only: `google/gemini-3.5-flash` instead of `google/gemini-3.5-flash-lite` (same generation, same reasoning effort `low`, same 8192-token cap). Everything else as `eoh_baseline.yaml`: `funsearch` mode, default LLM4AD prompt, 300 evaluations, train on `train`, the frozen test sets. 10 seeds (0–9).
+- **Question:** is "no LLM rule beats tuned Best Fit on `test_id_5k`" (0 of 36 seeds across the baseline, A1a, A1b and the control, #18) a limit of the model, or a ceiling for this search and rule family within 300 evaluations?
+- **Hypothesis and why:** mostly a ceiling. Tuned Best Fit is 1.67% over L2 on `test_id_5k`; the best LLM seeds are 2.88% (baseline 4/5) and ~1.8% (A1b), and every gain found so far comes from the same few ideas (fresh-bin bet, sliver avoidance) that tuned Best Fit already tunes directly. A stronger model should find those ideas more reliably, so more seeds beat plain Best Fit, but not a new kind of rule. A1b showed the fresh-bin bet comes from selection on `train`, so a better optimiser of `train` should place it at least as often, with the same failures under shift.
+- **Prediction:**
+  - **At most 2 of 10 seeds better than tuned Best Fit** (same setting, i.e. funsearch-tuned) on `test_id_5k`.
+  - **At least 6 of 10 seeds better than Best Fit** on `test_id_5k` (baseline 3/6).
+  - **At least 5 of 10 fresh-bin seeds** (baseline 3/6).
+  - **Failures follow the fresh-bin seeds:** at least 2 seeds worse than Best Fit on `test_shape_k1.5` or `test_shape_k5`, and at least 2 worse on a capacity or scale set (`test_cap200`, `test_cap500`, `test_scale25`), as in A1b.
+- **What counts as an effect:** the shared rules: per-seed verdicts vs Best Fit and vs tuned Best Fit; seed counts vs the baseline's with Fisher's test (only 0/10 or 10/10 against 3/6 reaches p < 0.05, so the other counts are descriptive). For this setting the capacity and scale sets above are **claim sets**, pre-registered here, not secondary. Tuned Best Fit is retuned in this folder; it needs no LLM, so seeds 0–5 must match the baseline's exactly.
+- **If confirmed, we claim:** the ceiling is not the lite model. A stronger LLM finds the same kind of rules more reliably, with the same trade: gains in distribution, failures under shift.
+- **If not confirmed:**
+  - **3 or more seeds beat tuned Best Fit:** model capability limited the lite runs. Report what those rules do (`baseline_findings.md` style) and whether they still fail under shift.
+  - **Fewer than 6 seeds beat Best Fit, or fewer than 5 fresh-bin seeds:** a stronger model does not optimise `train` more reliably here; the search budget, not the model, sets how often EoH escapes Best Fit.
+  - **No capacity or shape failures among the fresh-bin seeds:** the stronger model writes the bet in a capacity-relative form (e.g. reading the capacity from `max(bins)`). Check the programs.
+- **What remains uncertain either way:**
+  - **One stronger model:** this is one data point ("a stronger LLM under the same evaluation budget"), not a trend over model size.
+  - **More than capability changes:** a larger model also writes longer, differently styled code and uses more tokens per call. Report tokens and cost per run next to the result; the evaluation budget (300) is the same.
+
 ## Control. Random sampling, no evolution (`control_randsample.yaml`)
 
 - **Changes from baseline:** LLM4AD `randsample`. The same 300-evaluation budget, no evolution: every call sends the **same fixed FunSearch-style prompt** (Best Fit as `priority_v0`, "complete `priority_v1`"), with no task description and no parents. The best on train is kept, as in EoH. So the prompt differs from EoH's as well as the search.
@@ -135,7 +157,7 @@ Dated entries only, each with the reason. Nothing above changes after the freeze
 
 Written after the A1 results were seen. None of these changes a prediction, or which outcome a result maps to.
 
-1. **Seed count (line 32).** Ablation 1 went from 5 to 10 seeds on 7 Nov: @lottomonster ran seeds 0–9 (#7), and the team scores every complete run. The configs and tests changed in `e3009aa` (on `ablation-runs`, reaching `pipeline` with #19); the control followed in `b14e98b`, which also adds its `docs/log.md` entry ("2026-11-07: control runs 10 seeds"). `docs/log.md` has no matching entry for A1 yet, so "2026-11-04: ablation settings locked" still reads seeds 0–4 until one is added on `ablation-runs`. The A1 predictions were rescaled from 5 to 10 seeds on 7 Nov (commit `87516b5`), after the runs but before any scoring.
+1. **Seed count (line 32).** Ablation 1 went from 5 to 10 seeds on 7 Nov: @lottomonster ran seeds 0–9 (#7), and the team scores every complete run. The configs and tests changed in `e3009aa` (on `ablation-runs`, reaching `pipeline` with #19); the control followed in `b14e98b`, which also adds its `docs/log.md` entry ("2026-11-07: control runs 10 seeds"). The A1 entry in `docs/log.md` ("2026-11-07: Ablation 1 runs 10 seeds; optional rows dropped") was added later, in `a2b668e` on `ablation-runs`; it supersedes the seed count in "2026-11-04: ablation settings locked" for A1. The A1 predictions were rescaled from 5 to 10 seeds on 7 Nov (commit `87516b5`), after the runs but before any scoring.
 2. **Fresh-bin seed (line 38).** It is the measured definition: `fresh_given_room` > 0.01 on train. By that definition the baseline has 3/6 (seeds 3, 4, 5). `baseline_findings.md` explains seed 3's behaviour by an accidental skip window, so only seeds 4/5 place the bet deliberately (2/6). Seed counts in this file use the measured 3/6.
 3. **A1b wording (line 86).** "If confirmed, we claim" reads as a significant result, but under the shared rules only 10/10 fresh-bin seeds would be significant vs 3/6 (8/10 or 9/10 give p ≥ 0.12). Read 8/10 or 9/10 as **consistent with** that claim. Moot for A1b's result (6/10 fresh-bin seeds: not confirmed).
 4. **Control comparison (line 116).** `paired_stats.py` can't compare a seed with another setting's per-seed results (#13). The control's verdicts are vs Best Fit and tuned Best Fit only, and EoH's best seeds are compared descriptively (means side by side). Edited above, since the control has not run.
@@ -152,3 +174,9 @@ The control has run (seeds 0–9, `b14e98b`, `99452e2`, `f3dfa94`) but has not b
 4. **No multiple-comparisons correction.** Verdicts are not corrected across rules × seeds × sets × references (#13's caveat). A single per-seed verdict is descriptive; claims rest on seed counts and on patterns that repeat across seeds and sets.
 5. **A1a tuned Best Fit (line 69).** Retuned in anyfit, tuned Best Fit gets 3.90–4.00% on train (Amendment 5), against the prediction "within ~0.1 pp of Best Fit". The prediction is left as written; if held-out agrees, the report shows it as a miss.
 6. **Scoring start time (Amendment 1).** Commit times show when results were saved, not when scoring ran. Checked: the scoring script (`score.sh`) was first committed at 14:02 on 7 Nov, and the earliest scoring output on disk (`abl_anyfit/tuned_bf/seed0`) is from 13:57, both after the A1 predictions were committed (`67b478c`, 13:55). No A1 scoring ran before 13:55.
+
+### 2026-11-08, A2 proposal (after A1 and the control were scored)
+
+1. **A2 alternative (section above).** Proposed on #7: a stronger LLM instead of mixed shapes, because A1 and the control left "no LLM rule beats tuned Best Fit in distribution" as the main open question, and the new failures are capacity failures, which mixed shapes (capacity 100 throughout) cannot test. Written before any A2 run; adopted only if the team agrees on #7, then logged in `docs/log.md`.
+2. **Optional settings.** `abl_informed_dist` and `abl_informed` were dropped on 7 Nov (`docs/log.md`, `a2b668e`); `abl_no_m2` is not planned.
+3. **Amendment 1** now cites the A1 log entry (`a2b668e`).
