@@ -5,7 +5,7 @@ and what we will conclude whichever way it goes. Once this file is merged, it is
 dated **Amendments** entry at the bottom, never as edits above. The report checks its claims against this file.
 
 Team agreement: "Freeze test sets **and the claim we'll make for each outcome** before the main searches"
-(decisions doc, "Agreed by default"). Owner: Jia Kang (claims doc). Written by: Jin. Frozen on: ___ (the day #15 merges).
+(decisions doc, "Agreed by default"). Owner: Jia Kang (claims doc). Written by: Jin. Frozen on: 9 Nov 2026 (the day #15 merges).
 Ablation 1 predictions (A1a, A1b) committed on 7 Nov 2026, before any Ablation 1 run was scored; the commit timestamp is the record. A1 was then scored before this file was frozen: see Amendments, 7 Nov.
 
 ## What the course asks for (why this file exists)
@@ -134,7 +134,7 @@ A **collapse** is a mean excess more than 100 pp above Best Fit on a set. In A1b
 - **If not confirmed, we claim:** the failures don't come from the training shape alone. The rule family or the search picks fragile rules even when the training data covers more than one shape.
 - **What remains uncertain either way:** shapes 2 and 4 bracket the original training shape (3) but not the test shapes (1.5, 5), so the shape sets test extrapolation beyond the training range. Mixing also changes the average training difficulty.
 
-## A2b. Mixed capacities (`abl_mixed_capacities.yaml`, to be built)
+## A2b. Mixed capacities (`abl_mixed_caps_informed.yaml`)
 
 - **Changes from A1b:** the training set only, with the informed prompt kept (`evaluation: {prompt: informed_rules}`). Half the instances are at capacity 100 and half at capacity 300, otherwise as `train` (Weibull shape 3, scale 45, so the same item sizes in both halves). The test sets are unchanged. This is one change from A1b and two from the baseline.
 - **Question:** does A1b's capacity collapse come from training on a single capacity?
@@ -165,11 +165,12 @@ A **collapse** is a mean excess more than 100 pp above Best Fit on a set. In A1b
 - **What remains uncertain either way:**
   - **Conditional on the prompt:** the result holds for the informed prompt only. If time allows, A2b on the baseline prompt would give a 2×2 (prompt × training capacities) and show whether the fix depends on the prompt.
   - **Item sizes are fixed at scale 45:** training has no variety in item size, so `test_cap500_scaled` is only a check.
-  - **Tuned Best Fit's ranges:** its knob ranges assume capacity 100 (`tuned_bf.py`), so at capacity 300 its penalty cannot make an empty bin win.
+  - **Fitness balance:** Best Fit's excess on `train_mixed_cap` is 4.70% at capacity 100 and 1.21% at 300, so short of a collapse the capacity-100 half drives selection. A2b can show that variety prevents the collapse, but probably not that rules learn to read the capacity. The gain at capacity 100 may also shrink less than predicted above.
+  - **Tuned Best Fit's ranges:** its knob ranges assume capacity 100 (`tuned_bf.py`), so at capacity 300 its penalty cannot make an empty bin win. A2b keeps the default ranges, so its tuned Best Fit differs from A1b's only in the training set.
 
-## A2 (proposed alternative, 8 Nov). Stronger LLM, same budget (`abl_strong_model.yaml`)
+## A3 (optional). Stronger LLM, same budget (`abl_strong_model.yaml`)
 
-**Status: draft, proposed on #7 after A1 and the control were scored. It replaces the mixed-shapes A2 above only if @lottomonster and @JiaKangL agree, and must be committed before any `abl_strong_model` run.** Every prediction below is written before any A2 run; the only A2 run so far is a 12-evaluation `pipecheck` (setup check, small instances, not scored).
+**Status: optional, run only if time allows after A2 (#7, 9 Nov); otherwise future work.** First proposed on 8 Nov as a replacement for the mixed-shapes A2; the team kept training-data variety as A2 instead. Every prediction below was written before any `abl_strong_model` run; the only run so far is a 12-evaluation `pipecheck` (setup check, small instances, not scored).
 
 - **Changes from baseline:** the LLM only: `google/gemini-3.5-flash` instead of `google/gemini-3.5-flash-lite` (same generation, same reasoning effort `low`, same 8192-token cap). Everything else as `eoh_baseline.yaml`: `funsearch` mode, default LLM4AD prompt, 300 evaluations, train on `train`, the frozen test sets. 10 seeds (0–9).
 - **Question:** is "no LLM rule beats tuned Best Fit on `test_id_5k`" (0 of 36 seeds across the baseline, A1a, A1b and the control, #18) a limit of the model, or a ceiling for this search and rule family within 300 evaluations?
@@ -240,7 +241,7 @@ The control has run (seeds 0–9, `b14e98b`, `99452e2`, `f3dfa94`) but has not b
 
 ### 2026-11-08, A2 proposal (after A1 and the control were scored)
 
-1. **A2 alternative (section above).** Proposed on #7: a stronger LLM instead of mixed shapes, because A1 and the control left "no LLM rule beats tuned Best Fit in distribution" as the main open question, and the new failures are capacity failures, which mixed shapes (capacity 100 throughout) cannot test. Written before any A2 run; adopted only if the team agrees on #7, then logged in `docs/log.md`.
+1. **A2 alternative (section above, now optional A3).** Proposed on #7: a stronger LLM instead of mixed shapes, because A1 and the control left "no LLM rule beats tuned Best Fit in distribution" as the main open question, and the new failures are capacity failures, which mixed shapes (capacity 100 throughout) cannot test. Written before any A2 run; adopted only if the team agrees on #7, then logged in `docs/log.md`.
 2. **Optional settings.** `abl_informed_dist` and `abl_informed` were dropped on 7 Nov (`docs/log.md`, `a2b668e`); `abl_no_m2` is not planned.
 3. **Amendment 1** now cites the A1 log entry (`a2b668e`).
 
@@ -279,3 +280,5 @@ Edited above, as in Amendment 4, since A2 has not run.
 1. **Seeds and Fisher rows.** A2 runs 10 seeds (#7), so A2's seed counts are no longer descriptive only.
 2. **Ablation 2 is one ablation with two settings** (#7): A2a mixed shapes, and the new A2b mixed capacities. A2a uses the baseline setup and compares against the baseline. A2b uses the A1b setup (informed prompt) and compares against A1b, seeds 0–9, because the capacity collapse appears only there. This changes the earlier rule that every setting is one change from the baseline: A2b is one change from A1b. Every held-out set is a claim set for both.
 3. **A2a wording.** The sets at shapes 1.5 and 5 are outside the training range of shapes 2 to 4, so they test extrapolation. The earlier text said interpolation.
+4. **A2b review points (#7, #15).** The config is `abl_mixed_caps_informed.yaml`, tuned Best Fit keeps its default knob ranges, and a fitness-balance line is added under A2b's uncertainties. No prediction changes.
+5. **A3.** The stronger-model section is relabelled optional A3 (#7).
