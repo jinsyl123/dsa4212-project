@@ -52,10 +52,11 @@ class TestAblationConfigs(unittest.TestCase):
                 self.assertEqual(cfg["llm"]["model"], "google/gemini-3.5-flash-lite")
                 self.assertEqual(cfg["llm"]["provider"], "openrouter")
                 self.assertEqual(cfg["budget"]["max_evals"], 300)
-                # Ablation 1's main settings run 10 seeds (docs/log.md, 7 Nov); every other setting runs 5
+                # Ablation 1's main settings and the control run 10 seeds (docs/log.md, 7 Nov); every other setting runs 5
                 expected = (
                     list(range(10))
-                    if cfg["experiment"] in ("abl_anyfit", "abl_informed_rules")
+                    if cfg["experiment"]
+                    in ("abl_anyfit", "abl_informed_rules", "control_randsample")
                     else list(range(5))
                 )
                 self.assertEqual(cfg["seeds"], expected)
@@ -64,9 +65,10 @@ class TestAblationConfigs(unittest.TestCase):
         no_m2 = self._load("abl_no_m2")["methods"]
         self.assertEqual([m["label"] for m in no_m2], ["eoh_no_m2"])
         self.assertFalse(no_m2[0]["params"]["use_m2_operator"])
+        # tuned_bf is the no-LLM reference, retuned in the control's own folder like the baseline's
         self.assertEqual(
             [m["name"] for m in self._load("control_randsample")["methods"]],
-            ["randsample"],
+            ["randsample", "tuned_bf"],
         )
 
 

@@ -122,3 +122,9 @@ One entry per decision that affects results. Link the config and the results fol
 - **Why:** the stop has nothing to do with the method; the rule is applied whatever the rerun scores.
 - **Applied to:** `abl_informed_rules` seed 6 (first attempt: 54 evals, network failure; kept in commit `1ef5ac5`).
 - **Affects:** `results/abl_informed_rules/eoh/seed6/`.
+
+### 2026-11-07: control runs 10 seeds (Nic)
+
+- **Decision:** `control_randsample` runs seeds 0–9 (10), like Ablation 1's main settings.
+- **Why:** the control is compared with both ablations; with 10 seeds its seed counts are on the same footing as A1a/A1b, and the Fisher rule in #15 can reach p < 0.05 (only at 0/10 or 10/10 vs the baseline's 3/6).
+- **Affects:** `configs/control_randsample.yaml`, `tests/test_ablations.py`; results in `results/control_randsample/`.
