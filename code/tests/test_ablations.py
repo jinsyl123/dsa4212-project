@@ -72,7 +72,7 @@ class TestAblationConfigs(unittest.TestCase):
         )
 
     def test_strong_model_changes_only_the_llm(self):
-        # Ablation 2 (proposed on #7): the full model of the same generation, same reasoning effort and token cap
+        # Optional A3 (#7): the full model of the same generation, same reasoning effort and token cap
         cfg = self._load("abl_strong_model")
         self.assertEqual(cfg["llm"]["model"], "google/gemini-3.5-flash")
         self.assertEqual(cfg["llm"]["provider"], self.base["llm"]["provider"])

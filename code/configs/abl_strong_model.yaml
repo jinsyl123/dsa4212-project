@@ -1,4 +1,4 @@
-# Ablation 2 (proposed on #7, 8 Nov): a stronger LLM under the same evaluation budget.
+# Optional A3 (#7; proposed 8 Nov as Ablation 2, kept optional on 9 Nov): a stronger LLM under the same evaluation budget.
 # Only the LLM changes: gemini-3.5-flash instead of gemini-3.5-flash-lite (same generation, same reasoning effort).
 # Question: is "no LLM rule beats tuned Best Fit in distribution" (Ablation 1, #18) a limit of the model?
 # Everything else as the main baseline: funsearch mode, default prompt, 300 evals, frozen test sets.
