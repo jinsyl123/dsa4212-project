@@ -87,7 +87,7 @@ Bold: claimed, i.e. Fisher's exact test on seed counts gives p < 0.05 against bo
 
 **Consistent with the predictions but not significant with 10 seeds:** mixed shapes (A2a) cut shape failures from 3/6 to 1/10; mixed capacities (A2b) remove A1b's capacity collapse inside the trained range (0/10 vs 4/10 on `test_cap200` and `test_scale25`, 2/10 vs 5/10 on `test_cap500`).
 
-**Patterns across every setting:** no LLM rule beats its own tuned Best Fit in distribution (1 of 60 seeds, A2a seed 6). The fresh-bin bet (opening an empty bin while a used one has room) carries both the gains and most of the failures under shift; tuned Best Fit is the most fragile rule under shape and scale shifts (e.g. about 30% over the bound on `test_shape_k5`, vs Best Fit's 8%).
+**Patterns across every setting:** no LLM rule beats its own tuned Best Fit in distribution (1 of 60 seeds, A2a seed 6). In the baseline, the fresh-bin seeds (3, 4, 5; opening an empty bin while a used one has room) account for both its largest in-distribution gains (seeds 4, 5) and all three of its shape failures. Tuned Best Fit fails most consistently under shape shift: every baseline seed is worse than Best Fit on `test_shape_k5` (about 30% over the bound, vs Best Fit's 8%).
 
 ## Audit trail
 
