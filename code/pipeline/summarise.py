@@ -103,7 +103,7 @@ def colours(cfg) -> dict:
 def _save(fig, path: Path):
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path.with_suffix(".png"), dpi=200, bbox_inches="tight")
-    fig.savefig(path.with_suffix(".pdf"), bbox_inches="tight")  # vector copy for LaTeX
+    fig.savefig(path.with_suffix(".pdf"), bbox_inches="tight", metadata={"CreationDate": None})  # vector copy for LaTeX; no date, so reruns are byte-identical
     plt.close(fig)
 
 

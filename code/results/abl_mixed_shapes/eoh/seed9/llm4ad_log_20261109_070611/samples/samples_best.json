@@ -1,0 +1,16 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after hypothetically adding the item to each valid bin, assigning negative infinity to bins that cannot fit the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    priorities = np.where(remaining >= 0, -remaining, -np.inf)\n    return priorities\n\n",
+        "score": -0.04808555648413241,
+        "program": ""
+    },
+    {
+        "sample_order": 237,
+        "algorithm": "{The new algorithm determines bin priority by employing a smooth cosine-based bell function centered near a tight safety target, paired with a steep polynomial barrier for any capacity overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    target = 0.02 * bins\n    width = 0.05 * bins + 1e-5\n    normalized = (remaining - target) / width\n    score = np.where(np.abs(normalized) <= np.pi, 0.5 * (np.cos(normalized) + 1.0), 0.0)\n    overflow_penalty = np.where(remaining < 0, -1.0 / (1.0 + remaining ** 2), 0.0)\n    return score + 10000.0 * overflow_penalty\n\n",
+        "score": -0.047751931863580205,
+        "program": ""
+    }
+]

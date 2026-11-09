@@ -38,7 +38,7 @@ class TestAblationConfigs(unittest.TestCase):
                 self.assertEqual(cfg["evaluation"], expected)
 
     def test_shared_settings(self):
-        names = list(ABLATIONS) + ["abl_no_m2", "control_randsample"]
+        names = list(ABLATIONS) + ["abl_no_m2", "abl_mixed_caps_informed", "control_randsample"]
         cfgs = {n: self._load(n) for n in names}
         self.assertEqual(len({c["experiment"] for c in cfgs.values()}), len(names))      # separate results folders
         for n, cfg in cfgs.items():
@@ -46,13 +46,36 @@ class TestAblationConfigs(unittest.TestCase):
                 self.assertEqual(cfg["llm"]["model"], "google/gemini-3.5-flash-lite")
                 self.assertEqual(cfg["llm"]["provider"], "openrouter")
                 self.assertEqual(cfg["budget"]["max_evals"], 300)
-                self.assertEqual(cfg["seeds"], [0, 1, 2, 3, 4])
+                # Ablations 1 and 2 and the control run 10 seeds (docs/log.md, 7 and 9 Nov); the dropped rows keep 5
+                ten = ("abl_anyfit", "abl_informed_rules", "abl_mixed_shapes", "abl_mixed_caps_informed",
+                       "control_randsample")
+                self.assertEqual(cfg["seeds"], list(range(10 if cfg["experiment"] in ten else 5)))
 
     def test_method_ablations(self):
         no_m2 = self._load("abl_no_m2")["methods"]
         self.assertEqual([m["label"] for m in no_m2], ["eoh_no_m2"])
         self.assertFalse(no_m2[0]["params"]["use_m2_operator"])
-        self.assertEqual([m["name"] for m in self._load("control_randsample")["methods"]], ["randsample"])
+        # tuned_bf is the no-LLM reference, retuned in the control's own folder like the baseline's
+        self.assertEqual([m["name"] for m in self._load("control_randsample")["methods"]], ["randsample", "tuned_bf"])
+
+    def test_strong_model_changes_only_the_llm(self):
+        # Optional A3 (#7): the full model of the same generation, same reasoning effort and token cap
+        cfg = self._load("abl_strong_model")
+        self.assertEqual(cfg["llm"]["model"], "google/gemini-3.5-flash")
+        self.assertEqual(cfg["llm"]["provider"], self.base["llm"]["provider"])
+        for k in ("extra", "max_tokens"):
+            self.assertEqual(cfg["llm"].get(k), self.base["llm"].get(k), k)
+        for k in ("budget", "methods", "evaluation", "final_eval", "instances"):
+            self.assertEqual(cfg[k], self.base[k], k)
+        self.assertEqual(cfg["seeds"], list(range(10)))
+
+    def test_mixed_caps_informed_changes_only_the_training_set_from_a1b(self):
+        # Ablation 2b (#7): A1b's setup; its comparison row is abl_informed_rules (claims, #15)
+        cfg, a1b = self._load("abl_mixed_caps_informed"), self._load("abl_informed_rules")
+        self.assertEqual(cfg["evaluation"], {**a1b["evaluation"], "train_set": "train_mixed_cap"})
+        # methods too: tuned Best Fit keeps its default knob ranges, so it differs from A1b's only in the training set
+        for k in ("llm", "budget", "methods", "final_eval", "instances", "seeds"):
+            self.assertEqual(cfg[k], a1b[k], k)
 
 
 class TestMixedSet(unittest.TestCase):
@@ -70,6 +93,19 @@ class TestMixedSet(unittest.TestCase):
         train_shapes = {m["shape"] for m in sets["train_mixed"]["mix"]}
         test_shapes = {s["shape"] for n, s in sets.items() if n.startswith("test_shape")}
         self.assertFalse(train_shapes & test_shapes)
+
+    def test_train_mixed_cap_alternates_capacity_with_the_same_items(self):
+        import yaml
+        sets = yaml.safe_load((ROOT / "configs" / "instances" / "v0.yaml").read_text())["sets"]
+        insts = instances.generate_set("train_mixed_cap", sets["train_mixed_cap"], base_seed=0)
+        self.assertEqual(len(insts), 32)
+        self.assertEqual([i["capacity"] for i in insts], [100, 300] * 16)
+        for cap in (100, 300):
+            items = np.concatenate([i["items"] for i in insts if i["capacity"] == cap])
+            self.assertAlmostEqual(items.mean(), 40.2, delta=1.0)                     # Weibull(3) * 45 in both halves
+        # every other key matches train, so the capacity is the only change
+        rest = {k: v for k, v in sets["train_mixed_cap"].items() if k != "mix"}
+        self.assertEqual(rest, sets["train"])
 
     def test_missing_set_is_built(self):
         # a laptop with data/ already built must still get sets added to the spec later

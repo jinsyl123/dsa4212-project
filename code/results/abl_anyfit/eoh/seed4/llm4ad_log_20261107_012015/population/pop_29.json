@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The new algorithm calculates priority using an inverted exponential decay based on the squared positive residuals, smoothly favoring tighter fits while strictly discarding overflowed bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    return np.where(residuals >= 0, np.exp(-(residuals ** 2) / 0.1), -np.inf)\n\n",
+        "score": -0.04511263822580452
+    },
+    {
+        "algorithm": "{The algorithm calculates priority by applying a logistic sigmoid penalty to the squared residual capacity for feasible bins, favoring tighter fits with smooth scaling.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    return np.where(residuals >= 0, -1 / (1 + np.exp(-residuals ** 2)), -np.inf)\n\n",
+        "score": -0.04553636983615907
+    },
+    {
+        "algorithm": "{The algorithm calculates priority using a Gaussian bell curve centered on a target tight residual capacity to reward near-optimal fits while penalizing both large wasted space and overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    optimal_residual = 0.05\n    return np.where(residuals >= 0, np.exp(-((residuals - optimal_residual) ** 2) / 0.02), -np.inf)\n\n",
+        "score": -0.04632909859159014
+    },
+    {
+        "algorithm": "{The algorithm calculates priority by applying a hyperbolic tangent penalty to the cubed residual capacity for feasible bins, encouraging tight packing while smoothly scaling preferences.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    return np.where(residuals >= 0, -np.tanh(residuals ** 3), -np.inf)\n\n",
+        "score": -0.04666403041520675
+    },
+    {
+        "algorithm": "{The algorithm calculates priority by using a hyperbolic tangent function over the remaining capacity for feasible bins, smoothly scaling preferences for tight fits while assigning negative infinity to infeasible ones.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, 1.0 - np.tanh(remaining), -np.inf)\n\n",
+        "score": -0.04737433004369138
+    },
+    {
+        "algorithm": "{The algorithm calculates the priority of adding an item to each bin based on the remaining residual capacity after placement, favoring bins that leave the least unused space to promote tight packing.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    return np.where(residuals >= 0, 1.0 / (residuals + 1e-5), -np.inf)\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority using a sharper exponential decay function centered on a stricter target residual capacity to heavily favor near-perfect fits while strictly penalizing suboptimal space utilization.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    optimal_residual = 0.01\n    return np.where(residuals >= 0, np.exp(-((residuals - optimal_residual) ** 2) / 0.005), -np.inf)\n\n",
+        "score": -0.04792788947257192
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority using a triangular tent-like function centered on a target tight residual capacity, rewarding near-optimal fits and penalizing overflows linearly.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    optimal_residual = 0.05\n    width = 0.15\n    return np.where(residuals >= 0, np.maximum(0.0, 1.0 - np.abs(residuals - optimal_residual) / width), -np.inf)\n\n",
+        "score": -0.0500394724247681
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority using a polynomial bell-shaped function based on the fractional residual capacity ratio, favoring bins that retain a specific proportion of their original space while completely discarding overflowing bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    residuals = bins - item\n    r_ratio = residuals / np.maximum(bins, 1e-8)\n    target_ratio = 0.1\n    return np.where(residuals >= 0, np.maximum(0.0, 1.0 - ((r_ratio - target_ratio) / 0.1) ** 4), -np.inf)\n\n",
+        "score": -0.05367465197669527
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority using a Gaussian bell-like curve centered at zero residual, smoothly prioritizing exact fits and penalizing both unused capacity and overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    return np.where(residuals >= 0, np.exp(-residuals / 0.1) * (1.0 - np.exp(-residuals / 0.05)), -np.inf)\n\n",
+        "score": -0.05510819972904474
+    }
+]

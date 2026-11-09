@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after adding the item, penalizing bins that would overflow with a very low priority score.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    priorities = np.where(remaining >= 0, remaining, -np.inf)\n    return -priorities\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by applying an exponential penalty to the squared deviation from a tighter scaled target capacity, while strictly forbidding any overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    target = bins * 0.15\n    score = -np.exp(np.maximum(0.0, remaining - target) ** 2 / (bins + 1e-5))\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.0493814006996237
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by measuring the inverse linear ratio of the remaining capacity relative to a scaled target capacity, strictly prohibiting any overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target = bins * 0.25\n    score = -np.maximum(0.0, remaining - target) / (bins + 1e-5)\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.051720615486272825
+    },
+    {
+        "algorithm": "{The new algorithm computes bin priority by combining an exponential decay function centered around an eighty percent target fill level with a linear penalty for unused slack space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    fill_ratio = remaining / (bins + 1e-8)\n    target = 0.8\n    affinity = -np.abs(fill_ratio - target)\n    slack_penalty = remaining\n    score = affinity - 0.05 * slack_penalty\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.0517610887187019
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priority by combining a Gaussian bell-shaped curve centered around a seventy-percent target fill level with a scaled quadratic penalty for remaining slack space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    fill_ratio = remaining / (bins + 1e-8)\n    target = 0.7\n    affinity = -((fill_ratio - target) ** 2) / 0.18\n    slack_penalty = remaining ** 2\n    score = affinity - 0.1 * slack_penalty\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.051957187431753815
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by measuring the absolute difference between the remaining capacity and a stricter optimal residual target of ten percent, heavily penalizing overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_residual = bins * 0.1\n    score = -np.abs(remaining - optimal_residual)\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.05425035154866313
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priority by utilizing a Gaussian-like bell curve centered at an optimal seventy percent fill rate combined with a quadratic penalty on remaining slack capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    used = 1.0 - (remaining / (bins + 1e-8))\n    target = 0.7\n    bell_affinity = np.exp(-((used - target) ** 2) / 0.1)\n    slack_penalty = remaining ** 2\n    score = bell_affinity - 0.02 * slack_penalty\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.054781423135200166
+    },
+    {
+        "algorithm": "{The new algorithm evaluates bin priority by combining a Gaussian-like affinity for a target fill ratio of seventy percent with a logarithmic penalty for slack capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    fill_ratio = remaining / (bins + 1e-8)\n    target = 0.7\n    affinity = -((fill_ratio - target) ** 2)\n    slack_penalty = np.log(np.maximum(remaining, 1e-8))\n    score = affinity - 0.1 * slack_penalty\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.05557337111059993
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority using the ratio of the item size to the original bin capacity, favoring bins that achieve a specific proportional fill rate through harmonic scaling.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    fill_ratio = item / (bins + 1e-8)\n    score = -1.0 / (np.abs(fill_ratio - 0.5) + 1e-4)\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.05692809559903149
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority using an exponential decay function based on the resulting residual capacity ratio, favoring bins that maintain a moderate fill percentage while heavily penalizing those left nearly empty or overloaded.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    ratio = np.divide(remaining, bins, out=np.zeros_like(bins, dtype=float), where=bins>0)\n    score = -np.exp(-4.0 * (ratio - 0.5) ** 2)\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.05696954122237366
+    }
+]

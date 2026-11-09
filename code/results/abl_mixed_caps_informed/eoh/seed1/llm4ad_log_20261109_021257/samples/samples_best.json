@@ -1,0 +1,30 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after packing the item, perfectly balancing the Best-Fit principle with a preference for slightly looser fits to maintain flexibility for future items.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.where(rem >= 0, 1.0 / (1.0 + rem), -1.0)\n    return scores\n\n",
+        "score": -0.0295663556157795,
+        "program": ""
+    },
+    {
+        "sample_order": 35,
+        "algorithm": "{The new algorithm scores bins by applying a sharper Gaussian-shaped preference function centered around a smaller remaining capacity of 0.2 to favor tighter fits.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.where(rem >= 0, np.exp(-((rem - 0.2) ** 2) / 0.2), -1.0)\n    return scores\n\n",
+        "score": -0.028974401364203237,
+        "program": ""
+    },
+    {
+        "sample_order": 44,
+        "algorithm": "{The new algorithm scores bins using a Gaussian-shaped preference function centered around a target remaining capacity of 0.1 with a variance of 0.15 to encourage even tighter packing.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.where(rem >= 0, np.exp(-((rem - 0.1) ** 2) / 0.15), -1.0)\n    return scores\n\n",
+        "score": -0.028624305438821954,
+        "program": ""
+    },
+    {
+        "sample_order": 127,
+        "algorithm": "{The new algorithm scores bins using a Gaussian-like bell curve centered on a higher remaining capacity threshold to favor looser packing and prevent premature bin exhaustion.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    optimal_rem = 0.35\n    scores = np.where(rem >= 0, np.exp(-((rem - optimal_rem) ** 2) / 0.12), -1.0)\n    return scores\n\n",
+        "score": -0.028484548804801807,
+        "program": ""
+    }
+]

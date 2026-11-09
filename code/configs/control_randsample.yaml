@@ -3,6 +3,7 @@
 base: configs/eoh_baseline.yaml
 experiment: control_randsample
 llm: openrouter-gemini-3.5-flash-lite
-seeds: [0, 1, 2, 3, 4]
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 methods:
   - { name: randsample }
+  - { name: tuned_bf } # no LLM; the reference, retuned in this folder (claims, References)

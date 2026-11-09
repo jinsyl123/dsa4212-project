@@ -4,5 +4,5 @@
 base: configs/eoh_baseline.yaml
 experiment: abl_mixed_shapes
 llm: openrouter-gemini-3.5-flash-lite
-seeds: [0, 1, 2, 3, 4]
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 evaluation: { train_set: train_mixed }

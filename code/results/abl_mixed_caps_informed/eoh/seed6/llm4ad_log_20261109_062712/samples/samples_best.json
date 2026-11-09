@@ -1,0 +1,16 @@
+[
+    {
+        "sample_order": 2,
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, penalizing near-overflows to avoid premature fragmentation while prioritizing empty bins only when necessary.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    fit = rem >= 0\n    if not np.any(fit):\n        return scores\n    is_empty = (bins == bins[0]) & (rem == bins[0] - item) \n    tightness = 1.0 / (1.0 + rem)\n    scores[fit] = tightness[fit]\n    empty_indices = np.where(fit & (bins == np.max(bins)))[0]\n    if len(empty_indices) > 0 and np.all(rem[fit] > 0.5 * bins[fit]):\n        pass\n    else:\n        scores[fit & (rem == np.max(bins))] *= 0.5\n    return scores\n\n",
+        "score": -0.0295663556157795,
+        "program": ""
+    },
+    {
+        "sample_order": 234,
+        "algorithm": "{This algorithm scores bins by prioritizing minimal remaining capacity with a steep polynomial penalty for very tight fits and a strong bonus for utilizing empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    fit = rem >= 0\n    if not np.any(fit):\n        return scores\n    \n    empty_mask = np.isclose(bins, np.max(bins)) & np.isclose(rem, np.max(bins) - item)\n    tightness = rem\n    penalty = np.where(rem < 0.05 * bins, 5.0, 1.0)\n    \n    scores[fit] = - (tightness[fit] ** 1.5) * penalty[fit]\n    scores[fit & empty_mask] += 1.5\n    return scores\n\n",
+        "score": -0.029499068737405192,
+        "program": ""
+    }
+]

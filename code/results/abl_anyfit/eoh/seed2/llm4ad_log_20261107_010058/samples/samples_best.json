@@ -1,0 +1,23 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm calculates priority as the remaining capacity after adding the item, assigning negative infinity to bins that cannot fit the item.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, remaining, -np.inf)\n\n",
+        "score": -0.13197905097018092,
+        "program": ""
+    },
+    {
+        "sample_order": 4,
+        "algorithm": "{The algorithm calculates the priority of adding an item to each bin based on the remaining residual capacity after placement, favoring bins that leave the least unused space to promote tight packing.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    residuals = bins - item\n    return np.where(residuals >= 0, 1.0 / (residuals + 1e-5), -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "program": ""
+    },
+    {
+        "sample_order": 262,
+        "algorithm": "{The algorithm computes priorities by applying a Gaussian-like bell curve to the remaining capacities, peaking at a small optimal target residual to balance tight packing and capacity dispersion.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    residuals = bins - item\n    valid = residuals >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    optimal_residual = 0.05 * np.mean(residuals[valid])\n    scores = -((residuals - optimal_residual) ** 2) / (np.var(residuals[valid]) + 1.0)\n    return np.where(valid, scores, -np.inf)\n\n",
+        "score": -0.047500922311972615,
+        "program": ""
+    }
+]

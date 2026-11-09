@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm uses a modified utilization-target strategy that scores valid bins based on proximity to a 0.5 filling fraction combined with an inverse remaining capacity weight.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.5) + (1.5 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.027992219852594487
+    },
+    {
+        "algorithm": "{The algorithm employs a Harmonic-inspired bin-partitioning strategy that scores bins based on how well the item aligns with preferred fractional thresholds of the bin capacity, promoting clustered utilization.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    original_capacities = bins[valid] - rem[valid] + item\n    fraction = rem[valid] / (original_capacities + 1e-7)\n    \n    scores[valid] = -np.abs(fraction - 0.5) + (1.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.028351917185784038
+    },
+    {
+        "algorithm": "{The algorithm utilizes a modified utilization-target strategy that scores valid bins based on proximity to a 0.7 filling fraction combined with an inverse remaining capacity weight.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.7) + (3.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.0338105099312285
+    },
+    {
+        "algorithm": "{The algorithm employs a modified best-fit decreasing strategy that scores valid bins by heavily penalizing remaining capacity while favoring tighter utilization targets near half-full capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.5) + (3.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.0367458866351497
+    },
+    {
+        "algorithm": "{The algorithm uses a modified utilization target that prioritizes tighter fits by targeting a higher fractional capacity threshold of 0.7 and heavily penalizing larger remaining capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.7) + (5.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.04093275008380751
+    },
+    {
+        "algorithm": "{The algorithm uses an exponential decay function of the remaining capacity combined with a quadratic penalty around a specific golden-ratio residual fraction to optimize bin packing efficiency.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -((frac - 0.382) ** 2) + np.exp(-rem[valid])\n    return scores\n\n",
+        "score": -0.04431656007603718
+    },
+    {
+        "algorithm": "{The algorithm uses a Gaussian-like bell curve centered at a small target residual capacity to reward near-optimal tight fits while penalizing both exact zero-slack fills and large wasted spaces.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    target = 0.05\n    scores[valid] = np.exp(-5.0 * ((rem[valid] - target) ** 2))\n    return scores\n\n",
+        "score": -0.04619393430321432
+    },
+    {
+        "algorithm": "{\\nThe new algorithm utilizes an exponential decay function of the remaining capacity modulated by a cosine-based residual fraction preference to score bins smoothly.\\n}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = np.cos(frac * np.pi) + np.exp(-rem[valid])\n    return scores\n\n",
+        "score": -0.04642905493306809
+    },
+    {
+        "algorithm": "{The algorithm employs a threshold-based bin-partitioning strategy that scores bins inversely to their remaining capacity while prioritizing tighter fits near specific fractional utilization targets.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.3) + (2.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.046877121377498124
+    },
+    {
+        "algorithm": "{\\g{The algorithm utilizes a piecewise trigonometric and linear ramp function over the residual capacity ratio to heavily reward near-perfect fits while discouraging excessive waste.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    ratio = rem[valid] / (orig + 1e-7)\n    scores[valid] = np.cos(np.pi * ratio) - 2.0 * ratio\n    return scores\n\n",
+        "score": -0.04688121478164642
+    }
+]

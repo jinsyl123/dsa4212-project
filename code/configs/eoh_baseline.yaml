@@ -13,7 +13,7 @@ parallel: { num_samplers: 2, num_evaluators: 2 }
 evaluation:
   { mode: funsearch, timeout_seconds: 60, train_set: train, prompt: llm4ad }
 
-seeds: [0, 1, 2, 3, 4, 5]
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 methods:
   - { name: eoh, params: { pop_size: 10 } }

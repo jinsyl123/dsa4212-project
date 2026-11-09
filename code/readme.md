@@ -101,6 +101,7 @@ pipeline/
   evaluate_final.py      step 2: score best programs + baselines on held-out sets
   summarise.py           step 3: tables and figures
   check_integrity.py     rescore best programs twice + with shuffled instances; writes integrity.csv
+  paired_stats.py        each rule vs Best Fit / tuned Best Fit, instance by instance: sign test + bootstrap CI
 configs/
   llms.yaml              every LLM we can use: provider, model ID, prices, settings (single source of truth)
   budgets.yaml           named budgets (smoke, check, pilot, medium, full, large)
@@ -212,6 +213,8 @@ python pipeline/run_experiment.py --config configs/eoh_baseline.yaml --seeds 0
 python pipeline/evaluate_final.py --config configs/eoh_baseline.yaml
 python pipeline/summarise.py      --config configs/eoh_baseline.yaml
 ```
+
+**Paired statistics** (after step 2): `python pipeline/paired_stats.py --config configs/eoh_baseline.yaml` (same options) compares every rule with Best Fit and tuned Best Fit on the same instances and writes `paired_stats.csv`: wins/ties/losses, a two-sided sign test, the mean difference in percentage points with a 95% bootstrap interval, and a verdict: better / worse only when the interval excludes 0 **and** the sign test gives p < 0.05, tie when identical on every instance, otherwise unclear. Each seed is compared on its own, because runs of the same method differ a lot. Excess is over the L2 bound by default, as in the report (#12 decision 7), falling back to L1 for older results without it; `--metric excess` compares over L1 (written to `paired_stats_excess.csv`). Against Best Fit, wins/ties/losses count bins, so they are the same under either bound. Tuned Best Fit has several seeds, so it is averaged per instance first: against it, wins/ties/losses compare with that average, not with one real packing. An instance the reference lacks is left out with a warning. Every test set has 10 instances (#12), so a rule that beats Best Fit on all 10 gives p = 0.002 (9–1: 0.021); with 5 it could not go below 0.0625. There is no correction for running many comparisons: look for patterns across seeds and sets rather than single verdicts.
 
 **Trying another model or budget** needs no new config: pass `llm=` and `budget=` (names from `configs/llms.yaml` and `configs/budgets.yaml`) to all three steps. The results folder is named after them, so different choices never overwrite each other:
 
@@ -432,9 +435,10 @@ Run one with a `check` budget first, then in full, then score it (no `--llm` nee
 ```bash
 python pipeline/run_experiment.py --config configs/abl_anyfit.yaml --budget check
 python pipeline/run_experiment.py --config configs/abl_anyfit.yaml
-python pipeline/evaluate_final.py --config configs/abl_anyfit.yaml
-python pipeline/summarise.py --config configs/abl_anyfit.yaml
+bash pipeline/score.sh abl_anyfit           # all scoring steps, no LLM calls
 ```
+
+`score.sh` runs every scoring step in a fixed order: tuned Best Fit retuned in the setting, `evaluate_final`, `check_integrity`, `diagnose`, `paired_stats`, `summarise`. All of them are deterministic. To check that committed scores reproduce on your machine, run `bash pipeline/score.sh --check abl_anyfit abl_informed_rules`. It fails, listing the files, if any result differs from the commit. Only CSV row order and measured run times (`time_s`) may differ between runs; every score, bin count and verdict must match exactly (`pipeline/check_outputs.py`).
 
 Before the full runs:
 
@@ -462,7 +466,7 @@ Before the full runs:
 
 **In git:** every file of each run folder, so every evaluated program and LLM4AD's logs can be audited (`summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` alone are enough to rebuild every table and figure). Runs made before 4 Nov only have those four files committed, unless their full folders were added later. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
 
-**Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
+**Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `paired_stats.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
 
 - `convergence_evals` / `convergence_tokens`: best training excess so far vs evaluations / tokens (median and range across seeds, Best Fit line);
 - `test_sets`: held-out change vs Best Fit per method and seed, one panel per set.
@@ -607,6 +611,7 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 
 - Reading: every tuned_bf seed beats every EoH seed on training and on `val`, `test_id_5k`, `test_size_10k` and `test_uniform`, using fewer bins than Best Fit on every instance of those four sets. The 25 Oct run (3.788% train) is better on `test_uniform` (−2.19 vs −1.85 pp). Every seed fails on `test_shape_k5` and `test_cap500_scaled`; on `test_shape_k1.5`, 4 of 6 seeds are worse than Best Fit. EoH runs fail on the same shifts (OpenRouter seeds 3–5 on k5 or k1.5, the 25 Oct run on k5 and cap500_scaled), so these failures do not need an LLM: tuning three knobs on the training distribution produces them too.
 - Packing convention: almost all of the gain comes from opening fresh bins on purpose, which `funsearch` mode allows. By `diagnose.py`, tuned_bf puts 33% of items on train (53% on `test_shape_k5`) into a fresh bin while a used bin has room. Rescored in `anyfit` mode, train is 4.62% and `test_shape_k5` 8.20%, close to Best Fit (4.75%, 8.25%). `test_cap500_scaled` is 5.22% in both modes: no fresh bins there, but the sliver zone is in absolute units, so at capacity 500 it penalises what are actually tight fits. State the mode next to every comparison with tuned_bf. An EoH run searched in `anyfit` mode must be compared with tuned_bf **retuned** in `anyfit` mode, not with these programs rescored.
+- **Update 7 Nov (Ablation 1):** "almost all of the gain comes from fresh bins" holds only for knobs **tuned in `funsearch` mode**. Retuned in `anyfit` mode (`results/abl_anyfit/tuned_bf/`, seeds 0–9), the same 3 knobs (`lo` 0–2, `hi` 19–23) penalise leaving a small gap in a used bin. That gives 3.90–4.00% on train with no fresh bins (Best Fit 4.75%), and it beats Best Fit on `test_id_5k` in 10/10 seeds by about 1 pp. Checked with an independent packer (no shared code): Best Fit 4.751%, tuned seed 0 3.965% on train. So a tuned Best Fit keeps most of its gain without fresh bins; see #18 and `docs/claims.md` Amendments.
 
 **EoH baseline, first run (25 Oct)** (`gemini-3.5-flash-lite`, 300 evals, 34 min, 301 calls, 0 failed, US$0.17 notional):
 

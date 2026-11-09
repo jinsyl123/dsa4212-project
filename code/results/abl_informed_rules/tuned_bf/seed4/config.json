@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "experiment": "abl_informed_rules",
+    "label": "tuned_bf",
+    "method": "tuned_bf",
+    "kind": "tuned",
+    "seed": 4,
+    "llm_name": null,
+    "llm_provider": null,
+    "llm_model": null,
+    "budget_name": "full",
+    "mode": "funsearch",
+    "train_set": "train",
+    "n_train": 32,
+    "max_evals": 300,
+    "max_tokens": 1500000
+  },
+  "method_kwargs": {},
+  "config": {
+    "experiment": "abl_informed_rules",
+    "instances": {
+      "spec": "configs/instances/v0.yaml",
+      "dir": "data/v0"
+    },
+    "llm": {
+      "provider": "openrouter",
+      "model": "google/gemini-3.5-flash-lite",
+      "temperature": 1.0,
+      "max_tokens": 8192,
+      "price_in_per_1m": 0.3,
+      "price_out_per_1m": 2.5,
+      "extra": {
+        "reasoning": {
+          "effort": "low"
+        }
+      },
+      "name": "openrouter-gemini-3.5-flash-lite"
+    },
+    "budget": {
+      "max_evals": 300,
+      "max_tokens": 1500000,
+      "max_minutes": 120,
+      "name": "full"
+    },
+    "parallel": {
+      "num_samplers": 2,
+      "num_evaluators": 2
+    },
+    "evaluation": {
+      "mode": "funsearch",
+      "timeout_seconds": 60,
+      "train_set": "train",
+      "prompt": "informed_rules",
+      "format_hint": true
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "methods": [
+      {
+        "name": "eoh",
+        "params": {
+          "pop_size": 10
+        },
+        "label": "eoh"
+      },
+      {
+        "name": "tuned_bf",
+        "label": "tuned_bf",
+        "params": {}
+      }
+    ],
+    "final_eval": {
+      "sets": [
+        "val",
+        "test_id_5k",
+        "test_size_1k",
+        "test_size_10k",
+        "test_cap200",
+        "test_cap500",
+        "test_cap500_scaled",
+        "test_scale25",
+        "test_scale65",
+        "test_shape_k1.5",
+        "test_shape_k5",
+        "test_uniform",
+        "test_control"
+      ],
+      "timeout_seconds": 900
+    },
+    "_config_path": "configs/abl_informed_rules.yaml"
+  },
+  "versions": {
+    "python": "3.9.6",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "llm4ad": "1.0.0",
+    "llm4ad_commit": "73ae214b469a46efdbf558b86fed6f81a4c6b371"
+  }
+}
