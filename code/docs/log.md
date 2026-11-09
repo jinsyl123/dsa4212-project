@@ -1,6 +1,6 @@
 # Decision log
 
-One entry per decision that affects results. Newest at the top. Link the config and the results folder.
+One entry per decision that affects results. Oldest at the top. Link the config and the results folder.
 
 ## Template
 
@@ -138,3 +138,10 @@ One entry per decision that affects results. Newest at the top. Link the config 
 - **Check:** pipecheck of the A2b config (seed 99, `check` budget, eoh only): 12/12 evals ok, informed prompt confirmed, 32 training instances. Not scored.
 - **Update 2026-11-09 (Nic's review on #7, before any A2 run):** A2b is renamed `abl_mixed_caps_informed` (was `abl_mixed_capacities`), so its A1b base shows in every table. Tuned Best Fit keeps its **default knob ranges**, so it differs from A1b's only in the training set. A widened penalty (1..300, briefly in `f8a95ea`) was rejected: it adds a second change versus A1b's tuned Best Fit, and a penalty high enough to open fresh bins at capacity 300 (above ~222) also opens one for every penalised gap at capacity 100, so no single absolute penalty fits both. Also noted: Best Fit's excess on `train_mixed_cap` is 4.70% at capacity 100 vs 1.21% at 300, so short of a collapse the capacity-100 half drives selection.
 - **Affects:** `configs/abl_mixed_shapes.yaml`, `configs/abl_mixed_caps_informed.yaml`, `configs/instances/v0.yaml` (`train_mixed_cap`; no other set changes), `tests/test_ablations.py`; #15.
+
+### 2026-11-09: baseline extended to 10 seeds (Nic)
+
+- **Decision:** the EoH baseline (`eoh_baseline.yaml`, `openrouter-gemini-3.5-flash-lite`) runs seeds 0–9; seeds 6–9 added on `ablation-runs` with the same settings as 0–5 (checked against seed 3's `config.json`: same LLM4AD commit, model, budget, method, prompt, training set).
+- **Why:** consistency with the ablations and the control (10 seeds each), and comparable seed counts for the Fisher tests in #15.
+- **How it's reported:** the pre-registered comparisons against the 6-seed baseline stay primary; 10-seed comparisons are added alongside, labelled as added after A1 and the control were scored (#15 amendment, 9 Nov).
+- **Affects:** `configs/eoh_baseline.yaml` (seeds); results in `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/eoh/seed6`–`seed9`.
