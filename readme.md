@@ -87,3 +87,20 @@ Frozen test sets, excess over the L2 lower bound, 10 instances per set. Per-seed
 **Consistent with the predictions but not significant with 10 seeds:** mixed shapes (A2a) cut shape failures from 3/6 to 1/10; mixed capacities (A2b) remove A1b's capacity collapse inside the trained range (0/10 vs 4/10 on `test_cap200` and `test_scale25`, 2/10 vs 5/10 on `test_cap500`).
 
 **Patterns across every setting:** no LLM rule beats its own tuned Best Fit in distribution (1 of 60 seeds, A2a seed 6). The fresh-bin bet (opening an empty bin while a used one has room) carries both the gains and most of the failures under shift; tuned Best Fit is the most fragile rule under shape and scale shifts (e.g. about 30% over the bound on `test_shape_k5`, vs Best Fit's 8%).
+
+## Audit trail
+
+Every search run is committed in full, so any result can be traced back to the programs and LLM calls behind it. One folder per run: `code/results/<setting>/<method>/seed<k>/` (e.g. `code/results/abl_informed_rules/eoh/seed0/` holds everything behind A1b seed 0's capacity collapse).
+
+| Evidence | File in the run folder |
+|---|---|
+| Every program the search evaluated | `candidates.jsonl` |
+| Every prompt sent to the LLM and its full response | `llm_calls.jsonl` |
+| Tokens, cost, latency and errors per LLM call | `llm_calls.csv` |
+| Score and status of every candidate (ok / error / timeout) | `evals.csv` |
+| Every candidate on every training instance (bins, lower bound, excess) | `per_instance.csv` |
+| The best program on the training set | `best_program.py` |
+| EoH's population at every generation, and LLM4AD's own log | `llm4ad_log_*/`, `stdout.log` |
+| Settings used, and the run's counts, cost and stop reason | `config.json`, `summary.json` |
+
+Tuned Best Fit runs (`tuned_bf/seed<k>/`) call no LLM: same files, minus `llm_calls.jsonl` and LLM4AD's logs (`llm_calls.csv` has only its header). Gaps: baseline seeds 0–5 ran before full prompt logging was added (#14), so they have no `llm_calls.jsonl` (their per-call `llm_calls.csv` is there), and seeds 3–5 also have no `stdout.log`. Every other run has every file. What each file contains, column by column: [`code/readme.md`](code/readme.md), §10.
