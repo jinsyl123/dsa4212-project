@@ -112,7 +112,6 @@ configs/
   compare.yaml           EoH vs alternatives and ablations
   instances/v0.yaml      instance sets used for real runs (frozen at G2)
   instances/smoke.yaml   small instance sets for tests
-notebooks/run_pipeline.ipynb
 tests/                   unit tests: evaluator, tuned Best Fit, tuned run outputs
 docs/log.md              decision log: add an entry for every decision that affects results
 results/<experiment>/    run outputs (raw run folders are git-ignored)
@@ -133,8 +132,8 @@ results/<experiment>/    run outputs (raw run folders are git-ignored)
 Then, with the environment active:
 
 ```bash
-pip install -r requirements.txt        # installs LLM4AD at the pinned commit; add `jupyter` for browser notebooks
-python -m unittest discover tests      # 14 tests should pass
+pip install -r requirements.txt        # installs LLM4AD at the pinned commit
+python -m unittest discover tests      # every test should pass
 ```
 
 Install LLM4AD **only** through `requirements.txt`: `pip install llm4ad` gives an older release (1.0.0) without ReEvo, MCTS-AHD or HSEvo.
