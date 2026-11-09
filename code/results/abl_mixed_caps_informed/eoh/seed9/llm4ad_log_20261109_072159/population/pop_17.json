@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{Our algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, effectively implementing a Best-Fit strategy that minimizes wasted space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    scores = np.where(remaining >= 0, -remaining, -np.inf)\n    return scores\n\n",
+        "score": -0.0295663556157795
+    },
+    {
+        "algorithm": "{Our algorithm scores bins by favoring those that leave the most balanced remaining capacity, implementing an alternative heuristic that penalizes both extremely tight fits and nearly empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    ideal_remaining = 0.5\n    scores = np.where(remaining >= 0, -np.abs(remaining - ideal_remaining), -np.inf)\n    return scores\n\n",
+        "score": -0.030154703796348336
+    },
+    {
+        "algorithm": "{\\algodesc{Our algorithm scores bins by combining a piecewise linear efficiency reward based on the resulting fill ratio with a Gaussian-like penalty for problematic medium-sized scraps and a dynamic cost for opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    used = max_cap - bins\n    new_fill = (used + item) / max_cap\n    efficiency_reward = np.where(new_fill >= 0.8, 2.0 * new_fill, 1.2 * new_fill)\n    scrap_penalty = 1.5 * np.exp(-(((rem - 0.1) / 0.05) ** 2))\n    scores[valid] = efficiency_reward[valid] - scrap_penalty[valid]\n    is_empty = (bins == max_cap) & valid\n    if np.any(is_empty):\n        first_empty = np.argmax(is_empty)\n        non_empty_valid = ~is_empty & valid\n        max_non_empty = np.max(scores[non_empty_valid]) if np.any(non_empty_valid) else 0.0\n        scores[first_empty] = max_non_empty - 0.5\n    return scores\n\n",
+        "score": -0.030836268149151122
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, penalizing near-overflows and heavily rewarding empty bins when necessary to minimize total bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    empty_mask = (bins == max_cap) & valid\n    tight_mask = valid & ~empty_mask\n    if np.any(tight_mask):\n        scores[tight_mask] = 1.0 / (rem[tight_mask] + 1e-7)\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[:] = -np.inf\n        scores[first_empty] = np.max(scores[tight_mask]) * 2.0 if np.any(tight_mask) else 1000.0\n    return scores\n\n",
+        "score": -0.031564462956769124
+    },
+    {
+        "algorithm": "{Our algorithm scores bins by combining a quadratic utilization reward with a sigmoidal penalty on remaining capacity, applying a distinct cost for opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    used = max_cap - bins\n    new_fill = (used + item) / max_cap\n    \n    # Quadratic fill reward combined with a logistic penalty on remaining capacity\n    logistic_penalty = 1.0 / (1.0 + np.exp(10.0 * (rem - 0.2)))\n    scores[valid] = (new_fill[valid] ** 2) - 0.3 * logistic_penalty[valid]\n    \n    is_empty = (bins == max_cap) & valid\n    if np.any(is_empty):\n        first_empty = np.argmax(is_empty)\n        non_empty_mask = ~is_empty & valid\n        max_non_empty = np.max(scores[non_empty_mask]) if np.any(non_empty_mask) else 0.0\n        scores[first_empty] = max_non_empty - 1.0\n        \n    return scores\n\n",
+        "score": -0.03402646378645588
+    },
+    {
+        "algorithm": "{Our algorithm scores bins by combining a quadratic fill-ratio reward with a milder exponential residual penalty and a lower threshold for opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    used = max_cap - bins\n    new_used = used + item\n    fill_score = (new_used / max_cap) ** 2\n    tightness_penalty = np.exp(-2.0 * rem)\n    scores[valid] = fill_score[valid] - 0.2 * tightness_penalty[valid]\n    is_empty = (bins == max_cap) & valid\n    if np.any(is_empty):\n        first_empty = np.argmax(is_empty)\n        max_non_empty_score = np.max(scores[~is_empty & valid]) if np.any(~is_empty & valid) else 0.0\n        scores[first_empty] = max_non_empty_score - 0.5\n    return scores\n\n",
+        "score": -0.034329193238857816
+    },
+    {
+        "algorithm": "{\\algodesc{Our algorithm scores bins by applying an exponential decay penalty to the residual capacity combined with a polynomial reward for the resulting fill ratio, while using a dynamic threshold to discourage opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    used = max_cap - bins\n    new_used = used + item\n    fill_score = (new_used / max_cap) ** 2\n    tightness_penalty = np.exp(-3.0 * rem)\n    scores[valid] = fill_score[valid] - 0.3 * tightness_penalty[valid]\n    is_empty = (bins == max_cap) & valid\n    if np.any(is_empty):\n        first_empty = np.argmax(is_empty)\n        max_non_empty_score = np.max(scores[~is_empty & valid]) if np.any(~is_empty & valid) else 0.0\n        scores[first_empty] = max_non_empty_score - 0.8\n    return scores\n\n",
+        "score": -0.03447032498486076
+    },
+    {
+        "algorithm": "{\\gdef\\algodesc{Our algorithm evaluates bins using a sigmoidal function of residual capacity combined with a quadratic penalty for medium-small scraps and a calibrated threshold for opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    used = max_cap - bins\n    fill_ratio = used / max_cap\n    scrap_penalty = np.where((rem > 0.0) & (rem < 0.1), -2.0 * (0.1 - rem), 0.0)\n    sigmoid_rem = 1.0 / (1.0 + np.exp(-10.0 * (rem - 0.2)))\n    scores[valid] = fill_ratio[valid] + 0.5 * sigmoid_rem[valid] + scrap_penalty[valid]\n    is_empty = (bins == max_cap) & valid\n    if np.any(is_empty):\n        scores[np.argmax(is_empty)] = 0.45\n    return scores\n\n",
+        "score": -0.03455466496771107
+    },
+    {
+        "algorithm": "{Our new algorithm scores bins using a trigonometric cosine distance metric relative to optimal target capacities combined with a dynamic empty bin penalty scaled by item size.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    is_empty = np.isclose(bins, max_cap) & valid\n    non_empty = valid & ~is_empty\n    \n    if np.any(non_empty):\n        used = max_cap - rem[non_empty]\n        ratio = used / max_cap\n        scores[non_empty] = np.cos(np.pi * (1.0 - ratio)) - 5.0 * np.exp(-10.0 * rem[non_empty])\n        \n    if np.any(is_empty):\n        first_empty = np.argmax(is_empty)\n        best_ne = np.max(scores[non_empty]) if np.any(non_empty) else 0.0\n        scores[first_empty] = best_ne - (1.0 + 2.0 * (item / max_cap))\n        \n    return scores\n\n",
+        "score": -0.034648547878271305
+    },
+    {
+        "algorithm": "{Our algorithm evaluates bins by balancing a linear fill-ratio reward with a steeper exponential penalty on residual capacity and a higher threshold to open new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    used = max_cap - bins\n    new_used = used + item\n    fill_score = new_used / max_cap\n    tightness_penalty = np.exp(-5.0 * rem)\n    scores[valid] = fill_score[valid] - 0.5 * tightness_penalty[valid]\n    is_empty = (bins == max_cap) & valid\n    if np.any(is_empty):\n        first_empty = np.argmax(is_empty)\n        max_non_empty_score = np.max(scores[~is_empty & valid]) if np.any(~is_empty & valid) else 0.0\n        scores[first_empty] = max_non_empty_score - 1.2\n    return scores\n\n",
+        "score": -0.03482307182039687
+    }
+]

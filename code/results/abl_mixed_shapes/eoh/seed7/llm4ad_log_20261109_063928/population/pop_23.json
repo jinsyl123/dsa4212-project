@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The new algorithm calculates priority using a sharper, left-shifted Gaussian bell curve centered at zero residual space to strictly penalize any slack while avoiding overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, np.exp(-((remaining - 0.02) ** 2) / 0.05), -np.inf)\n\n",
+        "score": -0.04706956866912132
+    },
+    {
+        "algorithm": "{The algorithm calculates priority by using a Gaussian-like bell curve centered at a small positive residual space, strongly favoring tight fits while heavily penalizing overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, np.exp(-((remaining - 0.1) ** 2) / 0.2), -np.inf)\n\n",
+        "score": -0.047843314093223704
+    },
+    {
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after hypothetical placement, favoring bins that can accommodate the item while minimizing leftover space.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04808555648413241
+    },
+    {
+        "algorithm": "{The algorithm calculates priority using a Gaussian-like bell curve centered on a small positive residual space, heavily penalizing overflows while smoothly rewarding near-optimal tight fits.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, np.exp(-((remaining - 0.1) ** 2) / 0.5), -np.inf)\n\n",
+        "score": -0.048125444257796766
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priority by taking the exponential negative of the squared residual capacity to favor extremely tight fits while penalizing unused space smoothly.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, np.exp(-(remaining ** 2)), -np.inf)\n\n",
+        "score": -0.04822825054805935
+    },
+    {
+        "algorithm": "{The algorithm calculates priority using the exponential decay of the squared residual space to exponentially penalize larger leftover capacities while strictly eliminating overflowing bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -np.exp(remaining ** 2), -np.inf)\n\n",
+        "score": -0.04842295459790359
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by applying an inverse quadratic penalty to the absolute deviation from a smaller target buffer space, while strictly prohibiting any bin overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    target_buffer = 0.5\n    return np.where(remaining >= 0, 1.0 / (1.0 + (remaining - target_buffer) ** 2), -np.inf)\n\n",
+        "score": -0.04883987876908617
+    },
+    {
+        "algorithm": "{The algorithm calculates priority by taking the exponential negative of the squared residual space, smoothly penalizing both loose fits and overflows while favoring near-exact allocations.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -np.exp(remaining ** 2 - remaining), -np.inf)\n\n",
+        "score": -0.04898257283301312
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by applying a Gaussian-like bell curve to the residual space, heavily penalizing any overflow while smoothly favoring placements that leave a target buffer space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target_buffer = 1.0\n    return np.where(remaining >= 0, np.exp(-((remaining - target_buffer) ** 2) / 2.0), -np.inf)\n\n",
+        "score": -0.050588377305467745
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority by using an inverse linear penalty on the absolute deviation from a larger target buffer space, strictly prohibiting any overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target_buffer = 2.0\n    return np.where(remaining >= 0, 1.0 / (1.0 + np.abs(remaining - target_buffer)), -np.inf)\n\n",
+        "score": -0.054118370494086666
+    }
+]
