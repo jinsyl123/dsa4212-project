@@ -1,6 +1,6 @@
 # Decision log
 
-One entry per decision that affects results. Link the config and the results folder. Order: the entries down to 2026-10-25 are newest first; from "2026-10-31: LLM4AD version" on, new entries go at the bottom.
+One entry per decision that affects results. Link the config and the results folder. Order: oldest first; new entries go at the bottom.
 
 ## Template
 
@@ -12,45 +12,6 @@ One entry per decision that affects results. Link the config and the results fol
 - **Affects:** configs / results folders / report sections
 
 ---
-
-### 2026-11-05: test sets frozen (Jia Kang)
-
-- **Decision:** every test set has 10 instances (was 5). Added `test_size_1k`, `test_cap200`, `test_scale25`, `test_scale65` and the control set `test_control`, and listed all of them in `final_eval.sets`. `train`, `train_mixed`, `val` and the seed are unchanged, and instances 0–4 of the existing test sets are identical to before (checked against the old data).
-- **Why:** with 5 instances no rule can beat Best Fit significantly on the sign test (best case p = 0.0625; with 10, p = 0.002). `test_cap200` fills the capacity series 100 → 200 → 500; `test_scale25`/`test_scale65` shift item size relative to the bin in both directions. `test_size_1k` needs its own instances because `val` chooses between runs. The control set catches scoring bugs: every item is over half a bin, so every rule must use one bin per item (all six OpenRouter seeds' best programs and Best Fit do). On `test_scale65` L1 is ~10% too low, so its excess is read over L2 (#10); on every other test set L2 = L1.
-- **Alternatives considered:** the real OR-Library files (binpack5–8) and Beyond the Hype's datasets (skipped); renaming `test_uniform` to `test_orlib_like` (kept: a set's seed comes from its name, so renaming changes its data).
-- **Affects:** `configs/instances/v0.yaml`; `final_eval.sets` in `eoh_baseline.yaml` and `compare.yaml` (the ablation configs inherit it); every `final_*.csv` once re-scored. Discussion: #12.
-
-### 2026-11-04: ablation settings locked (Nic)
-
-- **Decision:** run the main settings `abl_anyfit`, `abl_informed_rules` and `abl_mixed_shapes`, plus the control `control_randsample`. Seeds 0–4 each, `openrouter-gemini-3.5-flash-lite`, budget `full` (300 evals). The comparison row is the EoH baseline, seeds 0–5. Optional if time allows: `abl_informed_dist`, `abl_informed`. Fallback: `abl_no_m2`.
-- **Why:** the baseline shows the gain and the k5 failure both come from opening fresh bins (seeds 4/5), plus one failure from training on a single shape (seed 3, k1.5). Ablation 1 tests the empty-bin option; Ablation 2 tests training variety; randsample tests whether search adds anything. 5 seeds because half the baseline seeds collapse to Best Fit.
-- **Alternatives considered:** no-M2 as a main setting (no run points to M2), thoughts on/off (EoH Table 6 already covers it), a budget sweep (would be a third ablation).
-- **Affects:** `configs/abl_*.yaml`, `configs/control_randsample.yaml`, `results/<setting>/`. Plan and evidence: #7. Claims frozen before scoring: #15.
-
-### 2026-11-01: integrity checks on candidates, flag only (Jin)
-
-- **Decision:** `obpevo/integrity.py` parses every candidate with `ast` and records rule violations (non-numpy imports, randomness incl. `hash()`/`id()`/clock, `exec`/`eval`/`open`, numpy file I/O, dunder access, `global`, attribute assignment, module-level state, mutable defaults) in a new `integrity` column of `evals.csv`; `summary.json` gets `n_flagged` and `best_integrity`. `check_integrity.py` rescores each best program four times (usual order twice, one shuffled order twice), each in a fresh spawned process with its own hash and RNG seeds. Flagged programs are still scored and can still win.
-- **Why:** the brief asks to keep scoring outside the code being evolved. Flagging instead of dropping keeps every method's search unchanged (fair) and lets us report how often each rule is hit. All best programs committed at the time (25 Oct seed 0, OpenRouter seeds 0–2) are clean: no flags, 0 repeat and 0 shuffle mismatches on train and val.
-- **Limits (from an independent review):** LLM4AD keeps only the function body of each reply, so module-level rules rarely fire in our runs; an empty column means "no body-level violation". Static checks can be bypassed (e.g. a helper function mutating shared state); the rescoring catches such cases only if they change a bin count. Fresh spawned processes are needed because forked children share the parent's hash seed, which hid `hash()`-based nondeterminism in the first version.
-- **Alternatives considered:** rejecting flagged candidates (changes the search and LLM4AD's behaviour); a runtime sandbox (heavier; LLM4AD already runs candidates in a child process with a timeout).
-- **Affects:** `evals.csv` (new column, at the end), `summary.json`, `results/*/integrity.csv`. No score changes.
-
-### 2026-10-31: fresh-bin diagnostic, scores unchanged (Jin; updated 2026-11-04 after Nic's review)
-
-- **Decision:** `obpevo/diagnostics.py` + `diagnose.py` rescore best programs and the BF/FF/WF baselines in both packing modes and add `fresh_bin_rate` (share of items put in an empty bin while a used bin had room). Separate from `core.py`; tests check it packs identically to `core.py` in both modes.
-- **Why:** tests the explanation for EoH seed 0's k=5 failure. Seed 0 (`eoh_baseline_25oct`) opens a fresh bin in ~36% of choices on train (57% on k=5); BF/FF never do. In anyfit mode k=5 excess falls 38.9% → 8.1%, but EoH also loses most of its in-distribution lead (train 3.79% → 4.34%, BF 4.75%). Seed 11 (`eoh_freetier_seed11`, a separate run: free Gemini, different date, older pipeline, 62 of 363 calls hit 429s but all 300 evals ran) opens fresh bins less (~9%), gains less (train 4.48%), has no k=5 failure but fails on `test_cap500` (6.12% vs BF 0.50%); in anyfit it matches BF on every set. The OpenRouter seeds 0–2 never open a fresh bin (`fresh_given_room` = 0 everywhere), so funsearch = anyfit for them, and they have no failure. In our five runs, the failures come only from programs that open fresh bins; the OpenRouter programs never do. The anyfit comparison shows what these programs do, not why some runs learn it (the two groups also differ in provider, pipeline version and date).
-- **Seed 11's mechanism (Nic):** its score is `cos(π · remaining / (1.618 · item))`. Cosine repeats, so the score peaks at an exact fit and again whenever ~3.2×, 6.5×, … the item is left over. For a 45-unit item: exact fit +1.00, 146 left +1.00, an empty capacity-500 bin (455 left) +0.71, above many partly filled bins. At capacity 100 this rarely matters; at 500 empty bins often hit a peak. An example of an LLM heuristic that scores well in training for reasons unrelated to bin packing (the hard-coded golden ratio).
-- **Follow-ups:** `test_cap500` is not trivial (seed 11 fails there), so it stays in the final sets and the "near-trivial" note is dropped. Baseline rows in `final_summary.csv` use their classical AnyFit definitions (Worst Fit ~13%), while evolved programs are scored in funsearch mode (Worst Fit 148% there); for BF/FF the two conventions give identical bins (readme §11).
-- **Alternatives considered:** adding the column inside `core.evaluate` (touches the search hot path and Nic's scorer).
-- **Affects:** `results/{eoh_baseline_25oct,eoh_freetier_seed11,eoh_baseline__openrouter-gemini-3.5-flash-lite}/diagnostics_summary.csv`, readme §11, report analysis section.
-- **Update 2026-11-04:** OpenRouter seeds 3–5 (same setup) do open fresh bins, and seed 3 has a failure that is not a fresh-bin failure. See "ablation plan revised after seeds 3–5" below and readme §13.
-
-### 2026-10-31: failed held-out instances scored as Next Fit (Jin)
-
-- **Decision:** in `evaluate_final`, an instance where a program errors or times out gets Next Fit's excess instead of `NaN`; `status` and `failed_frac` still record the failure.
-- **Why:** `NaN` drops out of the mean, so a program that fails often would look better than one that runs everywhere. Next Fit is worse than every sensible heuristic (it never beats Best Fit on any v0 instance), so a failure is not rewarded relative to any program worth reporting. It is not a strict floor: in funsearch mode a valid program that always opens a new bin uses more bins than Next Fit. No current run has failures, so no reported number changes.
-- **Alternatives considered:** leave `NaN` and report `failed_frac` only (mean still flattering); a fixed penalty (arbitrary scale).
-- **Affects:** `evaluate_final.py`, `final_summary.csv` only when a program fails.
 
 ### 2026-10-25: v0 pipeline design (Nic)
 
@@ -77,11 +38,36 @@ One entry per decision that affects results. Link the config and the results fol
 - **Why:** PyPI llm4ad 1.0.0 lacks ReEvo/MCTS-AHD/HSEvo; Google's free tier cut runs short (~200 calls/day), giving unequal budgets.
 - **Affects:** results/eoh_baseline\_\_openrouter-gemini-3.5-flash-lite (main), results/eoh_baseline_25oct (exploratory, 1.0.0).
 
+### 2026-10-31: fresh-bin diagnostic, scores unchanged (Jin; updated 2026-11-04 after Nic's review)
+
+- **Decision:** `obpevo/diagnostics.py` + `diagnose.py` rescore best programs and the BF/FF/WF baselines in both packing modes and add `fresh_bin_rate` (share of items put in an empty bin while a used bin had room). Separate from `core.py`; tests check it packs identically to `core.py` in both modes.
+- **Why:** tests the explanation for EoH seed 0's k=5 failure. Seed 0 (`eoh_baseline_25oct`) opens a fresh bin in ~36% of choices on train (57% on k=5); BF/FF never do. In anyfit mode k=5 excess falls 38.9% → 8.1%, but EoH also loses most of its in-distribution lead (train 3.79% → 4.34%, BF 4.75%). Seed 11 (`eoh_freetier_seed11`, a separate run: free Gemini, different date, older pipeline, 62 of 363 calls hit 429s but all 300 evals ran) opens fresh bins less (~9%), gains less (train 4.48%), has no k=5 failure but fails on `test_cap500` (6.12% vs BF 0.50%); in anyfit it matches BF on every set. The OpenRouter seeds 0–2 never open a fresh bin (`fresh_given_room` = 0 everywhere), so funsearch = anyfit for them, and they have no failure. In our five runs, the failures come only from programs that open fresh bins; the OpenRouter programs never do. The anyfit comparison shows what these programs do, not why some runs learn it (the two groups also differ in provider, pipeline version and date).
+- **Seed 11's mechanism (Nic):** its score is `cos(π · remaining / (1.618 · item))`. Cosine repeats, so the score peaks at an exact fit and again whenever ~3.2×, 6.5×, … the item is left over. For a 45-unit item: exact fit +1.00, 146 left +1.00, an empty capacity-500 bin (455 left) +0.71, above many partly filled bins. At capacity 100 this rarely matters; at 500 empty bins often hit a peak. An example of an LLM heuristic that scores well in training for reasons unrelated to bin packing (the hard-coded golden ratio).
+- **Follow-ups:** `test_cap500` is not trivial (seed 11 fails there), so it stays in the final sets and the "near-trivial" note is dropped. Baseline rows in `final_summary.csv` use their classical AnyFit definitions (Worst Fit ~13%), while evolved programs are scored in funsearch mode (Worst Fit 148% there); for BF/FF the two conventions give identical bins (readme §11).
+- **Alternatives considered:** adding the column inside `core.evaluate` (touches the search hot path and Nic's scorer).
+- **Affects:** `results/{eoh_baseline_25oct,eoh_freetier_seed11,eoh_baseline__openrouter-gemini-3.5-flash-lite}/diagnostics_summary.csv`, readme §11, report analysis section.
+- **Update 2026-11-04:** OpenRouter seeds 3–5 (same setup) do open fresh bins, and seed 3 has a failure that is not a fresh-bin failure. See "ablation plan revised after seeds 3–5" below and readme §13.
+
+### 2026-10-31: failed held-out instances scored as Next Fit (Jin)
+
+- **Decision:** in `evaluate_final`, an instance where a program errors or times out gets Next Fit's excess instead of `NaN`; `status` and `failed_frac` still record the failure.
+- **Why:** `NaN` drops out of the mean, so a program that fails often would look better than one that runs everywhere. Next Fit is worse than every sensible heuristic (it never beats Best Fit on any v0 instance), so a failure is not rewarded relative to any program worth reporting. It is not a strict floor: in funsearch mode a valid program that always opens a new bin uses more bins than Next Fit. No current run has failures, so no reported number changes.
+- **Alternatives considered:** leave `NaN` and report `failed_frac` only (mean still flattering); a fixed penalty (arbitrary scale).
+- **Affects:** `evaluate_final.py`, `final_summary.csv` only when a program fails.
+
 ### 2026-11-01: review changes (Nic)
 
 - **Decision:** inner folder renamed code/code → code/pipeline; informed prompt split into informed_rules / informed_dist / informed; best program still selected on training (val chooses between configurations).
 - **Why:** PR review (Jin): attribution of prompt effects, comparability with the EoH papers.
 - **Affects:** pipeline/, task.py, readme §6, §11, §13.
+
+### 2026-11-01: integrity checks on candidates, flag only (Jin)
+
+- **Decision:** `obpevo/integrity.py` parses every candidate with `ast` and records rule violations (non-numpy imports, randomness incl. `hash()`/`id()`/clock, `exec`/`eval`/`open`, numpy file I/O, dunder access, `global`, attribute assignment, module-level state, mutable defaults) in a new `integrity` column of `evals.csv`; `summary.json` gets `n_flagged` and `best_integrity`. `check_integrity.py` rescores each best program four times (usual order twice, one shuffled order twice), each in a fresh spawned process with its own hash and RNG seeds. Flagged programs are still scored and can still win.
+- **Why:** the brief asks to keep scoring outside the code being evolved. Flagging instead of dropping keeps every method's search unchanged (fair) and lets us report how often each rule is hit. All best programs committed at the time (25 Oct seed 0, OpenRouter seeds 0–2) are clean: no flags, 0 repeat and 0 shuffle mismatches on train and val.
+- **Limits (from an independent review):** LLM4AD keeps only the function body of each reply, so module-level rules rarely fire in our runs; an empty column means "no body-level violation". Static checks can be bypassed (e.g. a helper function mutating shared state); the rescoring catches such cases only if they change a bin count. Fresh spawned processes are needed because forked children share the parent's hash seed, which hid `hash()`-based nondeterminism in the first version.
+- **Alternatives considered:** rejecting flagged candidates (changes the search and LLM4AD's behaviour); a runtime sandbox (heavier; LLM4AD already runs candidates in a child process with a timeout).
+- **Affects:** `evals.csv` (new column, at the end), `summary.json`, `results/*/integrity.csv`. No score changes.
 
 ### 2026-11-03: tuned Best Fit baseline (Jia Kang)
 
@@ -116,18 +102,19 @@ One entry per decision that affects results. Link the config and the results fol
 - **Why:** the plan's "instance-by-instance sign test vs best fit" and win rates (decision 14). Per seed, because 3 of 6 OpenRouter seeds tie Best Fit everywhere and the other 3 differ by ±1–2.6 pp, which a mean over seeds hides. On the baseline, seed 4 beats Best Fit on all 5 `test_id_5k` instances but the sign test can't go below p = 0.0625 with 5 instances (#12 proposes 10).
 - **Affects:** new `pipeline/paired_stats.py`, `results/*/paired_stats.csv`, readme §3 and §6.
 
-### 2026-11-07: incomplete runs are rerun, not scored (Nic)
+### 2026-11-04: ablation settings locked (Nic)
 
-- **Decision:** a run that ends early for an infrastructure reason (`budget:llm_errors`, `error`, interrupted) is rerun in full with `--force`; only complete runs (the evaluation budget reached) are scored. The failed attempt stays in git history.
-- **Why:** the stop has nothing to do with the method; the rule is applied whatever the rerun scores.
-- **Applied to:** `abl_informed_rules` seed 6 (first attempt: 54 evals, network failure; kept in commit `1ef5ac5`).
-- **Affects:** `results/abl_informed_rules/eoh/seed6/`.
+- **Decision:** run the main settings `abl_anyfit`, `abl_informed_rules` and `abl_mixed_shapes`, plus the control `control_randsample`. Seeds 0–4 each, `openrouter-gemini-3.5-flash-lite`, budget `full` (300 evals). The comparison row is the EoH baseline, seeds 0–5. Optional if time allows: `abl_informed_dist`, `abl_informed`. Fallback: `abl_no_m2`.
+- **Why:** the baseline shows the gain and the k5 failure both come from opening fresh bins (seeds 4/5), plus one failure from training on a single shape (seed 3, k1.5). Ablation 1 tests the empty-bin option; Ablation 2 tests training variety; randsample tests whether search adds anything. 5 seeds because half the baseline seeds collapse to Best Fit.
+- **Alternatives considered:** no-M2 as a main setting (no run points to M2), thoughts on/off (EoH Table 6 already covers it), a budget sweep (would be a third ablation).
+- **Affects:** `configs/abl_*.yaml`, `configs/control_randsample.yaml`, `results/<setting>/`. Plan and evidence: #7. Claims frozen before scoring: #15.
 
-### 2026-11-07: control runs 10 seeds (Nic)
+### 2026-11-05: test sets frozen (Jia Kang)
 
-- **Decision:** `control_randsample` runs seeds 0–9 (10), like Ablation 1's main settings.
-- **Why:** the control is compared with both ablations; with 10 seeds its seed counts are on the same footing as A1a/A1b, and the Fisher rule in #15 can reach p < 0.05 (only at 0/10 or 10/10 vs the baseline's 3/6).
-- **Affects:** `configs/control_randsample.yaml`, `tests/test_ablations.py`; results in `results/control_randsample/`.
+- **Decision:** every test set has 10 instances (was 5). Added `test_size_1k`, `test_cap200`, `test_scale25`, `test_scale65` and the control set `test_control`, and listed all of them in `final_eval.sets`. `train`, `train_mixed`, `val` and the seed are unchanged, and instances 0–4 of the existing test sets are identical to before (checked against the old data).
+- **Why:** with 5 instances no rule can beat Best Fit significantly on the sign test (best case p = 0.0625; with 10, p = 0.002). `test_cap200` fills the capacity series 100 → 200 → 500; `test_scale25`/`test_scale65` shift item size relative to the bin in both directions. `test_size_1k` needs its own instances because `val` chooses between runs. The control set catches scoring bugs: every item is over half a bin, so every rule must use one bin per item (all six OpenRouter seeds' best programs and Best Fit do). On `test_scale65` L1 is ~10% too low, so its excess is read over L2 (#10); on every other test set L2 = L1.
+- **Alternatives considered:** the real OR-Library files (binpack5–8) and Beyond the Hype's datasets (skipped); renaming `test_uniform` to `test_orlib_like` (kept: a set's seed comes from its name, so renaming changes its data).
+- **Affects:** `configs/instances/v0.yaml`; `final_eval.sets` in `eoh_baseline.yaml` and `compare.yaml` (the ablation configs inherit it); every `final_*.csv` once re-scored. Discussion: #12.
 
 ### 2026-11-07: Ablation 1 runs 10 seeds; optional rows dropped (Nic)
 
@@ -136,6 +123,19 @@ One entry per decision that affects results. Link the config and the results fol
 - **When:** decided and committed on 7 Nov before the A1 runs started (`e3009aa`, configs and test); this entry was meant to go in with that commit and was added later.
 - **Alternatives considered:** 5 seeds per setting plus both optional rows (same cost, less power on the main question).
 - **Affects:** `configs/abl_anyfit.yaml`, `configs/abl_informed_rules.yaml`, `tests/test_ablations.py`; results in `results/abl_anyfit/`, `results/abl_informed_rules/`.
+
+### 2026-11-07: control runs 10 seeds (Nic)
+
+- **Decision:** `control_randsample` runs seeds 0–9 (10), like Ablation 1's main settings.
+- **Why:** the control is compared with both ablations; with 10 seeds its seed counts are on the same footing as A1a/A1b, and the Fisher rule in #15 can reach p < 0.05 (only at 0/10 or 10/10 vs the baseline's 3/6).
+- **Affects:** `configs/control_randsample.yaml`, `tests/test_ablations.py`; results in `results/control_randsample/`.
+
+### 2026-11-07: incomplete runs are rerun, not scored (Nic)
+
+- **Decision:** a run that ends early for an infrastructure reason (`budget:llm_errors`, `error`, interrupted) is rerun in full with `--force`; only complete runs (the evaluation budget reached) are scored. The failed attempt stays in git history.
+- **Why:** the stop has nothing to do with the method; the rule is applied whatever the rerun scores.
+- **Applied to:** `abl_informed_rules` seed 6 (first attempt: 54 evals, network failure; kept in commit `1ef5ac5`).
+- **Affects:** `results/abl_informed_rules/eoh/seed6/`.
 
 ### 2026-11-09: Ablation 2 = A2a mixed shapes + A2b mixed capacities, 10 seeds each; A3 optional (Jin)
 
