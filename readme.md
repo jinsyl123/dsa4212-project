@@ -11,7 +11,7 @@ We use an LLM-driven search (**EoH**, via [LLM4AD](https://github.com/Optima-Cit
 | A2a: mixed training shapes | trained on Weibull shapes 2 and 4 instead of 3 | baseline | `abl_mixed_shapes.yaml` | `abl_mixed_shapes/` |
 | A2b: mixed training capacities | A1b, trained on capacities 100 and 300 (item scale 45) instead of 100 only | A1b | `abl_mixed_caps_informed.yaml` | `abl_mixed_caps_informed/` |
 
-A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (`code/docs/log.md`, 9 Nov; `code/docs/claims.md`, A2b). Every setting has seeds 0–9. The baseline's seeds 0–5 were run first and are the pre-registered comparison; seeds 6–9 were added on 9 Nov, and a difference in seed counts is claimed only if it is significant against both (`code/docs/claims.md`, Amendments, "baseline extended to 10 seeds", 9 Nov). A third ablation (a stronger LLM, `abl_strong_model.yaml`) was optional and was not run.
+A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (`code/docs/log.md`, 9 Nov; `code/docs/claims.md`, A2b). Every setting has seeds 0–9. The baseline's seeds 0–5 were run first and are the pre-registered comparison; seeds 6–9 were added on 9 Nov, and a difference in seed counts is claimed only if it is significant against both (`code/docs/log.md`, 9 Nov, "baseline extended to 10 seeds"; `code/docs/claims.md`, Amendments). A third ablation (a stronger LLM, `abl_strong_model.yaml`) was optional and was not run.
 
 Every setting is compared with Best Fit and with **tuned Best Fit** (Best Fit's 3 knobs tuned without an LLM, under the same 300-evaluation budget). Predictions for each setting were frozen before scoring in [`code/docs/claims.md`](code/docs/claims.md); every decision that affects results is in [`code/docs/log.md`](code/docs/log.md).
 
@@ -60,9 +60,10 @@ From the `code/` folder, with no LLM calls (about 1.5–2 hours in total; on Win
 bash pipeline/score.sh --check --llm openrouter-gemini-3.5-flash-lite eoh_baseline
 bash pipeline/score.sh --check abl_anyfit abl_informed_rules control_randsample
 bash pipeline/score.sh --check abl_mixed_shapes abl_mixed_caps_informed
+python pipeline/seed_counts.py       # seed counts and Fisher tests across settings (seconds)
 ```
 
-For each setting, `score.sh` retunes tuned Best Fit, rescores the committed best programs on every held-out set, runs the integrity checks, the fresh-bin diagnostic and the paired statistics, and rebuilds `final_summary.csv`, `paired_stats.csv`, `summary_tables.md` and the figures. With `--check` it then prints `OK: every committed output reproduced`, or lists the files that differ (CSV row order and measured run time are ignored). Rerunning a *search* does not give the same programs, because LLM sampling is random; that is why every run folder, including every LLM call, is committed.
+For each setting, `score.sh` retunes tuned Best Fit, rescores the committed best programs on every held-out set, runs the integrity checks, the fresh-bin diagnostic and the paired statistics, and rebuilds `final_summary.csv`, `paired_stats.csv`, `summary_tables.md` and the figures. With `--check` it then prints `OK: every committed output reproduced`, or lists the files that differ. CSV row order and measured run time are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. `seed_counts.py` then rebuilds `code/results/seed_counts.csv` and `seed_counts.md` from those outputs. Rerunning a *search* does not give the same programs, because LLM sampling is random; that is why every run folder, including every LLM call, is committed.
 
 ## Results
 
@@ -78,7 +79,9 @@ Frozen test sets, excess over the L2 lower bound, 10 instances per set. Per-seed
 | A2a: mixed training shapes | 10 | 9/10 | 1/10 | 1/10 | 2/10 |
 | A2b: mixed training capacities (vs A1b) | 10 | 6/10 | 0/10 | 1/10 | 2/10 |
 
-**What holds up** (Fisher's exact test on seed counts, significant against both the 6- and 10-seed baseline):
+Bold: claimed, i.e. Fisher's exact test on seed counts gives p < 0.05 against both the 6- and 10-seed baseline. Every cell with its p-values: `code/results/seed_counts.md`; every category and set: `seed_counts.csv`.
+
+**What holds up** (significant against both the 6- and 10-seed baseline):
 - **The control** never beats Best Fit (0/10; p = 0.036 and 0.033): without evolution, the LLM does not get past Best Fit.
 - **A1b** beats Best Fit more often than the baseline (10/10; p = 0.036 and 0.033): stating the task and bin rules in the prompt makes the gain reliable. But 5/10 A1b seeds collapse on `test_cap500` (about 1,140% over the bound, Best Fit 0.5%), which A2b tests.
 
