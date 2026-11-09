@@ -11,7 +11,7 @@ We use an LLM-driven search (**EoH**, via [LLM4AD](https://github.com/Optima-Cit
 | A2a: mixed training shapes | trained on Weibull shapes 2 and 4 instead of 3 | baseline | `abl_mixed_shapes.yaml` | `abl_mixed_shapes/` |
 | A2b: mixed training capacities | A1b, trained on capacities 100 and 300 (item scale 45) instead of 100 only | A1b | `abl_mixed_caps_informed.yaml` | `abl_mixed_caps_informed/` |
 
-A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (`code/docs/log.md`, 9 Nov; `code/docs/claims.md`, A2b). Every setting has seeds 0–9. The baseline's seeds 0–5 were run first and are the pre-registered comparison; seeds 6–9 were added on 9 Nov, and a difference in seed counts is claimed only if it is significant against both (`code/docs/claims.md`, Amendments, 9 Nov). A third ablation (a stronger LLM, `abl_strong_model.yaml`) was optional and was not run.
+A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (`code/docs/log.md`, 9 Nov; `code/docs/claims.md`, A2b). Every setting has seeds 0–9. The baseline's seeds 0–5 were run first and are the pre-registered comparison; seeds 6–9 were added on 9 Nov, and a difference in seed counts is claimed only if it is significant against both (`code/docs/claims.md`, Amendments, "baseline extended to 10 seeds", 9 Nov). A third ablation (a stronger LLM, `abl_strong_model.yaml`) was optional and was not run.
 
 Every setting is compared with Best Fit and with **tuned Best Fit** (Best Fit's 3 knobs tuned without an LLM, under the same 300-evaluation budget). Predictions for each setting were frozen before scoring in [`code/docs/claims.md`](code/docs/claims.md); every decision that affects results is in [`code/docs/log.md`](code/docs/log.md).
 

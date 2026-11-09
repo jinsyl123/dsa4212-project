@@ -413,7 +413,7 @@ The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1�
 
 **Change one thing at a time** against a baseline with the same model, budget and seeds, and use at least 3 seeds per arm: LLM runs vary a lot between seeds.
 
-**The ablations** each have a config that inherits another one (`base:`) and changes one setting. All use `openrouter-gemini-3.5-flash-lite`, the `full` budget and seeds 0–9 (10 per setting; `docs/log.md`, 7 and 9 Nov). The main baseline is the comparison row (seeds 0–5 as pre-registered, 0–9 as a check; `docs/claims.md`, Amendments, 9 Nov), except for A2b, which is compared with A1b.
+**The ablations** each have a config that inherits another one (`base:`) and changes one setting. All use `openrouter-gemini-3.5-flash-lite`, the `full` budget and seeds 0–9 (10 per setting; `docs/log.md`, 7 and 9 Nov). The main baseline is the comparison row (seeds 0–5 as pre-registered, 0–9 as a check; `docs/claims.md`, Amendments, "baseline extended to 10 seeds", 9 Nov), except for A2b, which is compared with A1b.
 
 | Config                         | Changes                                                                    | Base                      | Status               |
 | ------------------------------ | -------------------------------------------------------------------------- | ------------------------- | -------------------- |
@@ -422,7 +422,7 @@ The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1�
 | `abl_mixed_shapes.yaml`        | A2a: training on Weibull shapes 2 and 4                                    | `eoh_baseline.yaml`       | main                 |
 | `abl_mixed_caps_informed.yaml` | A2b: training on capacities 100 and 300, item scale 45 (`train_mixed_cap`) | `abl_informed_rules.yaml` | main                 |
 | `control_randsample.yaml`      | LLM4AD RandSample: same budget, fixed FunSearch-style prompt, no evolution | `eoh_baseline.yaml`       | control              |
-| `abl_strong_model.yaml`        | A3: `gemini-3.5-flash` instead of the lite model                           | `eoh_baseline.yaml`       | not run (`docs/claims.md`, Amendments, 9 Nov) |
+| `abl_strong_model.yaml`        | A3: `gemini-3.5-flash` instead of the lite model                           | `eoh_baseline.yaml`       | not run (`docs/claims.md`, Amendments, "baseline extended to 10 seeds", 9 Nov) |
 | `abl_informed_dist.yaml`       | prompt states the training distribution                                    | `eoh_baseline.yaml`       | dropped (7 Nov)      |
 | `abl_informed.yaml`            | both prompt additions                                                      | `eoh_baseline.yaml`       | dropped (7 Nov)      |
 | `abl_no_m2.yaml`               | EoH without M2                                                             | `eoh_baseline.yaml`       | dropped (7 Nov)      |
@@ -440,7 +440,7 @@ Before the full runs:
 
 - **Branch:** run from a branch that includes #14, so every run saves each LLM prompt and response (`llm_calls.jsonl`). Commit the whole run folder afterwards.
 - **Order:** the main settings first, then `control_randsample`. The control uses a different prompt (Best Fit as `priority_v0`, "complete `priority_v1`"), so its `check` run is a gate: look at `n_unique_programs` and `n_calls_not_evaluated` in `summary.json` before the 10 full seeds. The optional setting only if time allows.
-- **Credit:** about US$0.16–0.20 per run. Actual: A1 about US$4.15 (20 runs), control about US$0.90 (10 runs), A2 about US$3.91 (20 runs), from each run's `summary.json`. Check the OpenRouter balance first.
+- **Credit:** about US$0.16–0.20 per run. Actual: A1 about US$4.11 (20 runs, plus one aborted attempt), control about US$0.90 (10 runs), A2 about US$3.90 (20 runs); per run in `summary.json` (`cost_usd`). Check the OpenRouter balance first.
 
 ---
 
