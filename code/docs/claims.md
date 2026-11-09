@@ -282,3 +282,12 @@ Edited above, as in Amendment 4, since A2 has not run.
 3. **A2a wording.** The sets at shapes 1.5 and 5 are outside the training range of shapes 2 to 4, so they test extrapolation. The earlier text said interpolation.
 4. **A2b review points (#7, #15).** The config is `abl_mixed_caps_informed.yaml`, tuned Best Fit keeps its default knob ranges, and a fitness-balance line is added under A2b's uncertainties. No prediction changes.
 5. **A3.** The stronger-model section is relabelled optional A3 (#7).
+
+### 2026-11-09, baseline extended to 10 seeds (@lottomonster, #15 and #7); A3 not run
+
+Added after the freeze, as a dated amendment. Proposed by @lottomonster on #15 before any of the new seeds were run (config and log: `a8a5db0`, 11:32; runs: `6213209`, 12:32, on `ablation-runs`). No prediction above changes.
+
+1. **Baseline seeds 0–9.** The EoH baseline (`eoh_baseline.yaml`, `openrouter-gemini-3.5-flash-lite`, `full` budget) gets seeds 6–9, run with the same settings as seeds 0–5, for consistency with the ablations and the control (10 seeds each). Tuned Best Fit is retuned for seeds 6–9 in the baseline's folder; it must match A1b's and the control's seeds 6–9 exactly (a determinism check).
+2. **Primary vs secondary.** Every comparison pre-registered above against the 6-seed baseline (seeds 0–5, e.g. "baseline 3/6") stays **primary**, and its verdict stands as scored. Comparisons against the 10-seed baseline are reported **alongside**, labelled as added after Ablation 1 and the control were scored. A2 was scored against the 6-seed baseline as primary.
+3. **Fisher rows.** The shared rules' Fisher test uses the 6-seed baseline. Against the 10-seed baseline the same test is run on 10 vs 10 seeds and reported as secondary; a result significant against one baseline but not the other is reported with both p-values.
+4. **A3 (stronger model) is not run.** It was optional, only if time allowed after A2 (#7). With A1, the control and A2 scored, the team leaves it as future work; its predictions above stay as written and are not tested. The `abl_strong_model` config stays in the repo (only a 12-evaluation pipecheck has run).
