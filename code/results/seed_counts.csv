@@ -1,0 +1,856 @@
+setting,category,set,k,n,compared_with,k_ref,n_ref,fisher_p,significant_vs_all
+baseline,better_vs_best_fit,test_cap200,0,10,,,,,False
+baseline,better_vs_best_fit,test_cap500,0,10,,,,,False
+baseline,better_vs_best_fit,test_cap500_scaled,3,10,,,,,False
+baseline,better_vs_best_fit,test_id_5k,5,10,,,,,False
+baseline,better_vs_best_fit,test_scale25,0,10,,,,,False
+baseline,better_vs_best_fit,test_scale65,0,10,,,,,False
+baseline,better_vs_best_fit,test_shape_k1.5,3,10,,,,,False
+baseline,better_vs_best_fit,test_shape_k5,1,10,,,,,False
+baseline,better_vs_best_fit,test_size_10k,5,10,,,,,False
+baseline,better_vs_best_fit,test_size_1k,2,10,,,,,False
+baseline,better_vs_best_fit,test_uniform,4,10,,,,,False
+baseline,better_vs_tuned_bf,test_cap200,0,10,,,,,False
+baseline,better_vs_tuned_bf,test_cap500,0,10,,,,,False
+baseline,better_vs_tuned_bf,test_cap500_scaled,10,10,,,,,False
+baseline,better_vs_tuned_bf,test_id_5k,0,10,,,,,False
+baseline,better_vs_tuned_bf,test_scale25,10,10,,,,,False
+baseline,better_vs_tuned_bf,test_scale65,0,10,,,,,False
+baseline,better_vs_tuned_bf,test_shape_k1.5,9,10,,,,,False
+baseline,better_vs_tuned_bf,test_shape_k5,10,10,,,,,False
+baseline,better_vs_tuned_bf,test_size_10k,0,10,,,,,False
+baseline,better_vs_tuned_bf,test_size_1k,0,10,,,,,False
+baseline,better_vs_tuned_bf,test_uniform,0,10,,,,,False
+baseline,collapse,test_cap200,0,10,,,,,False
+baseline,collapse,test_cap500,0,10,,,,,False
+baseline,collapse,test_cap500_scaled,0,10,,,,,False
+baseline,collapse,test_id_5k,0,10,,,,,False
+baseline,collapse,test_scale25,0,10,,,,,False
+baseline,collapse,test_scale65,0,10,,,,,False
+baseline,collapse,test_shape_k1.5,0,10,,,,,False
+baseline,collapse,test_shape_k5,0,10,,,,,False
+baseline,collapse,test_size_10k,0,10,,,,,False
+baseline,collapse,test_size_1k,0,10,,,,,False
+baseline,collapse,test_uniform,0,10,,,,,False
+baseline,fresh_bin,train,3,10,,,,,False
+baseline,worse_vs_best_fit,k1.5 or k5,3,10,,,,,False
+baseline,worse_vs_best_fit,test_cap200,1,10,,,,,False
+baseline,worse_vs_best_fit,test_cap500,1,10,,,,,False
+baseline,worse_vs_best_fit,test_cap500_scaled,1,10,,,,,False
+baseline,worse_vs_best_fit,test_id_5k,0,10,,,,,False
+baseline,worse_vs_best_fit,test_scale25,1,10,,,,,False
+baseline,worse_vs_best_fit,test_scale65,1,10,,,,,False
+baseline,worse_vs_best_fit,test_shape_k1.5,1,10,,,,,False
+baseline,worse_vs_best_fit,test_shape_k5,2,10,,,,,False
+baseline,worse_vs_best_fit,test_size_10k,0,10,,,,,False
+baseline,worse_vs_best_fit,test_size_1k,0,10,,,,,False
+baseline,worse_vs_best_fit,test_uniform,0,10,,,,,False
+baseline,worse_vs_tuned_bf,test_cap200,1,10,,,,,False
+baseline,worse_vs_tuned_bf,test_cap500,1,10,,,,,False
+baseline,worse_vs_tuned_bf,test_cap500_scaled,0,10,,,,,False
+baseline,worse_vs_tuned_bf,test_id_5k,10,10,,,,,False
+baseline,worse_vs_tuned_bf,test_scale25,0,10,,,,,False
+baseline,worse_vs_tuned_bf,test_scale65,1,10,,,,,False
+baseline,worse_vs_tuned_bf,test_shape_k1.5,1,10,,,,,False
+baseline,worse_vs_tuned_bf,test_shape_k5,0,10,,,,,False
+baseline,worse_vs_tuned_bf,test_size_10k,10,10,,,,,False
+baseline,worse_vs_tuned_bf,test_size_1k,10,10,,,,,False
+baseline,worse_vs_tuned_bf,test_uniform,10,10,,,,,False
+control,better_vs_best_fit,test_cap200,0,10,,,,,False
+control,better_vs_best_fit,test_cap200,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_best_fit,test_cap200,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_best_fit,test_cap500,0,10,,,,,False
+control,better_vs_best_fit,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_best_fit,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_best_fit,test_cap500_scaled,0,10,,,,,False
+control,better_vs_best_fit,test_cap500_scaled,0,10,baseline seeds 0-5,2.0,6.0,0.125,False
+control,better_vs_best_fit,test_cap500_scaled,0,10,baseline seeds 0-9,3.0,10.0,0.2105,False
+control,better_vs_best_fit,test_id_5k,0,10,,,,,True
+control,better_vs_best_fit,test_id_5k,0,10,baseline seeds 0-5,3.0,6.0,0.0357,True
+control,better_vs_best_fit,test_id_5k,0,10,baseline seeds 0-9,5.0,10.0,0.0325,True
+control,better_vs_best_fit,test_scale25,0,10,,,,,False
+control,better_vs_best_fit,test_scale25,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_best_fit,test_scale25,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_best_fit,test_scale65,0,10,,,,,False
+control,better_vs_best_fit,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_best_fit,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_best_fit,test_shape_k1.5,0,10,,,,,False
+control,better_vs_best_fit,test_shape_k1.5,0,10,baseline seeds 0-5,2.0,6.0,0.125,False
+control,better_vs_best_fit,test_shape_k1.5,0,10,baseline seeds 0-9,3.0,10.0,0.2105,False
+control,better_vs_best_fit,test_shape_k5,0,10,,,,,False
+control,better_vs_best_fit,test_shape_k5,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,better_vs_best_fit,test_shape_k5,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,better_vs_best_fit,test_size_10k,0,10,,,,,True
+control,better_vs_best_fit,test_size_10k,0,10,baseline seeds 0-5,3.0,6.0,0.0357,True
+control,better_vs_best_fit,test_size_10k,0,10,baseline seeds 0-9,5.0,10.0,0.0325,True
+control,better_vs_best_fit,test_size_1k,0,10,,,,,False
+control,better_vs_best_fit,test_size_1k,0,10,baseline seeds 0-5,2.0,6.0,0.125,False
+control,better_vs_best_fit,test_size_1k,0,10,baseline seeds 0-9,2.0,10.0,0.4737,False
+control,better_vs_best_fit,test_uniform,0,10,,,,,False
+control,better_vs_best_fit,test_uniform,0,10,baseline seeds 0-5,3.0,6.0,0.0357,False
+control,better_vs_best_fit,test_uniform,0,10,baseline seeds 0-9,4.0,10.0,0.0867,False
+control,better_vs_tuned_bf,test_cap200,0,10,,,,,False
+control,better_vs_tuned_bf,test_cap200,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_cap200,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_cap500,0,10,,,,,False
+control,better_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_cap500_scaled,10,10,,,,,False
+control,better_vs_tuned_bf,test_cap500_scaled,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_cap500_scaled,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_id_5k,0,10,,,,,False
+control,better_vs_tuned_bf,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_scale25,10,10,,,,,False
+control,better_vs_tuned_bf,test_scale25,10,10,baseline seeds 0-5,2.0,6.0,0.0082,False
+control,better_vs_tuned_bf,test_scale25,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_scale65,0,10,,,,,False
+control,better_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_shape_k1.5,10,10,,,,,False
+control,better_vs_tuned_bf,test_shape_k1.5,10,10,baseline seeds 0-5,5.0,6.0,0.375,False
+control,better_vs_tuned_bf,test_shape_k1.5,10,10,baseline seeds 0-9,9.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_shape_k5,10,10,,,,,False
+control,better_vs_tuned_bf,test_shape_k5,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_shape_k5,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_size_10k,0,10,,,,,False
+control,better_vs_tuned_bf,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_size_1k,0,10,,,,,False
+control,better_vs_tuned_bf,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,better_vs_tuned_bf,test_uniform,0,10,,,,,False
+control,better_vs_tuned_bf,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,better_vs_tuned_bf,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_cap200,0,10,,,,,False
+control,collapse,test_cap200,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_cap200,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_cap500,0,10,,,,,False
+control,collapse,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_cap500_scaled,0,10,,,,,False
+control,collapse,test_cap500_scaled,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_cap500_scaled,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_id_5k,0,10,,,,,False
+control,collapse,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_scale25,0,10,,,,,False
+control,collapse,test_scale25,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_scale25,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_scale65,0,10,,,,,False
+control,collapse,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_shape_k1.5,0,10,,,,,False
+control,collapse,test_shape_k1.5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_shape_k1.5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_shape_k5,0,10,,,,,False
+control,collapse,test_shape_k5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_shape_k5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_size_10k,0,10,,,,,False
+control,collapse,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_size_1k,0,10,,,,,False
+control,collapse,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,collapse,test_uniform,0,10,,,,,False
+control,collapse,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,collapse,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,fresh_bin,train,0,10,,,,,False
+control,fresh_bin,train,0,10,baseline seeds 0-5,3.0,6.0,0.0357,False
+control,fresh_bin,train,0,10,baseline seeds 0-9,3.0,10.0,0.2105,False
+control,worse_vs_best_fit,k1.5 or k5,0,10,,,,,False
+control,worse_vs_best_fit,k1.5 or k5,0,10,baseline seeds 0-5,3.0,6.0,0.0357,False
+control,worse_vs_best_fit,k1.5 or k5,0,10,baseline seeds 0-9,3.0,10.0,0.2105,False
+control,worse_vs_best_fit,test_cap200,0,10,,,,,False
+control,worse_vs_best_fit,test_cap200,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_best_fit,test_cap200,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_best_fit,test_cap500,0,10,,,,,False
+control,worse_vs_best_fit,test_cap500,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_best_fit,test_cap500,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_best_fit,test_cap500_scaled,0,10,,,,,False
+control,worse_vs_best_fit,test_cap500_scaled,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_best_fit,test_cap500_scaled,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_best_fit,test_id_5k,0,10,,,,,False
+control,worse_vs_best_fit,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,worse_vs_best_fit,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,worse_vs_best_fit,test_scale25,0,10,,,,,False
+control,worse_vs_best_fit,test_scale25,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_best_fit,test_scale25,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_best_fit,test_scale65,0,10,,,,,False
+control,worse_vs_best_fit,test_scale65,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_best_fit,test_scale65,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_best_fit,test_shape_k1.5,0,10,,,,,False
+control,worse_vs_best_fit,test_shape_k1.5,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_best_fit,test_shape_k1.5,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_best_fit,test_shape_k5,0,10,,,,,False
+control,worse_vs_best_fit,test_shape_k5,0,10,baseline seeds 0-5,2.0,6.0,0.125,False
+control,worse_vs_best_fit,test_shape_k5,0,10,baseline seeds 0-9,2.0,10.0,0.4737,False
+control,worse_vs_best_fit,test_size_10k,0,10,,,,,False
+control,worse_vs_best_fit,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,worse_vs_best_fit,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,worse_vs_best_fit,test_size_1k,0,10,,,,,False
+control,worse_vs_best_fit,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,worse_vs_best_fit,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,worse_vs_best_fit,test_uniform,0,10,,,,,False
+control,worse_vs_best_fit,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,worse_vs_best_fit,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_cap200,0,10,,,,,False
+control,worse_vs_tuned_bf,test_cap200,0,10,baseline seeds 0-5,3.0,6.0,0.0357,False
+control,worse_vs_tuned_bf,test_cap200,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_cap500,0,10,,,,,False
+control,worse_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_cap500_scaled,0,10,,,,,False
+control,worse_vs_tuned_bf,test_cap500_scaled,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,worse_vs_tuned_bf,test_cap500_scaled,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_id_5k,10,10,,,,,False
+control,worse_vs_tuned_bf,test_id_5k,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+control,worse_vs_tuned_bf,test_id_5k,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_scale25,0,10,,,,,False
+control,worse_vs_tuned_bf,test_scale25,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_tuned_bf,test_scale25,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_scale65,0,10,,,,,False
+control,worse_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_shape_k1.5,0,10,,,,,False
+control,worse_vs_tuned_bf,test_shape_k1.5,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+control,worse_vs_tuned_bf,test_shape_k1.5,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_shape_k5,0,10,,,,,False
+control,worse_vs_tuned_bf,test_shape_k5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+control,worse_vs_tuned_bf,test_shape_k5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_size_10k,10,10,,,,,False
+control,worse_vs_tuned_bf,test_size_10k,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+control,worse_vs_tuned_bf,test_size_10k,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_size_1k,10,10,,,,,False
+control,worse_vs_tuned_bf,test_size_1k,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+control,worse_vs_tuned_bf,test_size_1k,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+control,worse_vs_tuned_bf,test_uniform,10,10,,,,,False
+control,worse_vs_tuned_bf,test_uniform,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+control,worse_vs_tuned_bf,test_uniform,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A1a,better_vs_best_fit,test_cap200,5,10,,,,,False
+A1a,better_vs_best_fit,test_cap200,5,10,baseline seeds 0-5,0.0,6.0,0.0934,False
+A1a,better_vs_best_fit,test_cap200,5,10,baseline seeds 0-9,0.0,10.0,0.0325,False
+A1a,better_vs_best_fit,test_cap500,2,10,,,,,False
+A1a,better_vs_best_fit,test_cap500,2,10,baseline seeds 0-5,0.0,6.0,0.5,False
+A1a,better_vs_best_fit,test_cap500,2,10,baseline seeds 0-9,0.0,10.0,0.4737,False
+A1a,better_vs_best_fit,test_cap500_scaled,5,10,,,,,False
+A1a,better_vs_best_fit,test_cap500_scaled,5,10,baseline seeds 0-5,2.0,6.0,0.6329,False
+A1a,better_vs_best_fit,test_cap500_scaled,5,10,baseline seeds 0-9,3.0,10.0,0.6499,False
+A1a,better_vs_best_fit,test_id_5k,6,10,,,,,False
+A1a,better_vs_best_fit,test_id_5k,6,10,baseline seeds 0-5,3.0,6.0,1.0,False
+A1a,better_vs_best_fit,test_id_5k,6,10,baseline seeds 0-9,5.0,10.0,1.0,False
+A1a,better_vs_best_fit,test_scale25,4,10,,,,,False
+A1a,better_vs_best_fit,test_scale25,4,10,baseline seeds 0-5,0.0,6.0,0.2335,False
+A1a,better_vs_best_fit,test_scale25,4,10,baseline seeds 0-9,0.0,10.0,0.0867,False
+A1a,better_vs_best_fit,test_scale65,0,10,,,,,False
+A1a,better_vs_best_fit,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,better_vs_best_fit,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,better_vs_best_fit,test_shape_k1.5,5,10,,,,,False
+A1a,better_vs_best_fit,test_shape_k1.5,5,10,baseline seeds 0-5,2.0,6.0,0.6329,False
+A1a,better_vs_best_fit,test_shape_k1.5,5,10,baseline seeds 0-9,3.0,10.0,0.6499,False
+A1a,better_vs_best_fit,test_shape_k5,1,10,,,,,False
+A1a,better_vs_best_fit,test_shape_k5,1,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1a,better_vs_best_fit,test_shape_k5,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1a,better_vs_best_fit,test_size_10k,6,10,,,,,False
+A1a,better_vs_best_fit,test_size_10k,6,10,baseline seeds 0-5,3.0,6.0,1.0,False
+A1a,better_vs_best_fit,test_size_10k,6,10,baseline seeds 0-9,5.0,10.0,1.0,False
+A1a,better_vs_best_fit,test_size_1k,4,10,,,,,False
+A1a,better_vs_best_fit,test_size_1k,4,10,baseline seeds 0-5,2.0,6.0,1.0,False
+A1a,better_vs_best_fit,test_size_1k,4,10,baseline seeds 0-9,2.0,10.0,0.6285,False
+A1a,better_vs_best_fit,test_uniform,7,10,,,,,False
+A1a,better_vs_best_fit,test_uniform,7,10,baseline seeds 0-5,3.0,6.0,0.6066,False
+A1a,better_vs_best_fit,test_uniform,7,10,baseline seeds 0-9,4.0,10.0,0.3698,False
+A1a,better_vs_tuned_bf,test_cap200,3,10,,,,,False
+A1a,better_vs_tuned_bf,test_cap200,3,10,baseline seeds 0-5,0.0,6.0,0.25,False
+A1a,better_vs_tuned_bf,test_cap200,3,10,baseline seeds 0-9,0.0,10.0,0.2105,False
+A1a,better_vs_tuned_bf,test_cap500,2,10,,,,,False
+A1a,better_vs_tuned_bf,test_cap500,2,10,baseline seeds 0-5,0.0,6.0,0.5,False
+A1a,better_vs_tuned_bf,test_cap500,2,10,baseline seeds 0-9,0.0,10.0,0.4737,False
+A1a,better_vs_tuned_bf,test_cap500_scaled,10,10,,,,,False
+A1a,better_vs_tuned_bf,test_cap500_scaled,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A1a,better_vs_tuned_bf,test_cap500_scaled,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A1a,better_vs_tuned_bf,test_id_5k,0,10,,,,,False
+A1a,better_vs_tuned_bf,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,better_vs_tuned_bf,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,better_vs_tuned_bf,test_scale25,3,10,,,,,False
+A1a,better_vs_tuned_bf,test_scale25,3,10,baseline seeds 0-5,2.0,6.0,1.0,False
+A1a,better_vs_tuned_bf,test_scale25,3,10,baseline seeds 0-9,10.0,10.0,0.0031,False
+A1a,better_vs_tuned_bf,test_scale65,7,10,,,,,True
+A1a,better_vs_tuned_bf,test_scale65,7,10,baseline seeds 0-5,0.0,6.0,0.0114,True
+A1a,better_vs_tuned_bf,test_scale65,7,10,baseline seeds 0-9,0.0,10.0,0.0031,True
+A1a,better_vs_tuned_bf,test_shape_k1.5,2,10,,,,,True
+A1a,better_vs_tuned_bf,test_shape_k1.5,2,10,baseline seeds 0-5,5.0,6.0,0.035,True
+A1a,better_vs_tuned_bf,test_shape_k1.5,2,10,baseline seeds 0-9,9.0,10.0,0.0055,True
+A1a,better_vs_tuned_bf,test_shape_k5,0,10,,,,,True
+A1a,better_vs_tuned_bf,test_shape_k5,0,10,baseline seeds 0-5,6.0,6.0,0.0001,True
+A1a,better_vs_tuned_bf,test_shape_k5,0,10,baseline seeds 0-9,10.0,10.0,0.0,True
+A1a,better_vs_tuned_bf,test_size_10k,0,10,,,,,False
+A1a,better_vs_tuned_bf,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,better_vs_tuned_bf,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,better_vs_tuned_bf,test_size_1k,0,10,,,,,False
+A1a,better_vs_tuned_bf,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,better_vs_tuned_bf,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,better_vs_tuned_bf,test_uniform,5,10,,,,,False
+A1a,better_vs_tuned_bf,test_uniform,5,10,baseline seeds 0-5,0.0,6.0,0.0934,False
+A1a,better_vs_tuned_bf,test_uniform,5,10,baseline seeds 0-9,0.0,10.0,0.0325,False
+A1a,collapse,test_cap200,0,10,,,,,False
+A1a,collapse,test_cap200,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_cap200,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_cap500,0,10,,,,,False
+A1a,collapse,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_cap500_scaled,0,10,,,,,False
+A1a,collapse,test_cap500_scaled,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_cap500_scaled,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_id_5k,0,10,,,,,False
+A1a,collapse,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_scale25,0,10,,,,,False
+A1a,collapse,test_scale25,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_scale25,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_scale65,0,10,,,,,False
+A1a,collapse,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_shape_k1.5,0,10,,,,,False
+A1a,collapse,test_shape_k1.5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_shape_k1.5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_shape_k5,0,10,,,,,False
+A1a,collapse,test_shape_k5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_shape_k5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_size_10k,0,10,,,,,False
+A1a,collapse,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_size_1k,0,10,,,,,False
+A1a,collapse,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,collapse,test_uniform,0,10,,,,,False
+A1a,collapse,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,collapse,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,fresh_bin,train,0,10,,,,,False
+A1a,fresh_bin,train,0,10,baseline seeds 0-5,3.0,6.0,0.0357,False
+A1a,fresh_bin,train,0,10,baseline seeds 0-9,3.0,10.0,0.2105,False
+A1a,worse_vs_best_fit,k1.5 or k5,1,10,,,,,False
+A1a,worse_vs_best_fit,k1.5 or k5,1,10,baseline seeds 0-5,3.0,6.0,0.1181,False
+A1a,worse_vs_best_fit,k1.5 or k5,1,10,baseline seeds 0-9,3.0,10.0,0.582,False
+A1a,worse_vs_best_fit,test_cap200,2,10,,,,,False
+A1a,worse_vs_best_fit,test_cap200,2,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1a,worse_vs_best_fit,test_cap200,2,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_cap500,1,10,,,,,False
+A1a,worse_vs_best_fit,test_cap500,1,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1a,worse_vs_best_fit,test_cap500,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_cap500_scaled,1,10,,,,,False
+A1a,worse_vs_best_fit,test_cap500_scaled,1,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1a,worse_vs_best_fit,test_cap500_scaled,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_id_5k,0,10,,,,,False
+A1a,worse_vs_best_fit,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,worse_vs_best_fit,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_scale25,0,10,,,,,False
+A1a,worse_vs_best_fit,test_scale25,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A1a,worse_vs_best_fit,test_scale25,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_scale65,4,10,,,,,False
+A1a,worse_vs_best_fit,test_scale65,4,10,baseline seeds 0-5,1.0,6.0,0.5879,False
+A1a,worse_vs_best_fit,test_scale65,4,10,baseline seeds 0-9,1.0,10.0,0.3034,False
+A1a,worse_vs_best_fit,test_shape_k1.5,1,10,,,,,False
+A1a,worse_vs_best_fit,test_shape_k1.5,1,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1a,worse_vs_best_fit,test_shape_k1.5,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_shape_k5,1,10,,,,,False
+A1a,worse_vs_best_fit,test_shape_k5,1,10,baseline seeds 0-5,2.0,6.0,0.5179,False
+A1a,worse_vs_best_fit,test_shape_k5,1,10,baseline seeds 0-9,2.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_size_10k,0,10,,,,,False
+A1a,worse_vs_best_fit,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,worse_vs_best_fit,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_size_1k,0,10,,,,,False
+A1a,worse_vs_best_fit,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,worse_vs_best_fit,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,worse_vs_best_fit,test_uniform,0,10,,,,,False
+A1a,worse_vs_best_fit,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,worse_vs_best_fit,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,worse_vs_tuned_bf,test_cap200,5,10,,,,,False
+A1a,worse_vs_tuned_bf,test_cap200,5,10,baseline seeds 0-5,3.0,6.0,1.0,False
+A1a,worse_vs_tuned_bf,test_cap200,5,10,baseline seeds 0-9,1.0,10.0,0.1409,False
+A1a,worse_vs_tuned_bf,test_cap500,2,10,,,,,False
+A1a,worse_vs_tuned_bf,test_cap500,2,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1a,worse_vs_tuned_bf,test_cap500,2,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1a,worse_vs_tuned_bf,test_cap500_scaled,0,10,,,,,False
+A1a,worse_vs_tuned_bf,test_cap500_scaled,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1a,worse_vs_tuned_bf,test_cap500_scaled,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1a,worse_vs_tuned_bf,test_id_5k,8,10,,,,,False
+A1a,worse_vs_tuned_bf,test_id_5k,8,10,baseline seeds 0-5,6.0,6.0,0.5,False
+A1a,worse_vs_tuned_bf,test_id_5k,8,10,baseline seeds 0-9,10.0,10.0,0.4737,False
+A1a,worse_vs_tuned_bf,test_scale25,6,10,,,,,False
+A1a,worse_vs_tuned_bf,test_scale25,6,10,baseline seeds 0-5,1.0,6.0,0.1451,False
+A1a,worse_vs_tuned_bf,test_scale25,6,10,baseline seeds 0-9,0.0,10.0,0.0108,False
+A1a,worse_vs_tuned_bf,test_scale65,1,10,,,,,False
+A1a,worse_vs_tuned_bf,test_scale65,1,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1a,worse_vs_tuned_bf,test_scale65,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1a,worse_vs_tuned_bf,test_shape_k1.5,8,10,,,,,True
+A1a,worse_vs_tuned_bf,test_shape_k1.5,8,10,baseline seeds 0-5,1.0,6.0,0.035,True
+A1a,worse_vs_tuned_bf,test_shape_k1.5,8,10,baseline seeds 0-9,1.0,10.0,0.0055,True
+A1a,worse_vs_tuned_bf,test_shape_k5,6,10,,,,,True
+A1a,worse_vs_tuned_bf,test_shape_k5,6,10,baseline seeds 0-5,0.0,6.0,0.0338,True
+A1a,worse_vs_tuned_bf,test_shape_k5,6,10,baseline seeds 0-9,0.0,10.0,0.0108,True
+A1a,worse_vs_tuned_bf,test_size_10k,8,10,,,,,False
+A1a,worse_vs_tuned_bf,test_size_10k,8,10,baseline seeds 0-5,6.0,6.0,0.5,False
+A1a,worse_vs_tuned_bf,test_size_10k,8,10,baseline seeds 0-9,10.0,10.0,0.4737,False
+A1a,worse_vs_tuned_bf,test_size_1k,6,10,,,,,False
+A1a,worse_vs_tuned_bf,test_size_1k,6,10,baseline seeds 0-5,6.0,6.0,0.2335,False
+A1a,worse_vs_tuned_bf,test_size_1k,6,10,baseline seeds 0-9,10.0,10.0,0.0867,False
+A1a,worse_vs_tuned_bf,test_uniform,3,10,,,,,True
+A1a,worse_vs_tuned_bf,test_uniform,3,10,baseline seeds 0-5,6.0,6.0,0.0114,True
+A1a,worse_vs_tuned_bf,test_uniform,3,10,baseline seeds 0-9,10.0,10.0,0.0031,True
+A1b,better_vs_best_fit,test_cap200,0,10,,,,,False
+A1b,better_vs_best_fit,test_cap200,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_best_fit,test_cap200,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_best_fit,test_cap500,0,10,,,,,False
+A1b,better_vs_best_fit,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_best_fit,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_best_fit,test_cap500_scaled,5,10,,,,,False
+A1b,better_vs_best_fit,test_cap500_scaled,5,10,baseline seeds 0-5,2.0,6.0,0.6329,False
+A1b,better_vs_best_fit,test_cap500_scaled,5,10,baseline seeds 0-9,3.0,10.0,0.6499,False
+A1b,better_vs_best_fit,test_id_5k,10,10,,,,,True
+A1b,better_vs_best_fit,test_id_5k,10,10,baseline seeds 0-5,3.0,6.0,0.0357,True
+A1b,better_vs_best_fit,test_id_5k,10,10,baseline seeds 0-9,5.0,10.0,0.0325,True
+A1b,better_vs_best_fit,test_scale25,1,10,,,,,False
+A1b,better_vs_best_fit,test_scale25,1,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_best_fit,test_scale25,1,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_best_fit,test_scale65,0,10,,,,,False
+A1b,better_vs_best_fit,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_best_fit,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_best_fit,test_shape_k1.5,2,10,,,,,False
+A1b,better_vs_best_fit,test_shape_k1.5,2,10,baseline seeds 0-5,2.0,6.0,0.6044,False
+A1b,better_vs_best_fit,test_shape_k1.5,2,10,baseline seeds 0-9,3.0,10.0,1.0,False
+A1b,better_vs_best_fit,test_shape_k5,2,10,,,,,False
+A1b,better_vs_best_fit,test_shape_k5,2,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1b,better_vs_best_fit,test_shape_k5,2,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1b,better_vs_best_fit,test_size_10k,9,10,,,,,False
+A1b,better_vs_best_fit,test_size_10k,9,10,baseline seeds 0-5,3.0,6.0,0.1181,False
+A1b,better_vs_best_fit,test_size_10k,9,10,baseline seeds 0-9,5.0,10.0,0.1409,False
+A1b,better_vs_best_fit,test_size_1k,3,10,,,,,False
+A1b,better_vs_best_fit,test_size_1k,3,10,baseline seeds 0-5,2.0,6.0,1.0,False
+A1b,better_vs_best_fit,test_size_1k,3,10,baseline seeds 0-9,2.0,10.0,1.0,False
+A1b,better_vs_best_fit,test_uniform,4,10,,,,,False
+A1b,better_vs_best_fit,test_uniform,4,10,baseline seeds 0-5,3.0,6.0,1.0,False
+A1b,better_vs_best_fit,test_uniform,4,10,baseline seeds 0-9,4.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_cap200,0,10,,,,,False
+A1b,better_vs_tuned_bf,test_cap200,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_cap200,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_cap500,0,10,,,,,False
+A1b,better_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_cap500_scaled,9,10,,,,,False
+A1b,better_vs_tuned_bf,test_cap500_scaled,9,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_cap500_scaled,9,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_id_5k,0,10,,,,,False
+A1b,better_vs_tuned_bf,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_scale25,6,10,,,,,False
+A1b,better_vs_tuned_bf,test_scale25,6,10,baseline seeds 0-5,2.0,6.0,0.6084,False
+A1b,better_vs_tuned_bf,test_scale25,6,10,baseline seeds 0-9,10.0,10.0,0.0867,False
+A1b,better_vs_tuned_bf,test_scale65,0,10,,,,,False
+A1b,better_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_shape_k1.5,10,10,,,,,False
+A1b,better_vs_tuned_bf,test_shape_k1.5,10,10,baseline seeds 0-5,5.0,6.0,0.375,False
+A1b,better_vs_tuned_bf,test_shape_k1.5,10,10,baseline seeds 0-9,9.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_shape_k5,10,10,,,,,False
+A1b,better_vs_tuned_bf,test_shape_k5,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_shape_k5,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_size_10k,0,10,,,,,False
+A1b,better_vs_tuned_bf,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_size_1k,0,10,,,,,False
+A1b,better_vs_tuned_bf,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,better_vs_tuned_bf,test_uniform,1,10,,,,,False
+A1b,better_vs_tuned_bf,test_uniform,1,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,better_vs_tuned_bf,test_uniform,1,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,collapse,test_cap200,4,10,,,,,False
+A1b,collapse,test_cap200,4,10,baseline seeds 0-5,0.0,6.0,0.2335,False
+A1b,collapse,test_cap200,4,10,baseline seeds 0-9,0.0,10.0,0.0867,False
+A1b,collapse,test_cap500,5,10,,,,,False
+A1b,collapse,test_cap500,5,10,baseline seeds 0-5,0.0,6.0,0.0934,False
+A1b,collapse,test_cap500,5,10,baseline seeds 0-9,0.0,10.0,0.0325,False
+A1b,collapse,test_cap500_scaled,0,10,,,,,False
+A1b,collapse,test_cap500_scaled,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,collapse,test_cap500_scaled,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,collapse,test_id_5k,0,10,,,,,False
+A1b,collapse,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,collapse,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,collapse,test_scale25,4,10,,,,,False
+A1b,collapse,test_scale25,4,10,baseline seeds 0-5,0.0,6.0,0.2335,False
+A1b,collapse,test_scale25,4,10,baseline seeds 0-9,0.0,10.0,0.0867,False
+A1b,collapse,test_scale65,0,10,,,,,False
+A1b,collapse,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,collapse,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,collapse,test_shape_k1.5,0,10,,,,,False
+A1b,collapse,test_shape_k1.5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,collapse,test_shape_k1.5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,collapse,test_shape_k5,0,10,,,,,False
+A1b,collapse,test_shape_k5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,collapse,test_shape_k5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,collapse,test_size_10k,0,10,,,,,False
+A1b,collapse,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,collapse,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,collapse,test_size_1k,0,10,,,,,False
+A1b,collapse,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,collapse,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,collapse,test_uniform,0,10,,,,,False
+A1b,collapse,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,collapse,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,fresh_bin,train,6,10,,,,,False
+A1b,fresh_bin,train,6,10,baseline seeds 0-5,3.0,6.0,1.0,False
+A1b,fresh_bin,train,6,10,baseline seeds 0-9,3.0,10.0,0.3698,False
+A1b,worse_vs_best_fit,k1.5 or k5,1,10,,,,,False
+A1b,worse_vs_best_fit,k1.5 or k5,1,10,baseline seeds 0-5,3.0,6.0,0.1181,False
+A1b,worse_vs_best_fit,k1.5 or k5,1,10,baseline seeds 0-9,3.0,10.0,0.582,False
+A1b,worse_vs_best_fit,test_cap200,5,10,,,,,False
+A1b,worse_vs_best_fit,test_cap200,5,10,baseline seeds 0-5,1.0,6.0,0.3069,False
+A1b,worse_vs_best_fit,test_cap200,5,10,baseline seeds 0-9,1.0,10.0,0.1409,False
+A1b,worse_vs_best_fit,test_cap500,5,10,,,,,False
+A1b,worse_vs_best_fit,test_cap500,5,10,baseline seeds 0-5,1.0,6.0,0.3069,False
+A1b,worse_vs_best_fit,test_cap500,5,10,baseline seeds 0-9,1.0,10.0,0.1409,False
+A1b,worse_vs_best_fit,test_cap500_scaled,1,10,,,,,False
+A1b,worse_vs_best_fit,test_cap500_scaled,1,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A1b,worse_vs_best_fit,test_cap500_scaled,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1b,worse_vs_best_fit,test_id_5k,0,10,,,,,False
+A1b,worse_vs_best_fit,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,worse_vs_best_fit,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,worse_vs_best_fit,test_scale25,5,10,,,,,False
+A1b,worse_vs_best_fit,test_scale25,5,10,baseline seeds 0-5,1.0,6.0,0.3069,False
+A1b,worse_vs_best_fit,test_scale25,5,10,baseline seeds 0-9,1.0,10.0,0.1409,False
+A1b,worse_vs_best_fit,test_scale65,0,10,,,,,False
+A1b,worse_vs_best_fit,test_scale65,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A1b,worse_vs_best_fit,test_scale65,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1b,worse_vs_best_fit,test_shape_k1.5,0,10,,,,,False
+A1b,worse_vs_best_fit,test_shape_k1.5,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A1b,worse_vs_best_fit,test_shape_k1.5,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1b,worse_vs_best_fit,test_shape_k5,1,10,,,,,False
+A1b,worse_vs_best_fit,test_shape_k5,1,10,baseline seeds 0-5,2.0,6.0,0.5179,False
+A1b,worse_vs_best_fit,test_shape_k5,1,10,baseline seeds 0-9,2.0,10.0,1.0,False
+A1b,worse_vs_best_fit,test_size_10k,0,10,,,,,False
+A1b,worse_vs_best_fit,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,worse_vs_best_fit,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,worse_vs_best_fit,test_size_1k,0,10,,,,,False
+A1b,worse_vs_best_fit,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,worse_vs_best_fit,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,worse_vs_best_fit,test_uniform,0,10,,,,,False
+A1b,worse_vs_best_fit,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,worse_vs_best_fit,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,worse_vs_tuned_bf,test_cap200,6,10,,,,,False
+A1b,worse_vs_tuned_bf,test_cap200,6,10,baseline seeds 0-5,3.0,6.0,1.0,False
+A1b,worse_vs_tuned_bf,test_cap200,6,10,baseline seeds 0-9,1.0,10.0,0.0573,False
+A1b,worse_vs_tuned_bf,test_cap500,5,10,,,,,False
+A1b,worse_vs_tuned_bf,test_cap500,5,10,baseline seeds 0-5,1.0,6.0,0.3069,False
+A1b,worse_vs_tuned_bf,test_cap500,5,10,baseline seeds 0-9,1.0,10.0,0.1409,False
+A1b,worse_vs_tuned_bf,test_cap500_scaled,1,10,,,,,False
+A1b,worse_vs_tuned_bf,test_cap500_scaled,1,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,worse_vs_tuned_bf,test_cap500_scaled,1,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,worse_vs_tuned_bf,test_id_5k,10,10,,,,,False
+A1b,worse_vs_tuned_bf,test_id_5k,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A1b,worse_vs_tuned_bf,test_id_5k,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A1b,worse_vs_tuned_bf,test_scale25,4,10,,,,,False
+A1b,worse_vs_tuned_bf,test_scale25,4,10,baseline seeds 0-5,1.0,6.0,0.5879,False
+A1b,worse_vs_tuned_bf,test_scale25,4,10,baseline seeds 0-9,0.0,10.0,0.0867,False
+A1b,worse_vs_tuned_bf,test_scale65,0,10,,,,,False
+A1b,worse_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A1b,worse_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1b,worse_vs_tuned_bf,test_shape_k1.5,0,10,,,,,False
+A1b,worse_vs_tuned_bf,test_shape_k1.5,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A1b,worse_vs_tuned_bf,test_shape_k1.5,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A1b,worse_vs_tuned_bf,test_shape_k5,0,10,,,,,False
+A1b,worse_vs_tuned_bf,test_shape_k5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A1b,worse_vs_tuned_bf,test_shape_k5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A1b,worse_vs_tuned_bf,test_size_10k,10,10,,,,,False
+A1b,worse_vs_tuned_bf,test_size_10k,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A1b,worse_vs_tuned_bf,test_size_10k,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A1b,worse_vs_tuned_bf,test_size_1k,9,10,,,,,False
+A1b,worse_vs_tuned_bf,test_size_1k,9,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A1b,worse_vs_tuned_bf,test_size_1k,9,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A1b,worse_vs_tuned_bf,test_uniform,8,10,,,,,False
+A1b,worse_vs_tuned_bf,test_uniform,8,10,baseline seeds 0-5,6.0,6.0,0.5,False
+A1b,worse_vs_tuned_bf,test_uniform,8,10,baseline seeds 0-9,10.0,10.0,0.4737,False
+A2a,better_vs_best_fit,test_cap200,1,10,,,,,False
+A2a,better_vs_best_fit,test_cap200,1,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_best_fit,test_cap200,1,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_best_fit,test_cap500,0,10,,,,,False
+A2a,better_vs_best_fit,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_best_fit,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_best_fit,test_cap500_scaled,2,10,,,,,False
+A2a,better_vs_best_fit,test_cap500_scaled,2,10,baseline seeds 0-5,2.0,6.0,0.6044,False
+A2a,better_vs_best_fit,test_cap500_scaled,2,10,baseline seeds 0-9,3.0,10.0,1.0,False
+A2a,better_vs_best_fit,test_id_5k,9,10,,,,,False
+A2a,better_vs_best_fit,test_id_5k,9,10,baseline seeds 0-5,3.0,6.0,0.1181,False
+A2a,better_vs_best_fit,test_id_5k,9,10,baseline seeds 0-9,5.0,10.0,0.1409,False
+A2a,better_vs_best_fit,test_scale25,2,10,,,,,False
+A2a,better_vs_best_fit,test_scale25,2,10,baseline seeds 0-5,0.0,6.0,0.5,False
+A2a,better_vs_best_fit,test_scale25,2,10,baseline seeds 0-9,0.0,10.0,0.4737,False
+A2a,better_vs_best_fit,test_scale65,0,10,,,,,False
+A2a,better_vs_best_fit,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_best_fit,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_best_fit,test_shape_k1.5,3,10,,,,,False
+A2a,better_vs_best_fit,test_shape_k1.5,3,10,baseline seeds 0-5,2.0,6.0,1.0,False
+A2a,better_vs_best_fit,test_shape_k1.5,3,10,baseline seeds 0-9,3.0,10.0,1.0,False
+A2a,better_vs_best_fit,test_shape_k5,0,10,,,,,False
+A2a,better_vs_best_fit,test_shape_k5,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,better_vs_best_fit,test_shape_k5,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,better_vs_best_fit,test_size_10k,8,10,,,,,False
+A2a,better_vs_best_fit,test_size_10k,8,10,baseline seeds 0-5,3.0,6.0,0.2995,False
+A2a,better_vs_best_fit,test_size_10k,8,10,baseline seeds 0-9,5.0,10.0,0.3498,False
+A2a,better_vs_best_fit,test_size_1k,2,10,,,,,False
+A2a,better_vs_best_fit,test_size_1k,2,10,baseline seeds 0-5,2.0,6.0,0.6044,False
+A2a,better_vs_best_fit,test_size_1k,2,10,baseline seeds 0-9,2.0,10.0,1.0,False
+A2a,better_vs_best_fit,test_uniform,6,10,,,,,False
+A2a,better_vs_best_fit,test_uniform,6,10,baseline seeds 0-5,3.0,6.0,1.0,False
+A2a,better_vs_best_fit,test_uniform,6,10,baseline seeds 0-9,4.0,10.0,0.6563,False
+A2a,better_vs_tuned_bf,test_cap200,1,10,,,,,False
+A2a,better_vs_tuned_bf,test_cap200,1,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_tuned_bf,test_cap200,1,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_cap500,0,10,,,,,False
+A2a,better_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_cap500_scaled,10,10,,,,,False
+A2a,better_vs_tuned_bf,test_cap500_scaled,10,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A2a,better_vs_tuned_bf,test_cap500_scaled,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_id_5k,1,10,,,,,False
+A2a,better_vs_tuned_bf,test_id_5k,1,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_tuned_bf,test_id_5k,1,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_scale25,10,10,,,,,False
+A2a,better_vs_tuned_bf,test_scale25,10,10,baseline seeds 0-5,2.0,6.0,0.0082,False
+A2a,better_vs_tuned_bf,test_scale25,10,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_scale65,0,10,,,,,False
+A2a,better_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_tuned_bf,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_shape_k1.5,10,10,,,,,False
+A2a,better_vs_tuned_bf,test_shape_k1.5,10,10,baseline seeds 0-5,5.0,6.0,0.375,False
+A2a,better_vs_tuned_bf,test_shape_k1.5,10,10,baseline seeds 0-9,9.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_shape_k5,0,10,,,,,True
+A2a,better_vs_tuned_bf,test_shape_k5,0,10,baseline seeds 0-5,6.0,6.0,0.0001,True
+A2a,better_vs_tuned_bf,test_shape_k5,0,10,baseline seeds 0-9,10.0,10.0,0.0,True
+A2a,better_vs_tuned_bf,test_size_10k,1,10,,,,,False
+A2a,better_vs_tuned_bf,test_size_10k,1,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_tuned_bf,test_size_10k,1,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_size_1k,0,10,,,,,False
+A2a,better_vs_tuned_bf,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_tuned_bf,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,better_vs_tuned_bf,test_uniform,0,10,,,,,False
+A2a,better_vs_tuned_bf,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,better_vs_tuned_bf,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_cap200,0,10,,,,,False
+A2a,collapse,test_cap200,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_cap200,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_cap500,0,10,,,,,False
+A2a,collapse,test_cap500,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_cap500,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_cap500_scaled,0,10,,,,,False
+A2a,collapse,test_cap500_scaled,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_cap500_scaled,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_id_5k,0,10,,,,,False
+A2a,collapse,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_scale25,0,10,,,,,False
+A2a,collapse,test_scale25,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_scale25,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_scale65,0,10,,,,,False
+A2a,collapse,test_scale65,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_scale65,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_shape_k1.5,0,10,,,,,False
+A2a,collapse,test_shape_k1.5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_shape_k1.5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_shape_k5,0,10,,,,,False
+A2a,collapse,test_shape_k5,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_shape_k5,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_size_10k,0,10,,,,,False
+A2a,collapse,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_size_1k,0,10,,,,,False
+A2a,collapse,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,collapse,test_uniform,0,10,,,,,False
+A2a,collapse,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,collapse,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,fresh_bin,train,2,10,,,,,False
+A2a,fresh_bin,train,2,10,baseline seeds 0-5,3.0,6.0,0.2995,False
+A2a,fresh_bin,train,2,10,baseline seeds 0-9,3.0,10.0,1.0,False
+A2a,worse_vs_best_fit,k1.5 or k5,1,10,,,,,False
+A2a,worse_vs_best_fit,k1.5 or k5,1,10,baseline seeds 0-5,3.0,6.0,0.1181,False
+A2a,worse_vs_best_fit,k1.5 or k5,1,10,baseline seeds 0-9,3.0,10.0,0.582,False
+A2a,worse_vs_best_fit,test_cap200,0,10,,,,,False
+A2a,worse_vs_best_fit,test_cap200,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,worse_vs_best_fit,test_cap200,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_cap500,0,10,,,,,False
+A2a,worse_vs_best_fit,test_cap500,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,worse_vs_best_fit,test_cap500,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_cap500_scaled,0,10,,,,,False
+A2a,worse_vs_best_fit,test_cap500_scaled,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,worse_vs_best_fit,test_cap500_scaled,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_id_5k,0,10,,,,,False
+A2a,worse_vs_best_fit,test_id_5k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,worse_vs_best_fit,test_id_5k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_scale25,0,10,,,,,False
+A2a,worse_vs_best_fit,test_scale25,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,worse_vs_best_fit,test_scale25,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_scale65,1,10,,,,,False
+A2a,worse_vs_best_fit,test_scale65,1,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A2a,worse_vs_best_fit,test_scale65,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_shape_k1.5,0,10,,,,,False
+A2a,worse_vs_best_fit,test_shape_k1.5,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,worse_vs_best_fit,test_shape_k1.5,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_shape_k5,1,10,,,,,False
+A2a,worse_vs_best_fit,test_shape_k5,1,10,baseline seeds 0-5,2.0,6.0,0.5179,False
+A2a,worse_vs_best_fit,test_shape_k5,1,10,baseline seeds 0-9,2.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_size_10k,0,10,,,,,False
+A2a,worse_vs_best_fit,test_size_10k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,worse_vs_best_fit,test_size_10k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_size_1k,0,10,,,,,False
+A2a,worse_vs_best_fit,test_size_1k,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,worse_vs_best_fit,test_size_1k,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,worse_vs_best_fit,test_uniform,0,10,,,,,False
+A2a,worse_vs_best_fit,test_uniform,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,worse_vs_best_fit,test_uniform,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_cap200,1,10,,,,,False
+A2a,worse_vs_tuned_bf,test_cap200,1,10,baseline seeds 0-5,3.0,6.0,0.1181,False
+A2a,worse_vs_tuned_bf,test_cap200,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_cap500,0,10,,,,,False
+A2a,worse_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,worse_vs_tuned_bf,test_cap500,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_cap500_scaled,0,10,,,,,False
+A2a,worse_vs_tuned_bf,test_cap500_scaled,0,10,baseline seeds 0-5,0.0,6.0,1.0,False
+A2a,worse_vs_tuned_bf,test_cap500_scaled,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_id_5k,9,10,,,,,False
+A2a,worse_vs_tuned_bf,test_id_5k,9,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A2a,worse_vs_tuned_bf,test_id_5k,9,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_scale25,0,10,,,,,False
+A2a,worse_vs_tuned_bf,test_scale25,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,worse_vs_tuned_bf,test_scale25,0,10,baseline seeds 0-9,0.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_scale65,1,10,,,,,False
+A2a,worse_vs_tuned_bf,test_scale65,1,10,baseline seeds 0-5,1.0,6.0,1.0,False
+A2a,worse_vs_tuned_bf,test_scale65,1,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_shape_k1.5,0,10,,,,,False
+A2a,worse_vs_tuned_bf,test_shape_k1.5,0,10,baseline seeds 0-5,1.0,6.0,0.375,False
+A2a,worse_vs_tuned_bf,test_shape_k1.5,0,10,baseline seeds 0-9,1.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_shape_k5,9,10,,,,,True
+A2a,worse_vs_tuned_bf,test_shape_k5,9,10,baseline seeds 0-5,0.0,6.0,0.0009,True
+A2a,worse_vs_tuned_bf,test_shape_k5,9,10,baseline seeds 0-9,0.0,10.0,0.0001,True
+A2a,worse_vs_tuned_bf,test_size_10k,9,10,,,,,False
+A2a,worse_vs_tuned_bf,test_size_10k,9,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A2a,worse_vs_tuned_bf,test_size_10k,9,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_size_1k,9,10,,,,,False
+A2a,worse_vs_tuned_bf,test_size_1k,9,10,baseline seeds 0-5,6.0,6.0,1.0,False
+A2a,worse_vs_tuned_bf,test_size_1k,9,10,baseline seeds 0-9,10.0,10.0,1.0,False
+A2a,worse_vs_tuned_bf,test_uniform,8,10,,,,,False
+A2a,worse_vs_tuned_bf,test_uniform,8,10,baseline seeds 0-5,6.0,6.0,0.5,False
+A2a,worse_vs_tuned_bf,test_uniform,8,10,baseline seeds 0-9,10.0,10.0,0.4737,False
+A2b,better_vs_best_fit,test_cap200,2,10,,,,,False
+A2b,better_vs_best_fit,test_cap200,2,10,A1b seeds 0-9,0.0,10.0,0.4737,False
+A2b,better_vs_best_fit,test_cap500,1,10,,,,,False
+A2b,better_vs_best_fit,test_cap500,1,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,better_vs_best_fit,test_cap500_scaled,1,10,,,,,False
+A2b,better_vs_best_fit,test_cap500_scaled,1,10,A1b seeds 0-9,5.0,10.0,0.1409,False
+A2b,better_vs_best_fit,test_id_5k,6,10,,,,,False
+A2b,better_vs_best_fit,test_id_5k,6,10,A1b seeds 0-9,10.0,10.0,0.0867,False
+A2b,better_vs_best_fit,test_scale25,4,10,,,,,False
+A2b,better_vs_best_fit,test_scale25,4,10,A1b seeds 0-9,1.0,10.0,0.3034,False
+A2b,better_vs_best_fit,test_scale65,0,10,,,,,False
+A2b,better_vs_best_fit,test_scale65,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,better_vs_best_fit,test_shape_k1.5,2,10,,,,,False
+A2b,better_vs_best_fit,test_shape_k1.5,2,10,A1b seeds 0-9,2.0,10.0,1.0,False
+A2b,better_vs_best_fit,test_shape_k5,0,10,,,,,False
+A2b,better_vs_best_fit,test_shape_k5,0,10,A1b seeds 0-9,2.0,10.0,0.4737,False
+A2b,better_vs_best_fit,test_size_10k,6,10,,,,,False
+A2b,better_vs_best_fit,test_size_10k,6,10,A1b seeds 0-9,9.0,10.0,0.3034,False
+A2b,better_vs_best_fit,test_size_1k,0,10,,,,,False
+A2b,better_vs_best_fit,test_size_1k,0,10,A1b seeds 0-9,3.0,10.0,0.2105,False
+A2b,better_vs_best_fit,test_uniform,3,10,,,,,False
+A2b,better_vs_best_fit,test_uniform,3,10,A1b seeds 0-9,4.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_cap200,2,10,,,,,False
+A2b,better_vs_tuned_bf,test_cap200,2,10,A1b seeds 0-9,0.0,10.0,0.4737,False
+A2b,better_vs_tuned_bf,test_cap500,1,10,,,,,False
+A2b,better_vs_tuned_bf,test_cap500,1,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_cap500_scaled,10,10,,,,,False
+A2b,better_vs_tuned_bf,test_cap500_scaled,10,10,A1b seeds 0-9,9.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_id_5k,0,10,,,,,False
+A2b,better_vs_tuned_bf,test_id_5k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_scale25,10,10,,,,,False
+A2b,better_vs_tuned_bf,test_scale25,10,10,A1b seeds 0-9,6.0,10.0,0.0867,False
+A2b,better_vs_tuned_bf,test_scale65,0,10,,,,,False
+A2b,better_vs_tuned_bf,test_scale65,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_shape_k1.5,10,10,,,,,False
+A2b,better_vs_tuned_bf,test_shape_k1.5,10,10,A1b seeds 0-9,10.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_shape_k5,9,10,,,,,False
+A2b,better_vs_tuned_bf,test_shape_k5,9,10,A1b seeds 0-9,10.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_size_10k,0,10,,,,,False
+A2b,better_vs_tuned_bf,test_size_10k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_size_1k,0,10,,,,,False
+A2b,better_vs_tuned_bf,test_size_1k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,better_vs_tuned_bf,test_uniform,0,10,,,,,False
+A2b,better_vs_tuned_bf,test_uniform,0,10,A1b seeds 0-9,1.0,10.0,1.0,False
+A2b,collapse,test_cap200,0,10,,,,,False
+A2b,collapse,test_cap200,0,10,A1b seeds 0-9,4.0,10.0,0.0867,False
+A2b,collapse,test_cap500,2,10,,,,,False
+A2b,collapse,test_cap500,2,10,A1b seeds 0-9,5.0,10.0,0.3498,False
+A2b,collapse,test_cap500_scaled,0,10,,,,,False
+A2b,collapse,test_cap500_scaled,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,collapse,test_id_5k,0,10,,,,,False
+A2b,collapse,test_id_5k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,collapse,test_scale25,0,10,,,,,False
+A2b,collapse,test_scale25,0,10,A1b seeds 0-9,4.0,10.0,0.0867,False
+A2b,collapse,test_scale65,0,10,,,,,False
+A2b,collapse,test_scale65,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,collapse,test_shape_k1.5,0,10,,,,,False
+A2b,collapse,test_shape_k1.5,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,collapse,test_shape_k5,0,10,,,,,False
+A2b,collapse,test_shape_k5,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,collapse,test_size_10k,0,10,,,,,False
+A2b,collapse,test_size_10k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,collapse,test_size_1k,0,10,,,,,False
+A2b,collapse,test_size_1k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,collapse,test_uniform,0,10,,,,,False
+A2b,collapse,test_uniform,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,fresh_bin,train,2,10,,,,,False
+A2b,fresh_bin,train,2,10,A1b seeds 0-9,6.0,10.0,0.1698,False
+A2b,worse_vs_best_fit,k1.5 or k5,1,10,,,,,False
+A2b,worse_vs_best_fit,k1.5 or k5,1,10,A1b seeds 0-9,1.0,10.0,1.0,False
+A2b,worse_vs_best_fit,test_cap200,1,10,,,,,False
+A2b,worse_vs_best_fit,test_cap200,1,10,A1b seeds 0-9,5.0,10.0,0.1409,False
+A2b,worse_vs_best_fit,test_cap500,2,10,,,,,False
+A2b,worse_vs_best_fit,test_cap500,2,10,A1b seeds 0-9,5.0,10.0,0.3498,False
+A2b,worse_vs_best_fit,test_cap500_scaled,0,10,,,,,False
+A2b,worse_vs_best_fit,test_cap500_scaled,0,10,A1b seeds 0-9,1.0,10.0,1.0,False
+A2b,worse_vs_best_fit,test_id_5k,0,10,,,,,False
+A2b,worse_vs_best_fit,test_id_5k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,worse_vs_best_fit,test_scale25,0,10,,,,,True
+A2b,worse_vs_best_fit,test_scale25,0,10,A1b seeds 0-9,5.0,10.0,0.0325,True
+A2b,worse_vs_best_fit,test_scale65,2,10,,,,,False
+A2b,worse_vs_best_fit,test_scale65,2,10,A1b seeds 0-9,0.0,10.0,0.4737,False
+A2b,worse_vs_best_fit,test_shape_k1.5,0,10,,,,,False
+A2b,worse_vs_best_fit,test_shape_k1.5,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,worse_vs_best_fit,test_shape_k5,1,10,,,,,False
+A2b,worse_vs_best_fit,test_shape_k5,1,10,A1b seeds 0-9,1.0,10.0,1.0,False
+A2b,worse_vs_best_fit,test_size_10k,0,10,,,,,False
+A2b,worse_vs_best_fit,test_size_10k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,worse_vs_best_fit,test_size_1k,0,10,,,,,False
+A2b,worse_vs_best_fit,test_size_1k,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,worse_vs_best_fit,test_uniform,1,10,,,,,False
+A2b,worse_vs_best_fit,test_uniform,1,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,worse_vs_tuned_bf,test_cap200,8,10,,,,,False
+A2b,worse_vs_tuned_bf,test_cap200,8,10,A1b seeds 0-9,6.0,10.0,0.6285,False
+A2b,worse_vs_tuned_bf,test_cap500,2,10,,,,,False
+A2b,worse_vs_tuned_bf,test_cap500,2,10,A1b seeds 0-9,5.0,10.0,0.3498,False
+A2b,worse_vs_tuned_bf,test_cap500_scaled,0,10,,,,,False
+A2b,worse_vs_tuned_bf,test_cap500_scaled,0,10,A1b seeds 0-9,1.0,10.0,1.0,False
+A2b,worse_vs_tuned_bf,test_id_5k,10,10,,,,,False
+A2b,worse_vs_tuned_bf,test_id_5k,10,10,A1b seeds 0-9,10.0,10.0,1.0,False
+A2b,worse_vs_tuned_bf,test_scale25,0,10,,,,,False
+A2b,worse_vs_tuned_bf,test_scale25,0,10,A1b seeds 0-9,4.0,10.0,0.0867,False
+A2b,worse_vs_tuned_bf,test_scale65,2,10,,,,,False
+A2b,worse_vs_tuned_bf,test_scale65,2,10,A1b seeds 0-9,0.0,10.0,0.4737,False
+A2b,worse_vs_tuned_bf,test_shape_k1.5,0,10,,,,,False
+A2b,worse_vs_tuned_bf,test_shape_k1.5,0,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,worse_vs_tuned_bf,test_shape_k5,1,10,,,,,False
+A2b,worse_vs_tuned_bf,test_shape_k5,1,10,A1b seeds 0-9,0.0,10.0,1.0,False
+A2b,worse_vs_tuned_bf,test_size_10k,10,10,,,,,False
+A2b,worse_vs_tuned_bf,test_size_10k,10,10,A1b seeds 0-9,10.0,10.0,1.0,False
+A2b,worse_vs_tuned_bf,test_size_1k,10,10,,,,,False
+A2b,worse_vs_tuned_bf,test_size_1k,10,10,A1b seeds 0-9,9.0,10.0,1.0,False
+A2b,worse_vs_tuned_bf,test_uniform,10,10,,,,,False
+A2b,worse_vs_tuned_bf,test_uniform,10,10,A1b seeds 0-9,8.0,10.0,0.4737,False

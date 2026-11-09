@@ -438,6 +438,8 @@ bash pipeline/score.sh abl_anyfit           # all scoring steps, no LLM calls
 
 `score.sh` runs every scoring step in a fixed order: tuned Best Fit retuned in the setting, `evaluate_final`, `check_integrity`, `diagnose`, `paired_stats`, `summarise`. All of them are deterministic. To check that committed scores reproduce on your machine, run `bash pipeline/score.sh --check abl_anyfit abl_informed_rules`. It fails, listing the files, if any result differs from the commit. Only CSV row order and measured run times (`time_s`) may differ between runs, and changed figures are not compared (their bytes depend on the matplotlib version and fonts), though a missing or new figure still fails; every score, bin count and verdict must match exactly (`pipeline/check_outputs.py`).
 
+Once every setting is scored, `python pipeline/seed_counts.py` writes the setting-level effects: seeds per category (better / worse than Best Fit or tuned Best Fit per set, collapses, fresh-bin seeds) and the Fisher test against the baseline's seeds 0–5 and 0–9, or A1b for A2b (`docs/claims.md`, shared rules). Outputs: `results/seed_counts.csv` (every category and set) and `results/seed_counts.md` (the headline table). No LLM calls; it reads the committed `paired_stats.csv`, `final_per_instance.csv` and `diagnostics.csv`. To check it reproduces: `python pipeline/seed_counts.py && python pipeline/check_outputs.py results/seed_counts.csv results/seed_counts.md`.
+
 Before the full runs:
 
 - **Branch:** run from a branch that includes #14, so every run saves each LLM prompt and response (`llm_calls.jsonl`). Commit the whole run folder afterwards.
