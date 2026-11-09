@@ -1,5 +1,7 @@
 # Project log
 
+> **Early project log (topic, framework, key dates, from 21 Oct).** Every decision that affects results, from the v0 pipeline (25 Oct) on, is in [`code/docs/log.md`](../code/docs/log.md).
+
 One place for decisions, failed attempts and surprises. Add one dated line per entry; keep it short.
 Full plan and discussion: [issue #1](https://github.com/jinsyl123/dsa4212-project/issues/1).
 
