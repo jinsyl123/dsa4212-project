@@ -5,13 +5,13 @@ We use an LLM-driven search (**EoH**, via [LLM4AD](https://github.com/Optima-Cit
 | Setting | What changes (one thing, from the setting it is compared with) | Compared with | Config (`code/configs/`) | Results (`code/results/`) |
 |---|---|---|---|---|
 | EoH baseline | nothing | — | `eoh_baseline.yaml` | `eoh_baseline__openrouter-gemini-3.5-flash-lite/` |
+| Control: no evolution | LLM4AD RandSample: 300 samples of one fixed prompt, best kept | baseline | `control_randsample.yaml` | `control_randsample/` |
 | A1a: empty bins hidden | the rule is never offered an empty bin while a used bin fits (`mode: anyfit`) | baseline | `abl_anyfit.yaml` | `abl_anyfit/` |
 | A1b: bin rules in the prompt | the prompt states the task and that empty bins are among the options | baseline | `abl_informed_rules.yaml` | `abl_informed_rules/` |
 | A2a: mixed training shapes | trained on Weibull shapes 2 and 4 instead of 3 | baseline | `abl_mixed_shapes.yaml` | `abl_mixed_shapes/` |
 | A2b: mixed training capacities | A1b, trained on capacities 100 and 300 (item scale 45) instead of 100 only | A1b | `abl_mixed_caps_informed.yaml` | `abl_mixed_caps_informed/` |
-| Control: no evolution | LLM4AD RandSample: 300 samples of one fixed prompt, best kept | baseline | `control_randsample.yaml` | `control_randsample/` |
 
-A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (#7, `code/docs/log.md`, 9 Nov). Every setting has seeds 0–9. The baseline's seeds 0–5 were run first and are the pre-registered comparison; seeds 6–9 were added on 9 Nov, and a difference in seed counts is claimed only if it is significant against both (#21). A third ablation (a stronger LLM, `abl_strong_model.yaml`) was optional and was not run.
+A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (`code/docs/log.md`, 9 Nov; `code/docs/claims.md`, A2b). Every setting has seeds 0–9. The baseline's seeds 0–5 were run first and are the pre-registered comparison; seeds 6–9 were added on 9 Nov, and a difference in seed counts is claimed only if it is significant against both (`code/docs/claims.md`, Amendments, 9 Nov). A third ablation (a stronger LLM, `abl_strong_model.yaml`) was optional and was not run.
 
 Every setting is compared with Best Fit and with **tuned Best Fit** (Best Fit's 3 knobs tuned without an LLM, under the same 300-evaluation budget). Predictions for each setting were frozen before scoring in [`code/docs/claims.md`](code/docs/claims.md); every decision that affects results is in [`code/docs/log.md`](code/docs/log.md).
 
@@ -54,7 +54,7 @@ Reproducing the results needs **no API key**: scoring only rescores the committe
 
 ## Reproducing the main results
 
-From the `code/` folder, with no LLM calls (about 1.5–2 hours in total):
+From the `code/` folder, with no LLM calls (about 1.5–2 hours in total; on Windows, run from Git Bash):
 
 ```bash
 bash pipeline/score.sh --check --llm openrouter-gemini-3.5-flash-lite eoh_baseline
@@ -66,21 +66,21 @@ For each setting, `score.sh` retunes tuned Best Fit, rescores the committed best
 
 ## Results
 
-Frozen test sets, excess over the L2 lower bound, 10 instances per set. Per-seed verdicts: a seed is **better** or **worse** than a reference only if the 95% bootstrap CI excludes 0 and the sign test gives p < 0.05. Full tables, per-seed numbers and the check against every prediction: `code/results/<setting>/summary_tables.md`, #18, and the result posts on #7.
+Frozen test sets, excess over the L2 lower bound, 10 instances per set. Per-seed verdicts: a seed is **better** or **worse** than a reference only if the 95% bootstrap CI excludes 0 and the sign test gives p < 0.05, **tie** if it matches the reference on every instance, and **unclear** otherwise. Full tables and per-seed numbers: `code/results/<setting>/summary_tables.md` and `paired_stats.csv`; the predictions they are checked against: `code/docs/claims.md`. The capacity and scale failures (A1b on `test_cap500`, `test_cap200`, `test_scale25`) were found after A1 was scored; they were not pre-registered.
 
 | Setting | Seeds | Beats Best Fit on `test_id_5k` | Beats its tuned Best Fit on `test_id_5k` | Worse than Best Fit on k1.5 or k5 | Fresh-bin seeds |
 |---|---|---|---|---|---|
 | EoH baseline, seeds 0–5 (pre-registered) | 6 | 3/6 | 0/6 | 3/6 | 3/6 |
 | EoH baseline, seeds 0–9 | 10 | 5/10 | 0/10 | 3/10 | 3/10 |
+| Control: no evolution | 10 | **0/10** | 0/10 | 0/10 | 0/10 |
 | A1a: empty bins hidden | 10 | 6/10 | 0/10 | 1/10 | 0/10 (by design) |
 | A1b: bin rules in the prompt | 10 | **10/10** | 0/10 | 1/10 | 6/10 |
 | A2a: mixed training shapes | 10 | 9/10 | 1/10 | 1/10 | 2/10 |
 | A2b: mixed training capacities (vs A1b) | 10 | 6/10 | 0/10 | 1/10 | 2/10 |
-| Control: no evolution | 10 | **0/10** | 0/10 | 0/10 | 0/10 |
 
 **What holds up** (Fisher's exact test on seed counts, significant against both the 6- and 10-seed baseline):
-- **A1b** beats Best Fit more often than the baseline (10/10; p = 0.036 and 0.033): stating the task and bin rules in the prompt makes the gain reliable.
 - **The control** never beats Best Fit (0/10; p = 0.036 and 0.033): without evolution, the LLM does not get past Best Fit.
+- **A1b** beats Best Fit more often than the baseline (10/10; p = 0.036 and 0.033): stating the task and bin rules in the prompt makes the gain reliable. But 5/10 A1b seeds collapse on `test_cap500` (about 1,140% over the bound, Best Fit 0.5%), which A2b tests.
 
 **Consistent with the predictions but not significant with 10 seeds:** mixed shapes (A2a) cut shape failures from 3/6 to 1/10; mixed capacities (A2b) remove A1b's capacity collapse inside the trained range (0/10 vs 4/10 on `test_cap200` and `test_scale25`, 2/10 vs 5/10 on `test_cap500`).
 
@@ -101,4 +101,4 @@ Every search run is committed in full, so any result can be traced back to the p
 | EoH's population at every generation, and LLM4AD's own log | `llm4ad_log_*/`, `stdout.log` |
 | Settings used, and the run's counts, cost and stop reason | `config.json`, `summary.json` |
 
-Tuned Best Fit runs (`tuned_bf/seed<k>/`) call no LLM: same files, minus `llm_calls.jsonl` and LLM4AD's logs (`llm_calls.csv` has only its header). Gaps: baseline seeds 0–5 ran before full prompt logging was added (#14), so they have no `llm_calls.jsonl` (their per-call `llm_calls.csv` is there), and seeds 3–5 also have no `stdout.log`. Every other run has every file. What each file contains, column by column: [`code/readme.md`](code/readme.md), §10.
+Tuned Best Fit runs (`tuned_bf/seed<k>/`) call no LLM: same files, minus `llm_calls.jsonl` and LLM4AD's logs (`llm_calls.csv` has only its header). Gaps: baseline seeds 0–5 ran before full prompt logging was added, so they have no `llm_calls.jsonl` (their per-call `llm_calls.csv` is there), and seeds 3–5 also have no `stdout.log`. Every other run has every file. What each file contains, column by column: [`code/readme.md`](code/readme.md), §10.
