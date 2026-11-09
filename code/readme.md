@@ -436,7 +436,7 @@ python pipeline/run_experiment.py --config configs/abl_anyfit.yaml
 bash pipeline/score.sh abl_anyfit           # all scoring steps, no LLM calls
 ```
 
-`score.sh` runs every scoring step in a fixed order: tuned Best Fit retuned in the setting, `evaluate_final`, `check_integrity`, `diagnose`, `paired_stats`, `summarise`. All of them are deterministic. To check that committed scores reproduce on your machine, run `bash pipeline/score.sh --check abl_anyfit abl_informed_rules`. It fails, listing the files, if any result differs from the commit. Only CSV row order and measured run times (`time_s`) may differ between runs, and figures are not compared (their bytes depend on the matplotlib version and fonts); every score, bin count and verdict must match exactly (`pipeline/check_outputs.py`).
+`score.sh` runs every scoring step in a fixed order: tuned Best Fit retuned in the setting, `evaluate_final`, `check_integrity`, `diagnose`, `paired_stats`, `summarise`. All of them are deterministic. To check that committed scores reproduce on your machine, run `bash pipeline/score.sh --check abl_anyfit abl_informed_rules`. It fails, listing the files, if any result differs from the commit. Only CSV row order and measured run times (`time_s`) may differ between runs, and changed figures are not compared (their bytes depend on the matplotlib version and fonts), though a missing or new figure still fails; every score, bin count and verdict must match exactly (`pipeline/check_outputs.py`).
 
 Before the full runs:
 
