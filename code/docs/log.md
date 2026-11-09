@@ -144,3 +144,18 @@ One entry per decision that affects results. Link the config and the results fol
 - **Check:** pipecheck of the A2b config (seed 99, `check` budget, eoh only): 12/12 evals ok, informed prompt confirmed, 32 training instances. Not scored.
 - **Update 2026-11-09 (Nic's review on #7, before any A2 run):** A2b is renamed `abl_mixed_caps_informed` (was `abl_mixed_capacities`), so its A1b base shows in every table. Tuned Best Fit keeps its **default knob ranges**, so it differs from A1b's only in the training set. A widened penalty (1..300, briefly in `f8a95ea`) was rejected: it adds a second change versus A1b's tuned Best Fit, and a penalty high enough to open fresh bins at capacity 300 (above ~222) also opens one for every penalised gap at capacity 100, so no single absolute penalty fits both. Also noted: Best Fit's excess on `train_mixed_cap` is 4.70% at capacity 100 vs 1.21% at 300, so short of a collapse the capacity-100 half drives selection.
 - **Affects:** `configs/abl_mixed_shapes.yaml`, `configs/abl_mixed_caps_informed.yaml`, `configs/instances/v0.yaml` (`train_mixed_cap`; no other set changes), `tests/test_ablations.py`; #15.
+
+### 2026-11-09: baseline extended to 10 seeds (Nic)
+
+- **Decision:** the EoH baseline (`eoh_baseline.yaml`, `openrouter-gemini-3.5-flash-lite`) runs seeds 0–9; seeds 6–9 added on `ablation-runs` with the same settings as 0–5 (checked against seed 3's `config.json`: same LLM4AD commit, model, budget, method, prompt, training set).
+- **Why:** consistency with the ablations and the control (10 seeds each), and comparable seed counts for the Fisher tests in #15.
+- **How it's reported:** the pre-registered comparisons against the 6-seed baseline stay primary; 10-seed comparisons are added alongside, labelled as added after A1 and the control were scored (#15 amendment, 9 Nov).
+- **Affects:** `configs/eoh_baseline.yaml` (seeds); results in `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/eoh/seed6`–`seed9`.
+
+### 2026-11-09: search objective: correction and rationale (Nic)
+
+- **Correction to "2026-10-25: evaluation conventions":** the packing convention (funsearch mode) and the reported excess match LLM4AD exactly (Best Fit 4.00% on its Weibull set). The search objective differs: LLM4AD's `OBPEvaluation.evaluate` returns `-mean(bins)` over 5 × 5,000-item instances; ours returns `-mean((bins - L1) / L1)` (`core.score`).
+- **Why ours (rationale recorded now; the 25 Oct entry gave only comparability):** our training set mixes 200–2,000 items (and capacities 100/300 in A2b). `-mean(bins)` would weight instances by size and capacity; mean relative excess weights every instance equally, is scale-free, and is the metric we report. On LLM4AD's equal-size set the two rank programs almost identically.
+- **Sources:** EoH-S (arXiv 2508.03082) trains on 200–2,000-item instances and measures "the average relative gap to lower bound", i.e. this objective. FunSearch (Nature 2024) and LLM4AD score by negative bins and EoH (ICML 2024) by average lb/n, all three on equal-size instances (LLM4AD and EoH: 5 × 5,000 items, capacity 100).
+- **Side effect:** excess is unbounded, so instances where a rule collapses dominate the mean far more than under a bounded ratio such as lb/n = 1/(1 + excess).
+- **Affects:** no code; readme §11 wording ("identical to LLM4AD") should say "same packing and reported metric, different search objective".
