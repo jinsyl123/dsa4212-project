@@ -101,6 +101,7 @@ pipeline/
   evaluate_final.py      step 2: score best programs + baselines on held-out sets
   summarise.py           step 3: tables and figures
   check_integrity.py     rescore best programs twice + with shuffled instances; writes integrity.csv
+  paired_stats.py        each rule vs Best Fit / tuned Best Fit, instance by instance: sign test + bootstrap CI
 configs/
   llms.yaml              every LLM we can use: provider, model ID, prices, settings (single source of truth)
   budgets.yaml           named budgets (smoke, check, pilot, medium, full, large)
@@ -212,6 +213,8 @@ python pipeline/run_experiment.py --config configs/eoh_baseline.yaml --seeds 0
 python pipeline/evaluate_final.py --config configs/eoh_baseline.yaml
 python pipeline/summarise.py      --config configs/eoh_baseline.yaml
 ```
+
+**Paired statistics** (after step 2): `python pipeline/paired_stats.py --config configs/eoh_baseline.yaml` (same options) compares every rule with Best Fit and tuned Best Fit on the same instances and writes `paired_stats.csv`: wins/ties/losses, a two-sided sign test, the mean difference in percentage points with a 95% bootstrap interval, and a verdict: better / worse only when the interval excludes 0 **and** the sign test gives p < 0.05, tie when identical on every instance, otherwise unclear. Each seed is compared on its own, because runs of the same method differ a lot. Excess is over the L2 bound by default, as in the report (#12 decision 7), falling back to L1 for older results without it; `--metric excess` compares over L1 (written to `paired_stats_excess.csv`). Against Best Fit, wins/ties/losses count bins, so they are the same under either bound. Tuned Best Fit has several seeds, so it is averaged per instance first: against it, wins/ties/losses compare with that average, not with one real packing. An instance the reference lacks is left out with a warning. Every test set has 10 instances (#12), so a rule that beats Best Fit on all 10 gives p = 0.002 (9–1: 0.021); with 5 it could not go below 0.0625. There is no correction for running many comparisons: look for patterns across seeds and sets rather than single verdicts.
 
 **Trying another model or budget** needs no new config: pass `llm=` and `budget=` (names from `configs/llms.yaml` and `configs/budgets.yaml`) to all three steps. The results folder is named after them, so different choices never overwrite each other:
 
@@ -460,7 +463,7 @@ Before the full runs:
 
 **In git:** every file of each run folder, so every evaluated program and LLM4AD's logs can be audited (`summary.json`, `best_program.py`, `evals.csv` and `llm_calls.csv` alone are enough to rebuild every table and figure). Runs made before 4 Nov only have those four files committed, unless their full folders were added later. Fake-LLM and pipecheck results (`results/smoke/`, `results/pipecheck*/`) are not committed, since they are plumbing checks, not findings.
 
-**Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
+**Per experiment** (`results/<experiment>/`): `runs_index.csv`, `final_per_instance.csv`, `final_summary.csv`, `paired_stats.csv`, `summary_tables.md`, and `figures/` (PNG + PDF for LaTeX):
 
 - `convergence_evals` / `convergence_tokens`: best training excess so far vs evaluations / tokens (median and range across seeds, Best Fit line);
 - `test_sets`: held-out change vs Best Fit per method and seed, one panel per set.
