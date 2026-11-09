@@ -1,0 +1,8 @@
+# Ablation 2b (#7): A1b's setup (informed prompt), trained on a mix of capacities (100 and 300; see train_mixed_cap
+# in instances/v0.yaml). One change from abl_informed_rules, which is its comparison row (claims, #15).
+# Question: does A1b's capacity collapse (cap500, cap200, scale25) come from training on a single capacity?
+# Methods (eoh, tuned_bf with its default knob ranges) are inherited unchanged, so tuned Best Fit also differs from
+# A1b's only in the training set (Nic's review on #7).
+base: configs/abl_informed_rules.yaml
+experiment: abl_mixed_caps_informed
+evaluation: { train_set: train_mixed_cap }

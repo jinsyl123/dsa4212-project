@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm prioritizes bins using a modified Best-Fit Decreasing heuristic that favors bins with the tightest remaining capacity after placement, while penalizing the creation of new empty bins unless necessary.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if np.any(valid):\n        scores[valid] = 1.0 / (rem[valid] + 1e-7)\n    empty_mask = (bins == 1.0) & (bins >= item)\n    if np.any(empty_mask) and not np.any(valid & (bins < 1.0)):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = np.max(scores[valid]) + 1.0 if np.any(valid) else 0.0\n    return scores\n\n",
+        "score": -0.0295663556157795
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, penalizing new empty bins to consolidate usage.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.where(rem >= 0, 1.0 / (1.0 + rem), -1.0)\n    if scores.size > 0:\n        scores[-1] = 0.1 if item <= bins[-1] else -1.0\n    return scores\n\n",
+        "score": -0.03145552076396941
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, penalizing near-overflows and heavily rewarding empty bins when necessary.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.where(rem >= 0, -rem, -np.inf)\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    scores = np.where((bins == 0) | (bins == max_cap), np.max(bins) - item + 1e-3, scores)\n    return scores\n\n",
+        "score": -3.9570958933909397
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after packing the item, perfectly balancing the Best-Fit principle with a preference for slightly looser fits to maintain flexibility, while penalizing empty bins to defer their use.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    fits = bins >= item\n    rem = bins - item\n    max_cap = np.max(bins) if len(bins) > 0 and np.max(bins) > 0 else 1.0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    is_empty = (bins == max_cap) | (bins == np.max(bins)) if len(bins) > 0 else np.array([])\n    \n    if np.any(fits):\n        # Among fitting bins, prefer tightest fit (min remaining capacity), but penalize empty bins to avoid opening new ones prematurely\n        tightness = 1.0 - (rem[fits] / max_cap)\n        # If a bin is at max capacity (effectively empty), give it a lower base score\n        bin_penalties = np.where(bins[fits] == max_cap, 0.5, 0.0)\n        scores[fits] = tightness - bin_penalties\n    return scores\n\n",
+        "score": -Infinity
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, effectively implementing a Best-Fit strategy that minimizes wasted space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    return np.where(rem >= 0, 1.0 / (1.0 + rem), -1.0)\n\n",
+        "score": -Infinity
+    },
+    {
+        "algorithm": "{The algorithm prioritizes bins using a modified Best-Fit-Decreasing strategy that favors bins where the item leaves the smallest remaining capacity, while also discouraging the opening of new bins by assigning them a lower baseline priority.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.where(rem >= 0, 1.0 / (1.0 + rem), -1.0)\n    if scores.size > 0 and np.all(scores <= 0):\n        pass\n    elif scores.size > 0:\n        empty_mask = (bins == np.max(bins)) & (rem >= 0)\n        if np.any(empty_mask):\n            first_empty = np.argmax(empty_mask)\n            scores[first_empty] = -0.5\n    return scores\n\n",
+        "score": -Infinity
+    },
+    {
+        "algorithm": "{\\{The\\ algorithm\\ scores\\ bins\\ by\\ rewarding\\ tightness\\ of\\ fit\\ (preferring\\ the\\ smallest\\ remaining\\ capacity\\ $\\ge$\\ item\\ to\\ minimize\\ wasted\\ space)\\ while\\ heavily\\ penalizing\\ opening\\ new\\ empty\\ bins.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    fits = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(fits):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 else item\n    is_empty = (bins == max_cap) & (fits)\n    tightness = 1.0 / (rem + 1e-5)\n    scores[fits] = tightness[fits]\n    scores[is_empty] -= 1000.0\n    return scores\n\n",
+        "score": -Infinity
+    },
+    {
+        "algorithm": "{The algorithm prioritizes bins that tightly fit the item by scoring them inversely based on the resulting slack capacity, while heavily penalizing or rewarding empty bins to balance consolidation and new bin usage.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    fits = bins >= item\n    slack = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if np.any(fits):\n        valid_slack = slack[fits]\n        min_slack = np.min(valid_slack)\n        max_slack = np.max(valid_slack) if np.max(valid_slack) > np.min(valid_slack) else 1.0\n        scores[fits] = 1.0 - (valid_slack - min_slack) / (max_slack - min_slack + 1e-9)\n    empty_mask = (bins == np.max(bins)) & (~fits | (slack == np.max(slack[fits]) if np.any(fits) else True))\n    if not np.any(fits) and len(bins) > 0:\n        scores = -bins.astype(float)\n    return scores\n\n",
+        "score": -Infinity
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, penalizing overly empty bins to encourage high utilization.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    scores = np.where(remaining >= 0, 1.0 / (remaining + 1e-5), -np.inf)\n    return scores\n\n",
+        "score": -Infinity
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those where the item leaves the smallest positive remaining capacity, effectively implementing a tight Best-Fit heuristic.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    return np.where(rem >= 0, 1.0 / (1.0 + rem), -1.0)\n\n",
+        "score": -Infinity
+    }
+]

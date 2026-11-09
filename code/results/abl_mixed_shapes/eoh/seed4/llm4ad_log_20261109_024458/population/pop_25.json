@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The new algorithm calculates bin priority by applying a scaled negative exponential function to the cube of the remaining capacity for a sharper non-linear penalty on unused space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -np.exp(remaining ** 3), -np.inf)\n\n",
+        "score": -0.04736894710031783
+    },
+    {
+        "algorithm": "{The algorithm calculates the priority of adding an item to each bin based on the remaining capacity after insertion, favoring bins that leave the least unused space while remaining valid.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04808555648413241
+    },
+    {
+        "algorithm": "{The new algorithm determines bin priority by applying a scaled negative double-exponential function to the squared remaining capacity for an even steeper non-linear penalty on unused space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -np.exp(np.exp(remaining ** 2)), -np.inf)\n\n",
+        "score": -0.04832645408288911
+    },
+    {
+        "algorithm": "{The new algorithm calculates the priority of adding an item to each bin by using the exponential negative of the squared remaining capacity to create a smoother, non-linear penalty for unused space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -np.exp(remaining ** 2), -np.inf)\n\n",
+        "score": -0.04842295459790359
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priority by combining an exponential penalty on unused capacity with a trigonometric reward for near-exact fits to maximize packing density.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    score = -np.exp(remaining * 0.5) + np.cos(remaining * np.pi)\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.04860247728032616
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priority by combining a scaled logarithmic penalty on remaining capacity with a logistic growth reward for tight fills to encourage high compaction efficiency.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    score = -np.log1p(remaining) - (1.0 / (1.0 + np.exp(-10.0 * (0.1 - remaining))))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.05053302971553985
+    },
+    {
+        "algorithm": "{The new algorithm determines bin priority by combining an exponential decay penalty on remaining capacity with a cosine modulation to favor tightly fitting bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    import numpy as np\n    remaining = bins - item\n    score = -np.exp(remaining) * (1.0 + np.cos(remaining))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.0527174483039563
+    },
+    {
+        "algorithm": "{The new algorithm determines bin priority by applying a scaled logarithmic penalty to the remaining capacity combined with a sine-based modulation to create a periodic preference for tightly fitting bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    import numpy as np\n    remaining = bins - item\n    score = -np.log1p(remaining ** 2) * (1.0 + np.sin(remaining))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.05273943998431316
+    },
+    {
+        "algorithm": "{The new algorithm determines the priority of adding an item to each bin by utilizing a trigonometric cosine-based decay function of the remaining capacity combined with an exponential tightness penalty to strictly discourage slack while maintaining robust numerical behavior.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    score = -np.cos(np.minimum(remaining, np.pi / 2.0)) * (1.0 - np.exp(-np.maximum(remaining, 0)))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.05274714841340561
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priority by applying an exponential decay penalty to the remaining capacity combined with a cosine-based modulation to favor near-exact fits.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    import numpy as np\n    remaining = bins - item\n    score = -np.exp(remaining * 0.5) * (1.0 + np.cos(remaining))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.05452302890070387
+    }
+]

@@ -8,6 +8,9 @@ sets:
   # Ablation 2 (#7): same as train, but half the instances use Weibull shape 2 and half shape 4.
   # The test shapes (1.5 and 5) stay out of training. Adding a set never changes another set's data.
   train_mixed:    {n_instances: 32, n_items: [200, 2000], capacity: 100, dist: weibull, scale: 45, mix: [{shape: 2}, {shape: 4}]}
+  # Ablation 2b (#7): same as train, but half the instances use capacity 300. Item sizes are the same in both halves
+  # (scale 45), so the mean item is ~40% of a bin at 100 and ~13% at 300.
+  train_mixed_cap: {n_instances: 32, n_items: [200, 2000], capacity: 100, dist: weibull, shape: 3, scale: 45, mix: [{capacity: 100}, {capacity: 300}]}
 
   # --- model selection between runs/configs (never used by the search itself) ---
   val:            {n_instances: 10, n_items: 1000, capacity: 100, dist: weibull, shape: 3, scale: 45}

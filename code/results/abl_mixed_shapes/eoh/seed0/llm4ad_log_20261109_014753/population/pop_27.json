@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The new algorithm determines bin priorities by applying a steep exponential decay function to the remaining capacity, heavily favoring bins that leave a smaller target residual space while strictly invalidating overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_residual = 0.2\n    score = np.exp(-((remaining - optimal_residual) ** 2) / 0.1)\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.04736894710031783
+    },
+    {
+        "algorithm": "{The algorithm calculates the priority of each bin as the negative remaining capacity after tentatively adding the item, penalizing bins that would overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, -remaining)\n\n",
+        "score": -0.04808555648413241
+    },
+    {
+        "algorithm": "{The algorithm uses a steeper Gaussian-like exponential decay function scaled by a larger variance centered on zero remaining capacity to penalize loose fits more aggressively while strictly forbidding overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    score = np.exp(-2.0 * np.square(remaining))\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.048125444257796766
+    },
+    {
+        "algorithm": "{The algorithm uses a Gaussian-like exponential decay function centered on a zero remaining capacity to prioritize tighter fits while assigning infinitely low priority to overflowing bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    score = np.exp(-np.square(remaining))\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.04822825054805935
+    },
+    {
+        "algorithm": "{The new algorithm determines bin priorities by applying a Gaussian-like bell curve to the remaining capacity after placement, favoring bins that achieve a target residual space while strictly invalidating overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_residual = 0.5\n    score = np.exp(-((remaining - optimal_residual) ** 2) / 0.2)\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.0483176191735941
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priority by multiplying the logarithmic utilization rate by a trigonometric sine penalty of the remaining capacity fraction to encourage high packing density with periodic oscillation.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    orig = np.maximum(bins, 1e-9)\n    utilization = (orig - remaining) / orig\n    score = np.log(np.maximum(utilization, 1e-9)) * np.sin(np.pi * remaining / orig)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.048334202878220475
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins using a Gaussian-like bell curve centered around a higher optimal remaining capacity, applying a quadratic penalty for overflowing configurations.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_residual = 0.5\n    score = np.exp(-((remaining - optimal_residual) ** 2) / 0.1)\n    return np.where(remaining < 0, -1000.0 + remaining, score)\n\n",
+        "score": -0.04843512502973518
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins using an inverse linear distance from an optimal remaining capacity, while strictly penalizing any overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_residual = 0.5\n    score = 1.0 / (1.0 + np.abs(remaining - optimal_residual))\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.04883987876908617
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins using a Gaussian-like bell curve centered around an optimal remaining capacity, applying a steep exponential penalty for any overflowing configurations.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_residual = 0.5\n    score = np.exp(-((remaining - optimal_residual) ** 2))\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.04898257283301312
+    },
+    {
+        "algorithm": "{The new algorithm determines bin priorities by applying a broader Gaussian decay function centered around a larger optimal residual space of 0.5 with a wider variance.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_residual = 0.5\n    score = np.exp(-((remaining - optimal_residual) ** 2) / 0.5)\n    return np.where(remaining < 0, -np.inf, score)\n\n",
+        "score": -0.04900760691174692
+    }
+]

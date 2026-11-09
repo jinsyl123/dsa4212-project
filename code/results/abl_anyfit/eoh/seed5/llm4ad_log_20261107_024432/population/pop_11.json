@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm calculates the priority of each bin based on the residual capacity after adding the item, penalizing overflow and favoring tighter fits using a Best-Fit Decreasing heuristic.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    return np.where(residuals >= 0, -residuals, -1e6 + residuals)\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priorities using a Gaussian-like penalty based on absolute deviations from a stricter target fill level, heavily penalizing bins that violate capacity constraints.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    valid = residuals >= 0\n    target_residuals = 0.05 * bins\n    priorities = np.where(\n        valid,\n        -np.exp(((residuals - target_residuals) / (0.1 * bins + 1e-8)) ** 2),\n        -2e9 - np.abs(residuals)\n    )\n    return priorities\n\n",
+        "score": -0.04986871445158909
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priorities using an inverse polynomial penalty function focused on a tighter target fill ratio, favoring bins that achieve balanced utilization while heavily penalizing overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    valid = residuals >= 0\n    target_residuals = 0.3 * bins\n    priorities = np.where(\n        valid,\n        -1.0 / (1.0 + np.abs(residuals - target_residuals) / (0.2 * bins + 1e-8)),\n        -3e9 - np.abs(residuals)\n    )\n    return priorities\n\n",
+        "score": -0.05169848539017742
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priorities using an asymmetric quadratic loss function that favors tighter fits and penalizes slack and overflow with different curvatures.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    valid = residuals >= 0\n    target_residual = 0.1 * bins\n    priorities = np.where(\n        valid,\n        -2.0 * (residuals - target_residual) ** 2 - 0.2 * residuals,\n        -1e8 - 10.0 * (residuals ** 2)\n    )\n    return priorities\n\n",
+        "score": -0.053578772470440815
+    },
+    {
+        "algorithm": "{The algorithm computes bin priorities using a Gaussian bell-shaped function centered on an ideal residual capacity, encouraging a target slack space rather than a strict tight fit.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    valid = residuals >= 0\n    ideal_slack = 0.1 * bins\n    priorities = np.where(\n        valid,\n        -np.abs(residuals - ideal_slack),\n        -1e9 - np.abs(residuals)\n    )\n    return priorities\n\n",
+        "score": -0.05425035154866313
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priorities using an exponential decay penalty function centered on a higher target fill ratio, rewarding bins that maintain heavy utilization while aggressively penalizing overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    residuals = bins - item\n    valid = residuals >= 0\n    target_residuals = 0.1 * bins\n    priorities = np.where(\n        valid,\n        -np.exp(np.abs(residuals - target_residuals) / (0.15 * bins + 1e-8)),\n        -5e9 - np.abs(residuals)\n    )\n    return priorities\n\n",
+        "score": -0.054538536298259346
+    },
+    {
+        "algorithm": "{The algorithm computes bin priorities using an exponential decay function based on remaining capacity to favor tight fits while heavily penalizing overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    valid = residuals >= 0\n    priorities = np.where(\n        valid,\n        -np.exp(-residuals) - 0.1 * residuals,\n        -1e9 * np.exp(-np.abs(residuals))\n    )\n    return priorities\n\n",
+        "score": -0.05593718545956089
+    },
+    {
+        "algorithm": "{The new algorithm calculates bin priorities using an asymmetric cubic loss function that strongly penalizes overflow while promoting tight fits near a scaled target residual.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    residuals = bins - item\n    valid = residuals >= 0\n    target_residual = 0.15 * bins\n    priorities = np.where(\n        valid,\n        -3.0 * np.abs(residuals - target_residual) ** 3 - 0.5 * residuals,\n        -1e9 - 20.0 * (residuals ** 2)\n    )\n    return priorities\n\n",
+        "score": -0.058701788791924836
+    },
+    {
+        "algorithm": "{The algorithm computes bin priorities using an exponential decay function based on the squared deviation from a proportional target fill level, favoring bins that leave a balanced relative capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    valid = residuals >= 0\n    target_residuals = 0.15 * bins\n    priorities = np.where(\n        valid,\n        -np.exp(((residuals - target_residuals) / (0.2 * bins + 1e-8)) ** 2),\n        -1e9 - np.abs(residuals)\n    )\n    return priorities\n\n",
+        "score": -0.060706171480623
+    },
+    {
+        "algorithm": "{The algorithm calculates bin priorities using a piecewise linear hinge loss that rewards packing efficiency while severely penalizing overflow and slack space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    residuals = bins - item\n    valid = residuals >= 0\n    target_residual = 0.2 * bins\n    priorities = np.where(\n        valid,\n        -np.abs(residuals - target_residual) - 0.5 * residuals,\n        -1e9 - np.abs(residuals)\n    )\n    return priorities\n\n",
+        "score": -0.06074049235206673
+    }
+]

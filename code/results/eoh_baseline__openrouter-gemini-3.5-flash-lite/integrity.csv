@@ -11,6 +11,14 @@ eoh,4,,train,32,ok,0,0,clean
 eoh,4,,val,10,ok,0,0,clean
 eoh,5,,train,32,ok,0,0,clean
 eoh,5,,val,10,ok,0,0,clean
+eoh,6,,train,32,ok,0,0,clean
+eoh,6,,val,10,ok,0,0,clean
+eoh,7,,train,32,ok,0,0,clean
+eoh,7,,val,10,ok,0,0,clean
+eoh,8,,train,32,ok,0,0,clean
+eoh,8,,val,10,ok,0,0,clean
+eoh,9,,train,32,ok,0,0,clean
+eoh,9,,val,10,ok,0,0,clean
 tuned_bf,0,,train,32,ok,0,0,clean
 tuned_bf,0,,val,10,ok,0,0,clean
 tuned_bf,1,,train,32,ok,0,0,clean
@@ -23,3 +31,11 @@ tuned_bf,4,,train,32,ok,0,0,clean
 tuned_bf,4,,val,10,ok,0,0,clean
 tuned_bf,5,,train,32,ok,0,0,clean
 tuned_bf,5,,val,10,ok,0,0,clean
+tuned_bf,6,,train,32,ok,0,0,clean
+tuned_bf,6,,val,10,ok,0,0,clean
+tuned_bf,7,,train,32,ok,0,0,clean
+tuned_bf,7,,val,10,ok,0,0,clean
+tuned_bf,8,,train,32,ok,0,0,clean
+tuned_bf,8,,val,10,ok,0,0,clean
+tuned_bf,9,,train,32,ok,0,0,clean
+tuned_bf,9,,val,10,ok,0,0,clean

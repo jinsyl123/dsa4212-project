@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm implements an entropy-guided harmonic fit strategy that scores bins to favor those whose remaining capacities align with preferred fractional harmonic thresholds, balancing tight packing with load distribution.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    \n    # Harmonic-inspired weighting based on remaining capacity ratio relative to original bin size implied by max bin\n    max_cap = np.max(bins)\n    if max_cap == 0:\n        return np.where(valid, 0.0, -np.inf)\n        \n    ratio = rem / max_cap\n    # Prefer ratios close to certain harmonic fractions (e.g., 1/3, 1/2, 2/3) to reduce fragmentation\n    harmonic_targets = np.array([0.0, 0.33, 0.5, 0.67, 1.0])\n    \n    # Find distance to the closest harmonic target for each valid bin\n    distances = np.min(np.abs(ratio[:, None] - harmonic_targets[None, :]), axis=1)\n    \n    # Score penalizes deviation from harmonic targets, with a slight tie-breaker for smaller remaining capacities\n    scores = np.where(valid, -distances - 0.01 * (rem / max_cap), -np.inf)\n    return scores\n\n",
+        "score": -0.02814018690161106
+    },
+    {
+        "algorithm": "{The algorithm implements an exponential potential-field strategy that scores bins by combining an attractive force toward exact capacity exhaustion with a repulsive barrier against creating medium-sized residual gaps.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    \n    max_val = np.max(bins) if np.max(bins) > 0 else 1.0\n    r_norm = rem / max_val\n    \n    # Potential field: sharp reward for zero residual (exact fit), \n    # smooth valley for large residuals, and potential barrier for medium gaps (~0.3-0.5).\n    # Using a combination of Gaussian wells at 0 and sinusoidal repulsion for intermediate gaps.\n    exact_fit_reward = np.exp(-50.0 * (r_norm ** 2))\n    medium_gap_penalty = np.sin(np.pi * r_norm) * (r_norm)\n    \n    scores[valid] = 2.0 * exact_fit_reward[valid] - r_norm[valid] - 0.5 * np.abs(medium_gap_penalty[valid])\n    return scores\n\n",
+        "score": -0.029476803525222403
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, effectively implementing a Best-Fit strategy.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    return np.where(rem >= 0, 1.0 / (1.0 + rem), -np.inf)\n\n",
+        "score": -0.0295663556157795
+    },
+    {
+        "algorithm": "{The algorithm implements a Harmonic-Weighted Fit strategy that prioritizes bins whose resulting remaining capacity aligns with optimal fractional partition thresholds to balance load distribution.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    original_capacities = bins\n    harmonic_weights = 1.0 / (1.0 + np.floor(original_capacities / (item + 1e-9)))\n    scores[valid] = -rem[valid] * harmonic_weights[valid]\n    return scores\n\n",
+        "score": -0.031292726122004774
+    },
+    {
+        "algorithm": "{The new algorithm implements an exponential-decay residual penalty combined with a soft capacity-urgency bonus to favor tightly packed bins while smoothly discouraging micro-slivers.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    score = -np.exp(rem) - (1.0 / (np.maximum(rem, 0.0) + 0.05))\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.031932401873210364
+    },
+    {
+        "algorithm": "{The new algorithm implements an exponential-decay Best-Fit strategy that exponentially penalizes remaining capacity to tightly pack bins while heavily discouraging micro-slivers.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    score = -np.exp(rem) - (1.0 / (rem**2 + 0.001))\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.03238983129742505
+    },
+    {
+        "algorithm": "{The new algorithm implements a harmonic-weighted Best-Fit strategy that prioritizes tighter remaining capacities while penalizing near-zero slivers using an inverse-distance harmonic scaling.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    score = -rem - (0.1 / (rem + 0.01))\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.03309532849395324
+    },
+    {
+        "algorithm": "{The new algorithm implements an exponential cost-effectiveness strategy that scores valid bins by combining relative space utilization with an exponential penalty for creating small unusable slivers of remaining capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    initial_cap = bins\n    utilization = (initial_cap - rem) / initial_cap\n    sliver_penalty = np.exp(-rem / 0.05)\n    score = utilization - sliver_penalty\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.03635592465995871
+    },
+    {
+        "algorithm": "{The new algorithm implements a \"Bin-Centric Threshold\" strategy that scores valid bins by rewarding those whose capacity utilization post-insertion approaches a predefined target fill ratio, while heavily penalizing bins that deviate from this optimal balance point.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    original_capacities = bins\n    filled_ratio = (original_capacities - rem) / original_capacities\n    target_ratio = 0.85\n    score = -np.abs(filled_ratio - target_ratio)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.03670534866024185
+    },
+    {
+        "algorithm": "{The new algorithm implements a Modified Almost-Worst-Fit strategy that prioritizes bins leaving the fourth-largest remaining capacity, falling back to alternative larger capacities when fewer suitable options exist.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_rem = np.where(valid, rem, -np.inf)\n    unique_rems = np.sort(np.unique(valid_rem[valid]))\n    if len(unique_rems) >= 4:\n        target_rem = unique_rems[-4]\n    elif len(unique_rems) >= 2:\n        target_rem = unique_rems[0]\n    else:\n        target_rem = unique_rems[0]\n    return np.where(rem == target_rem, 0.0, np.where(valid, -abs(rem - target_rem), -np.inf))\n\n",
+        "score": -0.04066187659686707
+    }
+]

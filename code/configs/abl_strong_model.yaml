@@ -1,0 +1,8 @@
+# Optional A3 (#7; proposed 8 Nov as Ablation 2, kept optional on 9 Nov): a stronger LLM under the same evaluation budget.
+# Only the LLM changes: gemini-3.5-flash instead of gemini-3.5-flash-lite (same generation, same reasoning effort).
+# Question: is "no LLM rule beats tuned Best Fit in distribution" (Ablation 1, #18) a limit of the model?
+# Everything else as the main baseline: funsearch mode, default prompt, 300 evals, frozen test sets.
+base: configs/eoh_baseline.yaml
+experiment: abl_strong_model
+llm: openrouter-gemini-3.5-flash
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
