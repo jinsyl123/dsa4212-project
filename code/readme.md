@@ -413,17 +413,19 @@ The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1�
 
 **Change one thing at a time** against a baseline with the same model, budget and seeds, and use at least 3 seeds per arm: LLM runs vary a lot between seeds.
 
-**The planned ablations (#7)** each have a config that inherits `eoh_baseline.yaml` (`base:`) and changes one setting. All use `openrouter-gemini-3.5-flash-lite`, the `full` budget and seeds 0–4, so the main baseline (seeds 0–5) is the comparison row.
+**The ablations (#7)** each have a config that inherits another one (`base:`) and changes one setting. All use `openrouter-gemini-3.5-flash-lite` (except A3, the model ablation), the `full` budget and seeds 0–9 (10 per setting; `docs/log.md`, 7 and 9 Nov). The main baseline (seeds 0–5) is the comparison row, except for A2b, which is compared with A1b.
 
-| Config                    | Changes                                   | Status (#7)        |
-| ------------------------- | ----------------------------------------- | ------------------ |
-| `abl_anyfit.yaml`         | empty bins hidden during search           | main               |
-| `abl_informed_rules.yaml` | prompt states the task and how bins are offered (incl. empty bins) | main               |
-| `abl_mixed_shapes.yaml`   | training on Weibull shapes 2 and 4        | main               |
-| `abl_informed_dist.yaml`  | prompt states the training distribution   | optional           |
-| `abl_informed.yaml`       | both of the above in the prompt           | optional           |
-| `abl_no_m2.yaml`          | EoH without M2                            | fallback           |
-| `control_randsample.yaml` | LLM4AD RandSample: same budget, fixed FunSearch-style prompt, no evolution | control            |
+| Config                         | Changes                                                                    | Base                      | Status (#7)          |
+| ------------------------------ | -------------------------------------------------------------------------- | ------------------------- | -------------------- |
+| `abl_anyfit.yaml`              | A1a: empty bins hidden during search                                       | `eoh_baseline.yaml`       | main                 |
+| `abl_informed_rules.yaml`      | A1b: prompt states the task and how bins are offered (incl. empty bins)    | `eoh_baseline.yaml`       | main                 |
+| `abl_mixed_shapes.yaml`        | A2a: training on Weibull shapes 2 and 4                                    | `eoh_baseline.yaml`       | main                 |
+| `abl_mixed_caps_informed.yaml` | A2b: training on capacities 100 and 300, item scale 45 (`train_mixed_cap`) | `abl_informed_rules.yaml` | main                 |
+| `control_randsample.yaml`      | LLM4AD RandSample: same budget, fixed FunSearch-style prompt, no evolution | `eoh_baseline.yaml`       | control              |
+| `abl_strong_model.yaml`        | A3: `gemini-3.5-flash` instead of the lite model                           | `eoh_baseline.yaml`       | optional, if time    |
+| `abl_informed_dist.yaml`       | prompt states the training distribution                                    | `eoh_baseline.yaml`       | dropped (7 Nov)      |
+| `abl_informed.yaml`            | both prompt additions                                                      | `eoh_baseline.yaml`       | dropped (7 Nov)      |
+| `abl_no_m2.yaml`               | EoH without M2                                                             | `eoh_baseline.yaml`       | dropped (7 Nov)      |
 
 Run one with a `check` budget first, then in full, then score it (no `--llm` needed: the model is set in the file):
 
@@ -437,8 +439,8 @@ python pipeline/summarise.py --config configs/abl_anyfit.yaml
 Before the full runs:
 
 - **Branch:** run from a branch that includes #14, so every run saves each LLM prompt and response (`llm_calls.jsonl`). Commit the whole run folder afterwards.
-- **Order:** the three main settings first (`abl_anyfit`, `abl_informed_rules`, `abl_mixed_shapes`), then `control_randsample`. It has not run on OpenRouter yet and uses a different prompt (Best Fit as `priority_v0`, "complete `priority_v1`"), so its `check` run is a gate: look at `n_unique_programs` and `n_calls_not_evaluated` in `summary.json` before the 5 full seeds. The optional settings only if time allows.
-- **Credit:** about US$0.16–0.20 per run, 20 runs (3 main settings + control, 5 seeds each) ≈ US$3–4; budget ~US$5 for check runs and headroom. Check the OpenRouter balance first.
+- **Order:** the main settings first, then `control_randsample`. The control uses a different prompt (Best Fit as `priority_v0`, "complete `priority_v1`"), so its `check` run is a gate: look at `n_unique_programs` and `n_calls_not_evaluated` in `summary.json` before the 10 full seeds. The optional setting only if time allows.
+- **Credit:** about US$0.16–0.20 per run. Actual: A1 about US$4.15 (20 runs), control about US$0.90 (10 runs), A2 about US$3.91 (20 runs) (#7, #19). Check the OpenRouter balance first.
 
 ---
 
