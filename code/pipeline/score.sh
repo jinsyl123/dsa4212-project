@@ -3,7 +3,7 @@
 # anyone can rerun this and get the same results. Usage, from code/:
 #     bash pipeline/score.sh abl_anyfit abl_informed_rules      # score
 #     bash pipeline/score.sh --check abl_anyfit                  # score, then fail if any committed result changed
-#         (CSV row order and measured run times, time_s, may differ between runs; every score must match)
+#         (CSV row order, measured run times (time_s) and figure bytes may differ between runs; every score must match)
 #     bash pipeline/score.sh --llm openrouter-gemini-3.5-flash-lite eoh_baseline
 #         # --llm for configs whose results folder is named after the model (the baseline); same as the search
 #
@@ -50,5 +50,5 @@ print(C.load(sys.argv[1], llm=sys.argv[2] or None)['experiment'])" "$cfg" "${llm
 done
 
 if [[ $check -eq 1 ]]; then
-    "$py" pipeline/check_outputs.py "${dirs[@]}"   # CSV row order and measured run times may differ; nothing else
+    "$py" pipeline/check_outputs.py "${dirs[@]}"   # CSV row order, run times and figure bytes may differ; nothing else
 fi
