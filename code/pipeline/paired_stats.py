@@ -20,6 +20,9 @@ as a tie. Against a single-seed reference (Best Fit) they count bins.
 Excess is over the L2 bound by default (#12 decision 7), falling back to L1 for results without the L2 columns;
 --metric excess compares over L1 instead. Against a single-seed reference only the pp columns depend on the bound.
 An instance the reference wasn't scored on is left out of that comparison (n drops), with a warning.
+--seeds 0-5 keeps only those seeds of every rule with several seeds (the evolved rule and tuned Best Fit; Best Fit has
+one) and writes paired_stats_seeds0-5.csv: the pre-registered baseline comparison is seeds 0-5 against a tuned Best Fit
+averaged over seeds 0-5, and averaging over more reference seeds changes verdicts (#19 review).
 There is no correction for running many comparisons (rules x seeds x sets x references): treat single verdicts as
 descriptive and look for patterns across seeds and sets.
 """
@@ -95,13 +98,16 @@ def default_metric(df: pd.DataFrame) -> str:
 
 
 def main(config, references=None, n_boot=10_000, metric=None, alpha=0.05, overrides=None, llm=None, budget=None,
-         experiment=None) -> pd.DataFrame:
+         experiment=None, seeds=None) -> pd.DataFrame:
     cfg = C.load(config, overrides, llm=llm, budget=budget, experiment=experiment)
     out = C.results_dir(cfg)
     src = out / "final_per_instance.csv"
     if not src.exists():
         raise FileNotFoundError(f"{src} not found: run evaluate_final.py with the same arguments first")
     df = pd.read_csv(src)
+    if seeds is not None:  # keep these seeds of every multi-seed rule; single-seed references (Best Fit) stay
+        multi = df.groupby("label").seed.transform("nunique") > 1
+        df = df[df.seed.isin(seeds) | ~multi]
     if metric is None:
         metric = default_metric(df)
         if metric == "excess":
@@ -109,6 +115,8 @@ def main(config, references=None, n_boot=10_000, metric=None, alpha=0.05, overri
     res = compare(df, references or REFERENCES, n_boot, metric, alpha).round(5)
     # the default comparison goes to paired_stats.csv; an explicit L1 run next to L2 results gets its own file
     name = "paired_stats.csv" if metric != "excess" or "excess_l2" not in df else "paired_stats_excess.csv"
+    if seeds is not None:
+        name = name.replace(".csv", f"_seeds{min(seeds)}-{max(seeds)}.csv")
     res.to_csv(out / name, index=False)
     show = res[res.kind != "baseline"]
     print(f"[{cfg['experiment']}] {len(res)} comparisons on {metric} -> {out / name}")
@@ -128,5 +136,9 @@ if __name__ == "__main__":
     ap.add_argument("--llm", help="model name from configs/llms.yaml (default: the config's)")
     ap.add_argument("--budget", help="budget name from configs/budgets.yaml (default: the config's)")
     ap.add_argument("--experiment", help="results folder name (default: from config, llm and budget)")
+    ap.add_argument("--seeds", help="only seeds lo-hi of every multi-seed rule, e.g. 0-5 "
+                                    "(writes paired_stats_seeds0-5.csv)")
     a = ap.parse_args()
-    main(a.config, a.references, a.n_boot, a.metric, a.alpha, llm=a.llm, budget=a.budget, experiment=a.experiment)
+    seeds = None if a.seeds is None else list(range(int(a.seeds.split("-")[0]), int(a.seeds.split("-")[1]) + 1))
+    main(a.config, a.references, a.n_boot, a.metric, a.alpha, llm=a.llm, budget=a.budget, experiment=a.experiment,
+         seeds=seeds)

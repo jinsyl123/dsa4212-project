@@ -12,7 +12,8 @@
 #   2. evaluate_final   held-out scores on the frozen test sets (#16)
 #   3. check_integrity  integrity flags (#6)
 #   4. diagnose         fresh_given_room, both packing modes (#5)
-#   5. paired_stats     per-seed verdicts vs Best Fit and tuned Best Fit (#13; bootstrap uses a fixed seed)
+#   5. paired_stats     per-seed verdicts vs Best Fit and tuned Best Fit (#13; bootstrap uses a fixed seed); for the
+#                       baseline also seeds 0-5 only, the pre-registered comparison (paired_stats_seeds0-5.csv)
 #   6. summarise        tables and figures
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -42,6 +43,9 @@ print(C.load(sys.argv[1], llm=sys.argv[2] or None)['experiment'])" "$cfg" "${llm
     "$py" pipeline/check_integrity.py --config "$cfg" ${llm[@]+"${llm[@]}"}
     "$py" pipeline/diagnose.py        --config "$cfg" ${llm[@]+"${llm[@]}"}
     "$py" pipeline/paired_stats.py    --config "$cfg" ${llm[@]+"${llm[@]}"}
+    if [[ "$s" == eoh_baseline ]]; then   # pre-registered comparison: seeds 0-5 vs tuned Best Fit seeds 0-5 (#19)
+        "$py" pipeline/paired_stats.py --config "$cfg" ${llm[@]+"${llm[@]}"} --seeds 0-5
+    fi
     "$py" pipeline/summarise.py       --config "$cfg" ${llm[@]+"${llm[@]}"}
 done
 
