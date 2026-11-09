@@ -107,7 +107,7 @@ configs/
   smoke.yaml             fake LLM, plumbing check
   pipecheck.yaml         real LLM, tiny budget
   pipecheck_claude.yaml  example of switching LLM in a config file
-  eoh_baseline.yaml      EoH + tuned Best Fit, full budget, seeds 0–5 (main baseline)
+  eoh_baseline.yaml      EoH + tuned Best Fit, full budget, seeds 0–9 (main baseline; 0–5 pre-registered, 6–9 added 9 Nov)
   compare.yaml           EoH vs alternatives and ablations
   instances/v0.yaml      instance sets used for real runs (frozen at G2)
   instances/smoke.yaml   small instance sets for tests
@@ -413,7 +413,7 @@ The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1�
 
 **Change one thing at a time** against a baseline with the same model, budget and seeds, and use at least 3 seeds per arm: LLM runs vary a lot between seeds.
 
-**The ablations (#7)** each have a config that inherits another one (`base:`) and changes one setting. All use `openrouter-gemini-3.5-flash-lite` (except A3, the model ablation), the `full` budget and seeds 0–9 (10 per setting; `docs/log.md`, 7 and 9 Nov). The main baseline (seeds 0–5) is the comparison row, except for A2b, which is compared with A1b.
+**The ablations (#7)** each have a config that inherits another one (`base:`) and changes one setting. All use `openrouter-gemini-3.5-flash-lite`, the `full` budget and seeds 0–9 (10 per setting; `docs/log.md`, 7 and 9 Nov). The main baseline is the comparison row (seeds 0–5 as pre-registered, 0–9 as a check; #21), except for A2b, which is compared with A1b.
 
 | Config                         | Changes                                                                    | Base                      | Status (#7)          |
 | ------------------------------ | -------------------------------------------------------------------------- | ------------------------- | -------------------- |
@@ -422,7 +422,7 @@ The knobs are integers in item units: `lo` 0–10, `hi` lo+2–40, `penalty` 1�
 | `abl_mixed_shapes.yaml`        | A2a: training on Weibull shapes 2 and 4                                    | `eoh_baseline.yaml`       | main                 |
 | `abl_mixed_caps_informed.yaml` | A2b: training on capacities 100 and 300, item scale 45 (`train_mixed_cap`) | `abl_informed_rules.yaml` | main                 |
 | `control_randsample.yaml`      | LLM4AD RandSample: same budget, fixed FunSearch-style prompt, no evolution | `eoh_baseline.yaml`       | control              |
-| `abl_strong_model.yaml`        | A3: `gemini-3.5-flash` instead of the lite model                           | `eoh_baseline.yaml`       | optional, if time    |
+| `abl_strong_model.yaml`        | A3: `gemini-3.5-flash` instead of the lite model                           | `eoh_baseline.yaml`       | not run (#21)        |
 | `abl_informed_dist.yaml`       | prompt states the training distribution                                    | `eoh_baseline.yaml`       | dropped (7 Nov)      |
 | `abl_informed.yaml`            | both prompt additions                                                      | `eoh_baseline.yaml`       | dropped (7 Nov)      |
 | `abl_no_m2.yaml`               | EoH without M2                                                             | `eoh_baseline.yaml`       | dropped (7 Nov)      |
@@ -492,7 +492,7 @@ Before the full runs:
 
 **Two packing conventions** (`evaluation.mode`):
 
-- `funsearch` (default): one bin per item is set up at the start, all at full capacity, so `bins` always includes empty bins. Identical to LLM4AD, FunSearch and EoH; we verified our scores match LLM4AD's exactly. Consequence: any heuristic that prefers emptier bins always opens a new bin and collapses to about one item per bin (~148% excess on our training set).
+- `funsearch` (default): one bin per item is set up at the start, all at full capacity, so `bins` always includes empty bins. The same packing convention as LLM4AD, FunSearch and EoH, and the same reported metric: our Best Fit excess matches LLM4AD's exactly (4.00% on its Weibull set). The search objective differs: our search maximises minus the mean relative excess over L1 per instance (as EoH-S), LLM4AD's minus the mean number of bins (`docs/log.md`, 9 Nov). Consequence: any heuristic that prefers emptier bins always opens a new bin and collapses to about one item per bin (~148% excess on our training set).
 - `anyfit`: only open, non-empty bins are offered; a new bin opens only when none fit (Sgall's AnyFit class).
 
 **Which convention each row uses.** Evolved programs are always scored in `evaluation.mode` (`funsearch` by default). The baseline rows in `final_summary.csv` use their classical AnyFit definitions, so Worst Fit is ~13% there but 148% in funsearch mode (on train). Best Fit and First Fit never open a fresh bin while a used bin has room, so the two conventions give them identical bins (`tests/test_diagnostics.py` checks the first part; the diagnostics summaries show identical scores on every set), so their rows compare directly. State this in the report. `pipeline/diagnose.py` rescores every program and baseline in both modes and reports `fresh_given_room`: the share of choices where a program put the item in an empty bin although a used bin had room.

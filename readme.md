@@ -11,7 +11,7 @@ We use an LLM-driven search (**EoH**, via [LLM4AD](https://github.com/Optima-Cit
 | A2b: mixed training capacities | A1b, trained on capacities 100 and 300 (item scale 45) instead of 100 only | A1b | `abl_mixed_caps_informed.yaml` | `abl_mixed_caps_informed/` |
 | Control: no evolution | LLM4AD RandSample: 300 samples of one fixed prompt, best kept | baseline | `control_randsample.yaml` | `control_randsample/` |
 
-A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (#7, `code/docs/log.md`, 9 Nov). The baseline has seeds 0–5; every other setting has seeds 0–9.
+A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (#7, `code/docs/log.md`, 9 Nov). Every setting has seeds 0–9. The baseline's seeds 0–5 were run first and are the pre-registered comparison; seeds 6–9 were added on 9 Nov, and a difference in seed counts is claimed only if it is significant against both (#21). A third ablation (a stronger LLM, `abl_strong_model.yaml`) was optional and was not run.
 
 Every setting is compared with Best Fit and with **tuned Best Fit** (Best Fit's 3 knobs tuned without an LLM, under the same 300-evaluation budget). Predictions for each setting were frozen before scoring in [`code/docs/claims.md`](code/docs/claims.md); every decision that affects results is in [`code/docs/log.md`](code/docs/log.md).
 
@@ -56,19 +56,34 @@ Reproducing the results needs **no API key**: scoring only rescores the committe
 
 ## Reproducing the main results
 
-From the `code/` folder, with no LLM calls:
+From the `code/` folder, with no LLM calls (about 1.5–2 hours in total):
 
 ```bash
-python pipeline/evaluate_final.py --config configs/eoh_baseline.yaml --llm openrouter-gemini-3.5-flash-lite
-python pipeline/summarise.py      --config configs/eoh_baseline.yaml --llm openrouter-gemini-3.5-flash-lite
+bash pipeline/score.sh --check --llm openrouter-gemini-3.5-flash-lite eoh_baseline
+bash pipeline/score.sh --check abl_anyfit abl_informed_rules control_randsample
+bash pipeline/score.sh --check abl_mixed_shapes abl_mixed_caps_informed
 ```
 
-This rescores the committed best programs on every held-out set and rebuilds `final_summary.csv`, `summary_tables.md` and the figures. Rerunning a *search* does not give the same programs, because LLM sampling is random; that is why every run folder, including every LLM call, is committed.
-
-_To be finalised once the ablation scoring (#18) is merged:_
-- _#18 commits the baseline rescored on the frozen test sets (#16). Until then, the baseline results committed here are on the earlier sets, so the commands above give the frozen-set numbers, not the committed ones._
-- _#18 adds one command per setting, `bash pipeline/score.sh --check <setting>`, which rescores it and fails if any committed result differs._
+For each setting, `score.sh` retunes tuned Best Fit, rescores the committed best programs on every held-out set, runs the integrity checks, the fresh-bin diagnostic and the paired statistics, and rebuilds `final_summary.csv`, `paired_stats.csv`, `summary_tables.md` and the figures. With `--check` it then prints `OK: every committed output reproduced`, or lists the files that differ (CSV row order and measured run time are ignored). Rerunning a *search* does not give the same programs, because LLM sampling is random; that is why every run folder, including every LLM call, is committed.
 
 ## Results
 
-_To be added once Ablation 2 is scored: headline numbers per setting, with links to the report's figures and tables._
+Frozen test sets, excess over the L2 lower bound, 10 instances per set. Per-seed verdicts: a seed is **better** or **worse** than a reference only if the 95% bootstrap CI excludes 0 and the sign test gives p < 0.05. Full tables, per-seed numbers and the check against every prediction: `code/results/<setting>/summary_tables.md`, #18, and the result posts on #7.
+
+| Setting | Seeds | Beats Best Fit on `test_id_5k` | Beats its tuned Best Fit on `test_id_5k` | Worse than Best Fit on k1.5 or k5 | Fresh-bin seeds |
+|---|---|---|---|---|---|
+| EoH baseline, seeds 0–5 (pre-registered) | 6 | 3/6 | 0/6 | 3/6 | 3/6 |
+| EoH baseline, seeds 0–9 | 10 | 5/10 | 0/10 | 3/10 | 3/10 |
+| A1a: empty bins hidden | 10 | 6/10 | 0/10 | 1/10 | 0/10 (by design) |
+| A1b: bin rules in the prompt | 10 | **10/10** | 0/10 | 1/10 | 6/10 |
+| A2a: mixed training shapes | 10 | 9/10 | 1/10 | 1/10 | 2/10 |
+| A2b: mixed training capacities (vs A1b) | 10 | 6/10 | 0/10 | 1/10 | 2/10 |
+| Control: no evolution | 10 | **0/10** | 0/10 | 0/10 | 0/10 |
+
+**What holds up** (Fisher's exact test on seed counts, significant against both the 6- and 10-seed baseline):
+- **A1b** beats Best Fit more often than the baseline (10/10; p = 0.036 and 0.033): stating the task and bin rules in the prompt makes the gain reliable.
+- **The control** never beats Best Fit (0/10; p = 0.036 and 0.033): without evolution, the LLM does not get past Best Fit.
+
+**Consistent with the predictions but not significant with 10 seeds:** mixed shapes (A2a) cut shape failures from 3/6 to 1/10; mixed capacities (A2b) remove A1b's capacity collapse inside the trained range (0/10 vs 4/10 on `test_cap200` and `test_scale25`, 2/10 vs 5/10 on `test_cap500`).
+
+**Patterns across every setting:** no LLM rule beats its own tuned Best Fit in distribution (1 of 60 seeds, A2a seed 6). The fresh-bin bet (opening an empty bin while a used one has room) carries both the gains and most of the failures under shift; tuned Best Fit is the most fragile rule under shape and scale shifts (e.g. about 30% over the bound on `test_shape_k5`, vs Best Fit's 8%).
