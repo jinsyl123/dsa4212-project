@@ -1,6 +1,6 @@
 # Seed counts and Fisher tests (`pipeline/seed_counts.py`)
 
-Each cell: seeds in the category / seeds, then Fisher p against each comparison row (claims.md, shared rules). Baseline rows: seeds 0-5 (pre-registered) and seeds 0-9. A2b is compared with A1b. **Bold**: claimed, p < 0.05 against every comparison row.
+Each cell: seeds in the category / seeds, then Fisher p against each comparison row (claims.md, shared rules). Baseline rows: seeds 0-5 (pre-registered) and seeds 0-9. A2b is compared with A1b. **Bold**: p < 0.05 against every comparison row, i.e. claimed (claims.md, Amendments).
 
 | Setting | Beats Best Fit on `test_id_5k` | Beats its tuned Best Fit on `test_id_5k` | Worse than Best Fit on k1.5 or k5 | Fresh-bin seeds |
 |---|---|---|---|---|

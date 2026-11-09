@@ -1,4 +1,4 @@
-setting,category,set,k,n,compared_with,k_ref,n_ref,fisher_p,claimed
+setting,category,set,k,n,compared_with,k_ref,n_ref,fisher_p,significant_vs_all
 baseline,better_vs_best_fit,test_cap200,0,10,,,,,False
 baseline,better_vs_best_fit,test_cap500,0,10,,,,,False
 baseline,better_vs_best_fit,test_cap500_scaled,3,10,,,,,False

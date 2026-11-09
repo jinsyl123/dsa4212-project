@@ -6,9 +6,10 @@ paired_stats_seeds0-5.csv), final_per_instance.csv (collapses) and diagnostics.c
 No LLM calls, no rescoring; deterministic.
 Outputs:
     results/seed_counts.csv   one row per (setting, category, set, comparison row): k of n seeds in the category,
-                              the comparison row's k of n, the two-sided Fisher exact p, and claimed (p < 0.05
-                              against every comparison row of that setting, category and set)
-    results/seed_counts.md    the headline categories as a table, claimed cells in bold
+                              the comparison row's k of n, the two-sided Fisher exact p, and significant_vs_all
+                              (p < 0.05 against every comparison row of that setting, category and set; for any
+                              category and set, so not a claim unless claims.md predicted it)
+    results/seed_counts.md    the headline categories (all pre-registered) as a table, significant_vs_all cells in bold
 
 Categories, per seed (claims.md, shared rules and A2):
     better_vs_<ref> / worse_vs_<ref>   paired_stats verdict on a set, ref = best_fit or tuned_bf
@@ -110,10 +111,10 @@ def main() -> pd.DataFrame:
             rows.append(j.assign(setting=name, compared_with=ref_name))
     out = pd.concat(rows).reset_index()
     vs = out[out.compared_with != ""].groupby(["setting", "category", "set"]).fisher_p.max() < 0.05
-    out["claimed"] = [bool(vs.get((r.setting, r.category, r.set), False)) for r in out.itertuples()]
+    out["significant_vs_all"] = [bool(vs.get((r.setting, r.category, r.set), False)) for r in out.itertuples()]
     out["setting"] = pd.Categorical(out.setting, list(SETTINGS))
     out = out.sort_values(["setting", "category", "set", "compared_with"])[
-        ["setting", "category", "set", "k", "n", "compared_with", "k_ref", "n_ref", "fisher_p", "claimed"]]
+        ["setting", "category", "set", "k", "n", "compared_with", "k_ref", "n_ref", "fisher_p", "significant_vs_all"]]
     res = C.ROOT / "results"
     out.round({"fisher_p": 4}).to_csv(res / "seed_counts.csv", index=False)  # the table formats the unrounded p
     (res / "seed_counts.md").write_text(headline(out))
@@ -132,7 +133,7 @@ def headline(out: pd.DataFrame) -> str:
     lines = ["# Seed counts and Fisher tests (`pipeline/seed_counts.py`)", "",
              "Each cell: seeds in the category / seeds, then Fisher p against each comparison row (claims.md, "
              "shared rules). Baseline rows: seeds 0-5 (pre-registered) and seeds 0-9. A2b is compared with A1b. "
-             "**Bold**: claimed, p < 0.05 against every comparison row.", "",
+             "**Bold**: p < 0.05 against every comparison row, i.e. claimed (claims.md, Amendments).", "",
              "| Setting | " + " | ".join(c[2] for c in cols) + " |", "|---" * (len(cols) + 1) + "|"]
     for name in SETTINGS:
         if name == "baseline":
@@ -152,7 +153,7 @@ def headline(out: pd.DataFrame) -> str:
             r = own.loc[(name, cat, s)]
             ps = vs[(vs.setting == name) & (vs.category == cat) & (vs.set == s)].fisher_p.tolist()
             cell = f"{int(r.k)}/{int(r.n)} (p = {', '.join(f'{p:.3f}' for p in ps)})"
-            cells.append(f"**{cell}**" if r.claimed else cell)
+            cells.append(f"**{cell}**" if r.significant_vs_all else cell)
         lines.append(f"| {name} | " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
 
