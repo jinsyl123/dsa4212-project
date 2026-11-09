@@ -2,13 +2,16 @@
 
 We use an LLM-driven search (**EoH**, via [LLM4AD](https://github.com/Optima-CityU/LLM4AD)) to evolve a priority rule for **online bin packing**, and ask what makes the evolved rules beat Best Fit, and why some of them fail on shifted test sets. Two ablations and a control test where the gains and failures come from:
 
-| Setting | What changes from the EoH baseline | Config (`code/configs/`) | Results (`code/results/`) |
-|---|---|---|---|
-| EoH baseline | nothing | `eoh_baseline.yaml` | `eoh_baseline__openrouter-gemini-3.5-flash-lite/` |
-| A1a: empty bins hidden | the rule is never offered an empty bin while a used bin fits (`mode: anyfit`) | `abl_anyfit.yaml` | `abl_anyfit/` |
-| A1b: bin rules in the prompt | the prompt states the task and that empty bins are among the options | `abl_informed_rules.yaml` | `abl_informed_rules/` |
-| A2: mixed training shapes | trained on Weibull shapes 2 and 4 instead of 3 | `abl_mixed_shapes.yaml` | `abl_mixed_shapes/` |
-| Control: no evolution | LLM4AD RandSample: 300 samples of one fixed prompt, best kept | `control_randsample.yaml` | `control_randsample/` |
+| Setting | What changes (one thing, from the setting it is compared with) | Compared with | Config (`code/configs/`) | Results (`code/results/`) |
+|---|---|---|---|---|
+| EoH baseline | nothing | — | `eoh_baseline.yaml` | `eoh_baseline__openrouter-gemini-3.5-flash-lite/` |
+| A1a: empty bins hidden | the rule is never offered an empty bin while a used bin fits (`mode: anyfit`) | baseline | `abl_anyfit.yaml` | `abl_anyfit/` |
+| A1b: bin rules in the prompt | the prompt states the task and that empty bins are among the options | baseline | `abl_informed_rules.yaml` | `abl_informed_rules/` |
+| A2a: mixed training shapes | trained on Weibull shapes 2 and 4 instead of 3 | baseline | `abl_mixed_shapes.yaml` | `abl_mixed_shapes/` |
+| A2b: mixed training capacities | A1b, trained on capacities 100 and 300 (item scale 45) instead of 100 only | A1b | `abl_mixed_caps_informed.yaml` | `abl_mixed_caps_informed/` |
+| Control: no evolution | LLM4AD RandSample: 300 samples of one fixed prompt, best kept | baseline | `control_randsample.yaml` | `control_randsample/` |
+
+A2b builds on A1b because the capacity collapse it tests appears only with A1b's prompt (#7, `code/docs/log.md`, 9 Nov). The baseline has seeds 0–5; every other setting has seeds 0–9.
 
 Every setting is compared with Best Fit and with **tuned Best Fit** (Best Fit's 3 knobs tuned without an LLM, under the same 300-evaluation budget). Predictions for each setting were frozen before scoring in [`code/docs/claims.md`](code/docs/claims.md); every decision that affects results is in [`code/docs/log.md`](code/docs/log.md).
 
@@ -27,6 +30,8 @@ Project brief: https://alexxthiery.github.io/teaching/llm-evolution/llm-evolutio
 ├── readme.md         # this file: overview, setup, how to reproduce
 ├── authors.md        # name and student ID of every group member
 ├── report/           # LaTeX source of the submitted report
+├── docs/log.md       # early project log (topic and framework, 21 Oct); experiment decisions are in code/docs/log.md
+├── results/          # pointer only: every result is in code/results/
 └── code/
     ├── readme.md     # full pipeline guide: setup, configs, methods, outputs, troubleshooting
     ├── pipeline/     # evaluator, search wrapper, scoring and plotting scripts
