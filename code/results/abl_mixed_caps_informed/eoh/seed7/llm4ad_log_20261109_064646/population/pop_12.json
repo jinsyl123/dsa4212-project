@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm implements a bi-objective scoring mechanism that balances maximizing the utilization of the most filled existing bins with a controlled preference for opening new empty bins based on the current item size relative to the average capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    initial_capacity = np.max(bins) if len(bins) > 0 else 1.0\n    used_space = initial_capacity - bins\n    utilization = np.where(bins > 0, used_space / initial_capacity, 0.0)\n    is_empty = bins == initial_capacity\n    scores = np.where(valid, np.where(is_empty, 0.5 * (item / initial_capacity), utilization + (1.0 / (1.0 + remaining))), -np.inf)\n    return scores\n\n",
+        "score": -0.029369862869842833
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, effectively implementing a Best-Fit strategy that minimizes wasted space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, 1.0 / (1.0 + remaining), -np.inf)\n\n",
+        "score": -0.0295663556157795
+    },
+    {
+        "algorithm": "{\\giga{The algorithm implements a hyperbolic residual-fit penalty combined with a hyperbolic positional discouragement factor to favor tight capacity matches while consolidating items into earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    indices = np.arange(len(bins), dtype=float)\n    fit_score = 1.0 / (remaining + 1e-3)\n    pos_penalty = 1.0 / (1.0 + 0.5 * indices)\n    scores = np.where(valid, fit_score * pos_penalty, -np.inf)\n    return scores\n\n",
+        "score": -0.02961306046070748
+    },
+    {
+        "algorithm": "{The algorithm implements an exponential-penalty best-fit strategy that favors bins with tighter remaining capacities while exponentially penalizing bins with larger indices to encourage consolidation into earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    indices = np.arange(len(bins), dtype=float)\n    penalty = np.exp(-0.1 * indices)\n    scores = np.where(valid, (1.0 / (remaining + 1e-5)) * penalty, -np.inf)\n    return scores\n\n",
+        "score": -0.029728893071164025
+    },
+    {
+        "algorithm": "{The algorithm implements an Exponentially-Decayed Best-Fit strategy that prioritizes tighter fits while heavily penalizing bins that are further down the list to favor compact packing in earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    penalties = np.exp(np.arange(len(bins), dtype=float))\n    scores = np.where(valid, -remaining * penalties, -np.inf)\n    return scores\n\n",
+        "score": -0.029769476974056873
+    },
+    {
+        "algorithm": "{The algorithm implements a harmonic-weighted Best-Fit Decreasing strategy that scores valid bins inversely proportional to their remaining capacity scaled by a positional power law to strongly favor tight fits in earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    weights = 1.0 / (1.0 + np.arange(len(bins), dtype=float))\n    scores = np.where(valid, - (remaining + 1e-5) / weights, -np.inf)\n    return scores\n\n",
+        "score": -0.030114118567665476
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave a moderately small remaining capacity to balance between tight packing and preserving empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -np.abs(remaining - 0.5), -np.inf)\n\n",
+        "score": -0.030154703796348336
+    },
+    {
+        "algorithm": "{The algorithm implements a Power-Law-Weighted Best-Fit strategy that prioritizes tighter fits while scaling penalties polynomially with bin index to favor earlier bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    penalties = (np.arange(len(bins), dtype=float) + 1.0) ** 2\n    scores = np.where(valid, -remaining * penalties, -np.inf)\n    return scores\n\n",
+        "score": -0.03063719002191971
+    },
+    {
+        "algorithm": "{\\giga{The algorithm implements an exponential decay of residual capacity combined with a softmax-weighted cumulative capacity discount to encourage tight fits while favoring earlier-indexed bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    max_cap = np.max(bins) if len(bins) > 0 else 1.0\n    is_empty = (bins == max_cap)\n    tightness = np.exp(-remaining / (max_cap + 1e-6))\n    indices = np.arange(len(bins), dtype=float)\n    position_weight = 1.0 / (1.0 + np.log1p(indices))\n    scores = np.where(valid, tightness * position_weight + np.where(is_empty, 0.2, 0.0), -np.inf)\n    return scores\n\n",
+        "score": -0.031808603581769124
+    },
+    {
+        "algorithm": "{The algorithm implements a quadratic-fit residual penalty strategy that scores valid bins by combining the inverse squared difference from the reciprocal golden ratio with a Gaussian decay on remaining capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    target_ratio = 0.382\n    current_fill = np.where(bins > 0, item / bins, 0)\n    scores = np.where(valid, 1.0 / (1.0 + (current_fill - target_ratio) ** 2) * np.exp(-(remaining ** 2) / (2 * (np.std(bins) + 1e-5) ** 2)), -np.inf)\n    return scores\n\n",
+        "score": -0.0371115944910923
+    }
+]

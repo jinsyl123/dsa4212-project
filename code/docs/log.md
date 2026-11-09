@@ -128,3 +128,19 @@ One entry per decision that affects results. Link the config and the results fol
 - **Decision:** `control_randsample` runs seeds 0–9 (10), like Ablation 1's main settings.
 - **Why:** the control is compared with both ablations; with 10 seeds its seed counts are on the same footing as A1a/A1b, and the Fisher rule in #15 can reach p < 0.05 (only at 0/10 or 10/10 vs the baseline's 3/6).
 - **Affects:** `configs/control_randsample.yaml`, `tests/test_ablations.py`; results in `results/control_randsample/`.
+
+### 2026-11-07: Ablation 1 runs 10 seeds; optional rows dropped (Nic)
+
+- **Decision:** Ablation 1 runs `abl_anyfit` and `abl_informed_rules` with seeds 0–9 (10 each), instead of 0–4. `abl_informed_dist` and `abl_informed` are not run. Supersedes the seed count in "2026-11-04: ablation settings locked" for A1.
+- **Why:** about half of the baseline seeds converge to Best Fit (3 of 6), so 5 seeds per setting leaves 2–3 informative runs, too few to compare how often runs open fresh bins. Dropping the optional rows keeps the cost about the same (20 runs, ~$4) while doubling the seeds where the questions are.
+- **When:** decided and committed on 7 Nov before the A1 runs started (`e3009aa`, configs and test); this entry was meant to go in with that commit and was added later.
+- **Alternatives considered:** 5 seeds per setting plus both optional rows (same cost, less power on the main question).
+- **Affects:** `configs/abl_anyfit.yaml`, `configs/abl_informed_rules.yaml`, `tests/test_ablations.py`; results in `results/abl_anyfit/`, `results/abl_informed_rules/`.
+
+### 2026-11-09: Ablation 2 = A2a mixed shapes + A2b mixed capacities, 10 seeds each; A3 optional (Jin)
+
+- **Decision:** Ablation 2 has two settings, both changing only the training data, 10 seeds (0–9) each. **A2a** `abl_mixed_shapes` (baseline setup, compared with the baseline). **A2b** `abl_mixed_caps_informed` (A1b's informed prompt, trained on `train_mixed_cap`: capacities 100 and 300, item scale 45 in both halves; compared with `abl_informed_rules`). The stronger model (`abl_strong_model`) becomes optional A3. Agreed on #7 (Jia Kang, 9 Nov); predictions in #15 before any A2 run.
+- **Why A2b builds on A1b:** the capacity collapse it tests appears only there (5/10 seeds on cap500, 4/10 on cap200 and scale25); the baseline has none, so on the baseline setup A2b could only show "nothing breaks". Cost: the result holds for the informed prompt only (#15).
+- **Check:** pipecheck of the A2b config (seed 99, `check` budget, eoh only): 12/12 evals ok, informed prompt confirmed, 32 training instances. Not scored.
+- **Update 2026-11-09 (Nic's review on #7, before any A2 run):** A2b is renamed `abl_mixed_caps_informed` (was `abl_mixed_capacities`), so its A1b base shows in every table. Tuned Best Fit keeps its **default knob ranges**, so it differs from A1b's only in the training set. A widened penalty (1..300, briefly in `f8a95ea`) was rejected: it adds a second change versus A1b's tuned Best Fit, and a penalty high enough to open fresh bins at capacity 300 (above ~222) also opens one for every penalised gap at capacity 100, so no single absolute penalty fits both. Also noted: Best Fit's excess on `train_mixed_cap` is 4.70% at capacity 100 vs 1.21% at 300, so short of a collapse the capacity-100 half drives selection.
+- **Affects:** `configs/abl_mixed_shapes.yaml`, `configs/abl_mixed_caps_informed.yaml`, `configs/instances/v0.yaml` (`train_mixed_cap`; no other set changes), `tests/test_ablations.py`; #15.

@@ -1,0 +1,9 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, penalizing empty bins to defer their use until necessary, and the item is placed in the bin with the highest score.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    score = np.where(valid, 1.0 / (rem + 1e-5), -1.0)\n    score = np.where(is_empty, score - 0.5, score)\n    return score\n\n",
+        "score": -0.0295663556157795,
+        "program": ""
+    }
+]

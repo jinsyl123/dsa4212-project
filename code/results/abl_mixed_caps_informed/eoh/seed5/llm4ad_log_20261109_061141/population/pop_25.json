@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, penalizing empty bins to defer their use until necessary, and the item is placed in the bin with the highest score.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    score = np.where(valid, 1.0 / (rem + 1e-5), -1.0)\n    score = np.where(is_empty, score - 0.5, score)\n    return score\n\n",
+        "score": -0.0295663556157795
+    },
+    {
+        "algorithm": "{Our new algorithm scores bins using a polynomial penalty on remaining space combined with a cosine fill-ratio adjustment to favor tightly packed bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    fill_ratio = 1.0 - rem\n    score = np.where(valid, -np.power(rem, 1.5) + np.cos(fill_ratio * np.pi), -100.0)\n    score = np.where(is_empty, score - 1.5, score)\n    return score\n\n",
+        "score": -0.030944123015363936
+    },
+    {
+        "algorithm": "{Our new algorithm scores valid bins using an exponential decay function of the remaining capacity multiplied by the sine of the fill ratio, while heavily penalizing invalid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    fill_ratio = 1.0 - rem\n    score = np.where(valid, np.exp(-rem) * np.sin(fill_ratio * np.pi / 2.0), -1000.0)\n    score = np.where(is_empty, score - 0.5, score)\n    return score\n\n",
+        "score": -0.0496011523369908
+    },
+    {
+        "algorithm": "{Our new algorithm scores bins using a power-law decay of remaining capacity scaled by the bin's current utilization, applying a sharp penalty for selecting empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    utilization = 1.0 - bins\n    score = np.where(valid, np.power(rem + 1e-5, -0.5) * (2.0 + utilization), -1000.0)\n    score = np.where(is_empty, score - 8.0, score)\n    return score\n\n",
+        "score": -0.19975729711033668
+    },
+    {
+        "algorithm": "{Our new algorithm scores bins using a polynomial decay on remaining space combined with a cosine-based tightness bonus and an opening penalty for new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    fill_ratio = 1.0 - rem\n    score = np.where(valid, (rem + 1e-5) ** -0.5 + np.cos(fill_ratio * np.pi / 2), -100.0)\n    score = np.where(is_empty, score - 1.5, score)\n    return score\n\n",
+        "score": -0.36595788881799624
+    },
+    {
+        "algorithm": "{Our new algorithm scores bins using an exponential penalty on remaining space combined with a dynamic threshold bonus to group items of similar sizes together.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    fill_ratio = 1.0 - rem\n    score = np.where(valid, np.exp(-rem) + np.sin(fill_ratio * np.pi), -100.0)\n    score = np.where(is_empty, score - 2.0, score)\n    return score\n\n",
+        "score": -0.591291802563154
+    },
+    {
+        "algorithm": "{Our new algorithm scores bins using an exponential decay on remaining capacity combined with a sine-based fullness reward and an adjusted opening penalty for empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    fill_ratio = 1.0 - rem\n    score = np.where(valid, np.exp(-rem * 2.0) + np.sin(fill_ratio * np.pi), -100.0)\n    score = np.where(is_empty, score - 1.2, score)\n    return score\n\n",
+        "score": -0.6239415944642469
+    },
+    {
+        "algorithm": "{Our new algorithm scores bins using a polynomial penalty on remaining space combined with a cosine-based fill bonus and a heavy penalty for opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    fill_ratio = 1.0 - rem\n    score = np.where(valid, np.power(rem + 1.0, -2.0) + np.cos(fill_ratio * np.pi), -100.0)\n    score = np.where(is_empty, score - 3.5, score)\n    return score\n\n",
+        "score": -1.4760646206751118
+    },
+    {
+        "algorithm": "{Our new algorithm scores bins using an exponential decay of remaining capacity weighted by the current fill level, applying a steep penalty to discourage opening empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    fill = 1.0 - bins\n    score = np.where(valid, np.exp(-3.0 * rem) * (1.0 + fill), -1000.0)\n    score = np.where(is_empty, score - 5.0, score)\n    return score\n\n",
+        "score": -3.349248105962881
+    },
+    {
+        "algorithm": "{\\g\\g\\g\\g\\g}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    is_empty = (bins == 1.0) & valid\n    fill_ratio = 1.0 - rem\n    score = np.where(valid, fill_ratio / (rem**2 + 1e-4), -999.0)\n    score = np.where(is_empty, score - 2.0, score)\n    return score\n\n",
+        "score": -3.6368317174837452
+    }
+]
