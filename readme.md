@@ -21,8 +21,6 @@ Project brief: https://alexxthiery.github.io/teaching/llm-evolution/llm-evolutio
 ## Team links
 
 - Overleaf report: https://www.overleaf.com/project/6ad866a8d72db1d3c73a0dba
-- Google Docs: https://docs.google.com/document/d/1Y8FMyBoCH7kqoFPx2sO1rX7DdENuaLY6vYlsOpZdIk0/edit?usp=sharing
-- Report LaTeX template (Overleaf, read-only): https://www.overleaf.com/read/hrstqvkjhzff#a35f95
 
 ## Repository layout
 
