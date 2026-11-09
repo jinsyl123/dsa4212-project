@@ -1,12 +1,14 @@
 """Setting-level effects (claims.md, shared rules): seeds per category, and a Fisher test against the comparison row.
 Usage, from code/, after score.sh has scored every setting:
     python pipeline/seed_counts.py
-Reads, per setting: paired_stats.csv (per-seed verdicts), final_per_instance.csv (collapses) and diagnostics.csv
-(fresh-bin seeds). No LLM calls, no rescoring; deterministic.
+Reads, per setting: paired_stats.csv (per-seed verdicts; for the baseline's seeds 0-5 row,
+paired_stats_seeds0-5.csv), final_per_instance.csv (collapses) and diagnostics.csv (fresh-bin seeds).
+No LLM calls, no rescoring; deterministic.
 Outputs:
     results/seed_counts.csv   one row per (setting, category, set, comparison row): k of n seeds in the category,
-                              the comparison row's k of n, and the two-sided Fisher exact p
-    results/seed_counts.md    the headline categories as a table
+                              the comparison row's k of n, the two-sided Fisher exact p, and claimed (p < 0.05
+                              against every comparison row of that setting, category and set)
+    results/seed_counts.md    the headline categories as a table, claimed cells in bold
 
 Categories, per seed (claims.md, shared rules and A2):
     better_vs_<ref> / worse_vs_<ref>   paired_stats verdict on a set, ref = best_fit or tuned_bf
@@ -16,8 +18,9 @@ Categories, per seed (claims.md, shared rules and A2):
                                        train_mixed or train_mixed_cap) and in its own search mode (set "train")
 Comparison rows: the baseline's seeds 0-5 (pre-registered, primary) and seeds 0-9 (claims.md, Amendments, "baseline
 extended to 10 seeds"); A2b against A1b, seeds 0-9. A result is claimed only if p < 0.05 against both baselines.
-Verdicts against tuned Best Fit come from paired_stats.csv as committed: the reference is tuned Best Fit averaged over
-the setting's seeds, so for the baseline's seeds 0-5 row it is the 10-seed average, not the pre-registered 6-seed one.
+Verdicts against tuned Best Fit use tuned Best Fit averaged over the same seeds as the rule: for the baseline's seeds
+0-5 row that is seeds 0-5, the pre-registered comparison (claims.md, Amendments, "tuned Best Fit reference over seeds
+0-5"; written by score.sh as paired_stats_seeds0-5.csv).
 """
 from __future__ import annotations
 
@@ -54,10 +57,10 @@ def fisher_p(k1: int, n1: int, k2: int, n2: int) -> float:
     return min(1.0, p)
 
 
-def seed_categories(cfg: dict, label: str) -> pd.DataFrame:
+def seed_categories(cfg: dict, label: str, stats: str = "paired_stats.csv") -> pd.DataFrame:
     """One row per (seed, category, set) with in_cat = 0/1."""
     d = C.results_dir(cfg)
-    ps = pd.read_csv(d / "paired_stats.csv")
+    ps = pd.read_csv(d / stats)
     ps = ps[(ps.label == label) & (ps.metric == "excess_l2") & ~ps.set.isin(NOT_CLAIMS)]
     rows = []
     for (seed, s, ref), g in ps.groupby(["seed", "set", "reference"]):
@@ -85,6 +88,9 @@ def main() -> pd.DataFrame:
     for name, (config, label, _) in SETTINGS.items():
         cfg = C.load(C.ROOT / "configs" / f"{config}.yaml", llm=LLM if name == "baseline" else None)
         cats[name] = seed_categories(cfg, label)
+    # pre-registered row: baseline seeds 0-5 against tuned Best Fit averaged over seeds 0-5 (#19 review, point 1)
+    cfg = C.load(C.ROOT / "configs" / "eoh_baseline.yaml", llm=LLM)
+    cats["baseline seeds 0-5"] = seed_categories(cfg, "eoh", "paired_stats_seeds0-5.csv")
 
     def count(name, seeds=None):
         c = cats[name] if seeds is None else cats[name][cats[name].seed.isin(seeds)]
@@ -98,16 +104,18 @@ def main() -> pd.DataFrame:
             continue
         refs = BASELINE_ROWS if against == "baseline" else {f"{against} seeds 0-9": range(10)}
         for ref_name, seeds in refs.items():
-            ref = count("baseline" if against == "baseline" else against, seeds)
+            ref = count(ref_name if ref_name in cats else "baseline" if against == "baseline" else against, seeds)
             j = mine.join(ref, rsuffix="_ref", how="inner")
-            j["fisher_p"] = [round(fisher_p(r.k, r.n, r.k_ref, r.n_ref), 4) for r in j.itertuples()]
+            j["fisher_p"] = [fisher_p(r.k, r.n, r.k_ref, r.n_ref) for r in j.itertuples()]
             rows.append(j.assign(setting=name, compared_with=ref_name))
     out = pd.concat(rows).reset_index()
+    vs = out[out.compared_with != ""].groupby(["setting", "category", "set"]).fisher_p.max() < 0.05
+    out["claimed"] = [bool(vs.get((r.setting, r.category, r.set), False)) for r in out.itertuples()]
     out["setting"] = pd.Categorical(out.setting, list(SETTINGS))
     out = out.sort_values(["setting", "category", "set", "compared_with"])[
-        ["setting", "category", "set", "k", "n", "compared_with", "k_ref", "n_ref", "fisher_p"]]
+        ["setting", "category", "set", "k", "n", "compared_with", "k_ref", "n_ref", "fisher_p", "claimed"]]
     res = C.ROOT / "results"
-    out.to_csv(res / "seed_counts.csv", index=False)
+    out.round({"fisher_p": 4}).to_csv(res / "seed_counts.csv", index=False)  # the table formats the unrounded p
     (res / "seed_counts.md").write_text(headline(out))
     print(f"Wrote {res / 'seed_counts.csv'} ({len(out)} rows) and seed_counts.md")
     return out
@@ -123,7 +131,8 @@ def headline(out: pd.DataFrame) -> str:
     vs = out[out.compared_with != ""]
     lines = ["# Seed counts and Fisher tests (`pipeline/seed_counts.py`)", "",
              "Each cell: seeds in the category / seeds, then Fisher p against each comparison row (claims.md, "
-             "shared rules). Baseline rows: seeds 0-5 (pre-registered) and seeds 0-9. A2b is compared with A1b.", "",
+             "shared rules). Baseline rows: seeds 0-5 (pre-registered) and seeds 0-9. A2b is compared with A1b. "
+             "**Bold**: claimed, p < 0.05 against every comparison row.", "",
              "| Setting | " + " | ".join(c[2] for c in cols) + " |", "|---" * (len(cols) + 1) + "|"]
     for name in SETTINGS:
         if name == "baseline":
@@ -142,7 +151,8 @@ def headline(out: pd.DataFrame) -> str:
                 continue
             r = own.loc[(name, cat, s)]
             ps = vs[(vs.setting == name) & (vs.category == cat) & (vs.set == s)].fisher_p.tolist()
-            cells.append(f"{int(r.k)}/{int(r.n)} (p = {', '.join(f'{p:.3f}' for p in ps)})")
+            cell = f"{int(r.k)}/{int(r.n)} (p = {', '.join(f'{p:.3f}' for p in ps)})"
+            cells.append(f"**{cell}**" if r.claimed else cell)
         lines.append(f"| {name} | " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
 
