@@ -38,9 +38,6 @@ _default_hook = threading.excepthook
 threading.excepthook = lambda a: None if issubclass(a.exc_type, BudgetExhausted) else _default_hook(a)
 
 
-ensure_instances = C.ensure_instances                  # kept here so existing notebooks still work
-
-
 def task_description(cfg) -> str:
     prompt = cfg["evaluation"]["prompt"]
     if prompt not in T.DESCRIPTIONS:
@@ -249,7 +246,7 @@ def main(config, methods=None, seeds=None, force=False, verbose=False, overrides
     cfg = C.load(config, overrides, llm=llm, budget=budget, experiment=experiment)
     out = C.results_dir(cfg)
     out.mkdir(parents=True, exist_ok=True)
-    train = instances.load_set(ensure_instances(cfg) / f"{cfg['evaluation']['train_set']}.npz")
+    train = instances.load_set(C.ensure_instances(cfg) / f"{cfg['evaluation']['train_set']}.npz")
     todo = [(m, s) for m in cfg["methods"] if not methods or m["label"] in methods
             for s in (seeds if seeds is not None else cfg["seeds"])]
     llm = cfg["llm"]
