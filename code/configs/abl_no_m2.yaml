@@ -1,0 +1,7 @@
+# Ablation 2 fallback (#7): EoH without the M2 ("modify parameters") operator. Use only if Ablation 2 is not run.
+base: configs/eoh_baseline.yaml
+experiment: abl_no_m2
+llm: openrouter-gemini-3.5-flash-lite
+seeds: [0, 1, 2, 3, 4]
+methods:
+  - { label: eoh_no_m2, name: eoh, params: { pop_size: 10, use_m2_operator: false } }

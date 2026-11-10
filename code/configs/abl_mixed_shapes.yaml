@@ -1,0 +1,8 @@
+# Ablation 2 (#7): train on a mix of item-size shapes (Weibull shape 2 and 4; see train_mixed in instances/v0.yaml).
+# Question: do evolved rules still fail on test_shape_k1.5 / test_shape_k5 when training covers more than one shape?
+# The test shapes stay out of training. Everything else as the main baseline.
+base: configs/eoh_baseline.yaml
+experiment: abl_mixed_shapes
+llm: openrouter-gemini-3.5-flash-lite
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+evaluation: { train_set: train_mixed }

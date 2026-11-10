@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The new algorithm scores bins using an exponential decay of remaining capacity with a graduated penalty that heavily discourages opening new empty bins unless tight fits are unavailable.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    max_cap = np.max(bins)\n    is_empty = (bins == max_cap)\n    scores = np.where(valid, np.exp(-2.0 * rem) - np.where(is_empty, 0.8, 0.2 * (1.0 / (1.0 + rem))), -1.0)\n    return scores\n\n",
+        "score": -0.026663908610279903
+    },
+    {
+        "algorithm": "{This new algorithm scores bins by favoring tighter fits using a broader Gaussian bell curve centered around an ideal residual space of 0.25.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    ideal_rem = 0.25\n    scores = np.where(rem >= 0, np.exp(-((rem - ideal_rem) ** 2) / 0.15), -1.0)\n    return scores\n\n",
+        "score": -0.028624305438821954
+    },
+    {
+        "algorithm": "{This new algorithm scores bins by favoring tighter fits using a broader Gaussian bell curve centered around an increased ideal residual space of 0.25.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    ideal_rem = 0.25\n    scores = np.where(rem >= 0, np.exp(-((rem - ideal_rem) ** 2) / 0.16), -1.0)\n    return scores\n\n",
+        "score": -0.02867541440825229
+    },
+    {
+        "algorithm": "{The new algorithm scores bins by favoring those that leave a moderate remaining capacity using a Gaussian-like bell curve centered around an ideal residual space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    ideal_rem = 0.2\n    scores = np.where(rem >= 0, np.exp(-((rem - ideal_rem) ** 2) / 0.1), -1.0)\n    return scores\n\n",
+        "score": -0.028765917381559154
+    },
+    {
+        "algorithm": "{This new algorithm scores bins by favoring moderately tight fits using a broader Gaussian bell curve centered around an ideal residual space of 0.20.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    ideal_rem = 0.20\n    scores = np.where(rem >= 0, np.exp(-((rem - ideal_rem) ** 2) / 0.08), -1.0)\n    return scores\n\n",
+        "score": -0.02891382074594861
+    },
+    {
+        "algorithm": "{The new algorithm scores bins by favoring those that leave a moderate remaining capacity using a Gaussian-like bell curve function centered around an optimal residual space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    optimal_rem = 0.1\n    scores = np.where(rem >= 0, np.exp(-((rem - optimal_rem) ** 2) / 0.05), -1.0)\n    return scores\n\n",
+        "score": -0.028969468053887552
+    },
+    {
+        "algorithm": "{This new algorithm scores bins using a Gaussian-like bell curve centered on a smaller remaining capacity to favor tighter packing configurations.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    return np.where(rem < 0, -1.0, np.exp(-5.0 * (rem - 0.05)**2))\n\n",
+        "score": -0.028974401364203237
+    },
+    {
+        "algorithm": "{This new algorithm scores bins by favoring tighter fits using a narrower Gaussian bell curve centered around an ideal residual space of 0.10.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    ideal_rem = 0.10\n    scores = np.where(rem >= 0, np.exp(-((rem - ideal_rem) ** 2) / 0.04), -1.0)\n    return scores\n\n",
+        "score": -0.02898306625339677
+    },
+    {
+        "algorithm": "{This new algorithm scores bins using an exponential decay function based on the remaining capacity after placement, heavily penalizing both large leftover spaces and tight fits to favor a balanced medium-slack distribution.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    return np.where(rem < 0, -1.0, np.exp(-4.0 * (rem - 0.2)**2))\n\n",
+        "score": -0.029267642593964402
+    },
+    {
+        "algorithm": "{This new algorithm scores bins by favoring tighter fits using a narrower Gaussian bell curve centered around a smaller ideal residual space of 0.05.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    ideal_rem = 0.05\n    scores = np.where(rem >= 0, np.exp(-((rem - ideal_rem) ** 2) / 0.02), -1.0)\n    return scores\n\n",
+        "score": -0.029439203513407536
+    }
+]

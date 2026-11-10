@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm implements an entropy-guided harmonic fit strategy that scores bins to favor those whose remaining capacities align with preferred fractional harmonic thresholds, balancing tight packing with load distribution.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    \n    # Harmonic-inspired weighting based on remaining capacity ratio relative to original bin size implied by max bin\n    max_cap = np.max(bins)\n    if max_cap == 0:\n        return np.where(valid, 0.0, -np.inf)\n        \n    ratio = rem / max_cap\n    # Prefer ratios close to certain harmonic fractions (e.g., 1/3, 1/2, 2/3) to reduce fragmentation\n    harmonic_targets = np.array([0.0, 0.33, 0.5, 0.67, 1.0])\n    \n    # Find distance to the closest harmonic target for each valid bin\n    distances = np.min(np.abs(ratio[:, None] - harmonic_targets[None, :]), axis=1)\n    \n    # Score penalizes deviation from harmonic targets, with a slight tie-breaker for smaller remaining capacities\n    scores = np.where(valid, -distances - 0.01 * (rem / max_cap), -np.inf)\n    return scores\n\n",
+        "score": -0.02814018690161106
+    },
+    {
+        "algorithm": "{The new algorithm leverages a hyperbolic tangent saturation curve scaled by bin utilization ratios to favor bins that achieve high fullness while penalizing leftover capacities that fall into suboptimal intermediate ranges.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    \n    initial_caps = bins + item - rem # effectively original bin capacity estimate or just use bins\n    # Let's approximate original bin capacity as max(bins) or current bin size + item\n    # Since bins passed are remaining capacities BEFORE adding the item? Wait, \n    # usually bins argument in these prompts represents the *remaining* capacities of the bins.\n    # Let's check: rem = bins - item. So `bins` is indeed the remaining capacity.\n    \n    # We can use the remaining capacity to compute a utilization-based hyperbolic score.\n    # Lower remaining capacity means higher fullness.\n    # Let r = rem, we want to reward very small rem (tight fit) and penalize medium rem.\n    \n    r = rem[valid]\n    # Hyperbolic penalty on the residual size to prefer tight packing\n    fit_score = -np.tanh(3.0 * r) + 2.0 * np.exp(-(r ** 2) / 0.02)\n    \n    scores[valid] = fit_score\n    return scores\n\n",
+        "score": -0.028969468053887552
+    },
+    {
+        "algorithm": "{\\nThe algorithm implements a non-linear exponential-decay grading of remaining capacities combined with a dynamic variance penalty to favor tightly packed bins while preventing excessive fragmentation.\\n}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    \n    max_cap = np.max(bins) if np.max(bins) > 0 else 1.0\n    norm_rem = rem / max_cap\n    \n    # Exponential decay favoring tight fits (Best-Fit spirit) combined with a variance penalty from mean remaining capacity\n    mean_rem = np.mean(rem[valid]) if np.any(valid) else 0.0\n    variance_penalty = np.abs(rem - mean_rem) / max_cap\n    \n    scores = np.where(valid, np.exp(-3.0 * norm_rem) - 0.2 * variance_penalty, -np.inf)\n    return scores\n\n",
+        "score": -0.029450288761271304
+    },
+    {
+        "algorithm": "{The algorithm implements an exponential potential-field strategy that scores bins by combining an attractive force toward exact capacity exhaustion with a repulsive barrier against creating medium-sized residual gaps.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    \n    max_val = np.max(bins) if np.max(bins) > 0 else 1.0\n    r_norm = rem / max_val\n    \n    # Potential field: sharp reward for zero residual (exact fit), \n    # smooth valley for large residuals, and potential barrier for medium gaps (~0.3-0.5).\n    # Using a combination of Gaussian wells at 0 and sinusoidal repulsion for intermediate gaps.\n    exact_fit_reward = np.exp(-50.0 * (r_norm ** 2))\n    medium_gap_penalty = np.sin(np.pi * r_norm) * (r_norm)\n    \n    scores[valid] = 2.0 * exact_fit_reward[valid] - r_norm[valid] - 0.5 * np.abs(medium_gap_penalty[valid])\n    return scores\n\n",
+        "score": -0.029476803525222403
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, effectively implementing a Best-Fit strategy.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    return np.where(rem >= 0, 1.0 / (1.0 + rem), -np.inf)\n\n",
+        "score": -0.0295663556157795
+    },
+    {
+        "algorithm": "{The algorithm scores bins using a piecewise harmonic-oscillator potential that heavily rewards exact capacity matches while penalizing both near-empty and medium-residual states.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    \n    r = rem[valid]\n    cap_max = np.max(bins) if np.max(bins) > 0 else 1.0\n    x = r / cap_max\n    \n    # Piecewise harmonic potential: high reward at x=0, dipping in mid-ranges, recovering for large unused bins\n    harmonic_score = - (x - 0.5) ** 2 + 0.25\n    exact_bonus = 2.0 / (1.0 + 100.0 * (x ** 2))\n    \n    scores[valid] = harmonic_score + exact_bonus\n    return scores\n\n",
+        "score": -0.029984090705344392
+    },
+    {
+        "algorithm": "{The new algorithm introduces a polynomial penalty on remaining capacities combined with a logarithmic tightness bonus to prioritize balanced bin utilization.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    score = -np.power(rem, 2.0) + np.log(np.maximum(rem, 0.0) + 0.1)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.030944123015363936
+    },
+    {
+        "algorithm": "{The new algorithm combines a polynomial residual penalty with a logarithmic tightness reward to balance tight packing and avoidance of unusable micro-capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    score = -np.power(rem, 2.0) + np.log(np.maximum(rem, 0.0) + 0.01)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.03116195536327821
+    },
+    {
+        "algorithm": "{The algorithm implements a Harmonic-Weighted Fit strategy that prioritizes bins whose resulting remaining capacity aligns with optimal fractional partition thresholds to balance load distribution.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    original_capacities = bins\n    harmonic_weights = 1.0 / (1.0 + np.floor(original_capacities / (item + 1e-9)))\n    scores[valid] = -rem[valid] * harmonic_weights[valid]\n    return scores\n\n",
+        "score": -0.031292726122004774
+    },
+    {
+        "algorithm": "{The new algorithm implements a polynomial-scaling potential-field strategy that scores bins based on a balance between minimizing leftover space and heavily penalizing near-full capacities to prevent unresolvable slivers.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    scores = np.where(valid, - (rem ** 3) + 5.0 * np.log(rem + 1e-5), -np.inf)\n    return scores\n\n",
+        "score": -0.03191060738847644
+    }
+]

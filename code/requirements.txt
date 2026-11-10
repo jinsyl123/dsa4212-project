@@ -1,0 +1,12 @@
+# Python 3.10-3.12 recommended (LLM4AD pins numpy<2, which has no wheels for 3.13+).
+# LLM4AD is installed from GitHub at the commit v0 was built and tested against.
+llm4ad @ git+https://github.com/Optima-CityU/LLM4AD.git@73ae214b469a46efdbf558b86fed6f81a4c6b371
+numpy<2.0.0
+pandas>=2.0
+matplotlib>=3.7
+pyyaml>=6.0
+requests>=2.28
+pytz
+tqdm
+python-dotenv>=1.0       # loads API keys from .env
+ipykernel                # lets the .venv appear as a Jupyter / VS Code kernel

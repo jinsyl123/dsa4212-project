@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, effectively implementing a Best-Fit strategy.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    return np.where(rem >= 0, 1.0 / (1.0 + rem), -np.inf)\n\n",
+        "score": -0.0295663556157795
+    },
+    {
+        "algorithm": "{The new algorithm implements a \"Bin-Centric Threshold\" strategy that scores valid bins by rewarding those whose capacity utilization post-insertion approaches a predefined target fill ratio, while heavily penalizing bins that deviate from this optimal balance point.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    original_capacities = bins\n    filled_ratio = (original_capacities - rem) / original_capacities\n    target_ratio = 0.85\n    score = -np.abs(filled_ratio - target_ratio)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.03670534866024185
+    },
+    {
+        "algorithm": "{The new algorithm implements an Almost-Best-Fit strategy by scoring bins to favor those that leave the second-smallest remaining capacity after placement, or the smallest if only one fits.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_rem = np.where(valid, rem, np.inf)\n    min_rem = np.min(valid_rem)\n    almost_min_rem = np.min(np.where(valid_rem > min_rem, valid_rem, np.inf))\n    target_rem = almost_min_rem if almost_min_rem != np.inf else min_rem\n    return np.where(rem == target_rem, 0.0, np.where(valid, -abs(rem - target_rem), -np.inf))\n\n",
+        "score": -0.052660418867294195
+    },
+    {
+        "algorithm": "{The algorithm implements an \"Entropy-Adaptive Fit\" strategy by scoring valid bins based on an exponential decay of remaining capacity weighted by the relative filling ratio of each bin.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_init = np.max(bins) if len(bins) > 0 else item\n    fill_ratio = 1.0 - (rem / np.where(bins > 0, bins, max_init))\n    scores[valid] = -np.exp(rem[valid] / (max_init + 1e-5)) * (1.0 + fill_ratio[valid])\n    return scores\n\n",
+        "score": -0.06479125607963604
+    },
+    {
+        "algorithm": "{The new algorithm implements a Generalized-Fit strategy that scores bins to favor those that leave a specific target remaining capacity based on a weighted blend of the maximum and minimum valid remaining capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_rem = np.where(valid, rem, -np.inf)\n    max_rem = np.max(valid_rem)\n    min_rem = np.min(np.where(valid, rem, np.inf))\n    target_rem = 0.75 * min_rem + 0.25 * max_rem\n    return np.where(valid, -abs(rem - target_rem), -np.inf)\n\n",
+        "score": -0.07345688804552242
+    },
+    {
+        "algorithm": "{The new algorithm implements an Almost-Worst-Fit strategy by scoring bins to favor those that leave the second-largest remaining capacity after placement, or the largest if only one fits.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_rem = np.where(valid, rem, -np.inf)\n    max_rem = np.max(valid_rem)\n    almost_max_rem = np.max(np.where(valid_rem < max_rem, valid_rem, -np.inf))\n    target_rem = almost_max_rem if almost_max_rem != -np.inf else max_rem\n    return np.where(rem == target_rem, 0.0, np.where(valid, -abs(rem - target_rem), -np.inf))\n\n",
+        "score": -0.08683868721977378
+    },
+    {
+        "algorithm": "{The algorithm scores bins using a harmonic wastage function that heavily penalizes fractional leftover capacities while discouraging the opening of new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    valid = rem >= 0\n    if not np.any(valid):\n        return scores\n    max_cap = np.max(bins) if len(bins) > 0 else item\n    is_empty = valid & (bins == max_cap)\n    non_empty = valid & ~is_empty\n    scores[non_empty] = -1.0 / (rem[non_empty] + 1e-5)\n    scores[is_empty] = -2.0 * max_cap / (item + 1e-5)\n    return scores\n\n",
+        "score": -0.09609062250970135
+    },
+    {
+        "algorithm": "{The new algorithm implements an \"Entropy-Fit\" strategy by scoring bins to favor those whose remaining capacity aligns with the distribution's mean weighted by the local density of capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_rem = rem[valid]\n    mean_rem = np.mean(valid_rem)\n    std_rem = np.std(valid_rem) + 1e-8\n    z_scores = np.abs(rem - mean_rem) / std_rem\n    entropy_weight = np.exp(-0.5 * z_scores ** 2)\n    scores = np.where(valid, entropy_weight * rem, -np.inf)\n    return scores\n\n",
+        "score": -1.7219408977275967
+    },
+    {
+        "algorithm": "{The new algorithm implements a \"Middle-Fit\" strategy by scoring bins to favor those whose remaining capacity is closest to the median of the remaining capacities among all valid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_rem = np.where(valid, rem, np.nan)\n    median_rem = np.nanmedian(valid_rem)\n    return np.where(valid, -np.abs(rem - median_rem), -np.inf)\n\n",
+        "score": -1.7229912246580943
+    },
+    {
+        "algorithm": "{The new algorithm implements a \"Bimodal-Fit\" strategy by scoring bins to favor those whose remaining capacity is closest to either the first or third quartile of the remaining capacities among all valid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    valid = rem >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_rem = np.where(valid, rem, np.nan)\n    q1, q3 = np.nanpercentile(valid_rem, [25, 75])\n    dist_q1 = np.abs(rem - q1)\n    dist_q3 = np.abs(rem - q3)\n    min_dist = np.minimum(dist_q1, dist_q3)\n    return np.where(valid, -min_dist, -np.inf)\n\n",
+        "score": -1.795445852646772
+    }
+]

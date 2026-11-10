@@ -1,0 +1,695 @@
+[
+    {
+        "sample_order": 201,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 202,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, bins - item, -np.inf)\n\n",
+        "score": -1.4826206063983292,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 203,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    priorities = item - bins\n    return np.where(bins >= item, priorities, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 204,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 205,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 206,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 207,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 208,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, remaining, -np.inf)\n\n",
+        "score": -1.4826206063983292,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 209,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, item - bins, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 210,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins == 0, -np.inf, item / bins)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 211,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, -remaining)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 212,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.full_like(bins, np.inf, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 213,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 214,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 215,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 216,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 217,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 218,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins - item >= 0, bins - item, -np.inf)\n\n",
+        "score": -1.4826206063983292,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 219,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 220,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins == 0, -np.inf, item / bins)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 221,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins == 0, -np.inf, item / bins)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 222,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 223,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 224,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    with np.errstate(divide='ignore', invalid='ignore'):\n        priorities = np.where(bins == 0, -np.inf, item / bins)\n    return priorities\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 225,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 226,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.full_like(bins, np.inf, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 227,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 228,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins == 0, np.inf, item / bins)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 229,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 230,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins > 0, item / bins, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 231,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, -remaining)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 232,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 233,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -1.0 * (bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 234,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 235,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 236,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 237,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 238,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 239,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return item / (bins + 1e-8)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 240,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 241,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, bins - item, -np.inf)\n\n",
+        "score": -1.4826206063983292,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 242,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.full_like(bins, np.inf, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 243,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return - (bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 244,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.full_like(bins, np.inf, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 245,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 246,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 247,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 248,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 249,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 250,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 251,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins == 0, -np.inf, item / bins)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 252,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 253,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 254,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 255,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 256,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins == 0, -np.inf, item / bins)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 257,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 258,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, remaining)\n\n",
+        "score": -1.4826206063983292,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 259,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 260,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, -remaining)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 261,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 262,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, bins - item, -np.inf)\n\n",
+        "score": -1.4826206063983292,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 263,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 264,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 265,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 266,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 267,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 268,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 269,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 270,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 271,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 272,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": null,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 273,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 274,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 275,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, item - bins, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 276,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, item - bins, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 277,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 278,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 279,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 280,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 281,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -1.0 * (bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 282,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 283,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return item - bins\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 284,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 285,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins == 0, -np.inf, item / bins)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 286,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 287,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining < 0, -np.inf, -remaining)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 288,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 289,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, item - bins, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 290,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return item / (bins + 1e-8)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 291,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, item - bins, -np.inf)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 292,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 293,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, bins - item, -np.inf)\n\n",
+        "score": -1.4826206063983292,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 294,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return item / np.maximum(bins, 1e-8)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 295,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins >= item, bins - item, -np.inf)\n\n",
+        "score": -1.4826206063983292,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 296,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 297,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return -np.abs(bins - item)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 298,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.divide(item, bins, out=np.zeros_like(bins, dtype=float), where=bins!=0)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    },
+    {
+        "sample_order": 299,
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    return np.where(bins == 0, -np.inf, item / bins)\n\n",
+        "score": -0.04751333399919737,
+        "operator": "Unknown",
+        "program": ""
+    }
+]

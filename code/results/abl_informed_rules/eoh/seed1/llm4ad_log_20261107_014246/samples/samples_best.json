@@ -1,0 +1,23 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm prioritizes bins using a modified Best-Fit-Decreasing strategy that favors bins leaving the smallest tight residual capacity while heavily penalizing excessively large leftover spaces to balance load and minimize total bins used.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    tightness = 1.0 / (rem[valid] + 1e-7)\n    fill_ratio = item / (bins[valid] + 1e-7)\n    scores[valid] = tightness + fill_ratio\n    return scores\n\n",
+        "score": -0.04751333399919737,
+        "program": ""
+    },
+    {
+        "sample_order": 29,
+        "algorithm": "{The algorithm employs a Harmonic-inspired bin-partitioning strategy that scores bins based on how well the item aligns with preferred fractional thresholds of the bin capacity, promoting clustered utilization.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    original_capacities = bins[valid] - rem[valid] + item\n    fraction = rem[valid] / (original_capacities + 1e-7)\n    \n    scores[valid] = -np.abs(fraction - 0.5) + (1.0 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.028351917185784038,
+        "program": ""
+    },
+    {
+        "sample_order": 211,
+        "algorithm": "{The algorithm uses a modified utilization-target strategy that scores valid bins based on proximity to a 0.5 filling fraction combined with an inverse remaining capacity weight.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    rem = bins - item\n    valid = rem >= 0\n    scores = np.full_like(bins, -np.inf, dtype=float)\n    if not np.any(valid):\n        return scores\n    \n    orig = bins[valid] - rem[valid] + item\n    frac = rem[valid] / (orig + 1e-7)\n    \n    scores[valid] = -np.abs(frac - 0.5) + (1.5 / (rem[valid] + 1e-5))\n    return scores\n\n",
+        "score": -0.027992219852594487,
+        "program": ""
+    }
+]

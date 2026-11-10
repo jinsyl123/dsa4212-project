@@ -1,0 +1,25 @@
+# Real-LLM pipeline check: same plumbing as a real run, tiny budget. ~3-5 minutes, well under US$0.05.
+# Checks what smoke.yaml can't: API key, a real model's response format, real token counts and cost.
+# Run: python code/run_experiment.py --config configs/pipecheck.yaml   (then evaluate_final / summarise)
+experiment: pipecheck
+
+instances: { spec: configs/instances/smoke.yaml, dir: data/smoke } # 6 small train instances
+
+llm: gemini-3.5-flash-lite
+
+budget: check
+
+parallel: { num_samplers: 4, num_evaluators: 4 } # more parallel calls = less waiting on the API
+
+evaluation:
+  { mode: funsearch, timeout_seconds: 10, train_set: train, prompt: llm4ad }
+
+seeds: [0]
+
+methods:
+  - { name: eoh, params: { pop_size: 4 } }
+  # - {name: reevo, params: {pop_size: 4}}    # uncomment one at a time to check each alternative method parses real output
+
+final_eval:
+  sets: [val, test_id]
+  timeout_seconds: 60

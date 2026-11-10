@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{This algorithm scores feasible bins using a power-law decay of the normalized remaining capacity to favor tight packings, while applying a polynomial cost for opening an empty bin that varies with the relative item size.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    max_cap = np.max(bins)\n    rem = bins - item\n    feasible = rem >= 0\n    ratio = rem / max_cap\n    scores = np.where(feasible, 1.0 / (1.0 + ratio ** 2 * 16.0), -np.inf)\n    empty_mask = (bins == max_cap) & feasible\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = 0.5 - 0.5 * (item / max_cap)\n    return scores\n\n",
+        "score": -0.04466222563460602
+    },
+    {
+        "algorithm": "{The algorithm scores feasible bins using an exponential decay function of the normalized remaining capacity to strongly favor tight fits, while applying a linear penalty for opening empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    max_cap = np.max(bins)\n    rem = bins - item\n    feasible = rem >= 0\n    ratio = rem / max_cap\n    scores = np.where(feasible, np.exp(-3.0 * ratio), -np.inf)\n    empty_mask = (bins == max_cap) & feasible\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = 0.5 * (1.0 - (item / max_cap))\n    return scores\n\n",
+        "score": -0.04530409083981299
+    },
+    {
+        "algorithm": "{The algorithm scores feasible bins using an exponential decay of the squared remaining capacity to aggressively penalize slack, while assigning a dynamic flat penalty to empty bins based on the item-to-capacity ratio.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    max_cap = np.max(bins)\n    rem = bins - item\n    feasible = rem >= 0\n    scores = np.where(feasible, -np.exp((rem / max_cap) ** 2 * 4.0), -np.inf)\n    empty_mask = (bins == max_cap) & feasible\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = -1.0 - (1.0 - item / max_cap)\n    return scores\n\n",
+        "score": -0.04546201282550381
+    },
+    {
+        "algorithm": "{The algorithm scores feasible bins using a power-law polynomial of the consumed capacity fraction to reward high density, combined with a step-down priority threshold for opening empty bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    max_cap = np.max(bins)\n    rem = bins - item\n    feasible = rem >= 0\n    used_ratio = (max_cap - rem) / max_cap\n    scores = np.where(feasible, used_ratio ** 3.0, -np.inf)\n    empty_mask = (bins == max_cap) & feasible\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = 0.1 + 0.2 * (1.0 - item / max_cap)\n    return scores\n\n",
+        "score": -0.046301044107511055
+    },
+    {
+        "algorithm": "{This algorithm employs a polynomial-scaled harmonic fit combined with a capacity-ratio squared penalty to evaluate feasible bins while applying a square-root scaled threshold for opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    max_cap = np.max(bins)\n    rem = bins - item\n    feasible = rem >= 0\n    scores = np.where(feasible, 1.0 / (1.0 + (rem / max_cap) ** 2) + 1.0 / (1.0 + rem), -np.inf)\n    empty_mask = (bins == max_cap) & feasible\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = 1.5 - np.sqrt(item / max_cap)\n    return scores\n\n",
+        "score": -0.04672028987269346
+    },
+    {
+        "algorithm": "{This algorithm prioritizes bins using an exponential penalty on remaining capacity for partially filled bins while giving a flat moderate preference to opening a single empty bin.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    max_cap = np.max(bins)\n    rem = bins - item\n    feasible = rem >= 0\n    ratio = rem / max_cap\n    scores = np.where(feasible, np.exp(-3.0 * ratio), -np.inf)\n    empty_mask = (bins == max_cap) & feasible\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = 0.4\n    return scores\n\n",
+        "score": -0.046929506367233184
+    },
+    {
+        "algorithm": "{This algorithm evaluates feasible bins using a power-law decay of the normalized remaining capacity and applies a size-scaled preference for opening a new empty bin.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    max_cap = np.max(bins)\n    rem = bins - item\n    feasible = rem >= 0\n    ratio = rem / max_cap\n    scores = np.where(feasible, 1.0 / (1.0 + ratio * 5.0), -np.inf)\n    empty_mask = (bins == max_cap) & feasible\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = 0.5 - 0.3 * (item / max_cap)\n    return scores\n\n",
+        "score": -0.0472599191145906
+    },
+    {
+        "algorithm": "{The algorithm scores feasible bins using a trigonometric cosine function of the normalized remaining capacity to favor tight fits, while assigning a dynamic proportional penalty for opening empty bins based on the item-to-capacity ratio.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    max_cap = np.max(bins)\n    rem = bins - item\n    feasible = rem >= 0\n    ratio = rem / max_cap\n    scores = np.where(feasible, np.cos(ratio * (np.pi / 2.0)), -np.inf)\n    empty_mask = (bins == max_cap) & feasible\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = 1.0 - (item / max_cap)\n    return scores\n\n",
+        "score": -0.047407114677078296
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after packing the item, perfectly balancing the Best-Fit principle with a penalty for opening new bins to minimize total usage.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.where(rem >= 0, -rem, -np.inf)\n    empty_mask = (bins == 1.0) & (bins == bins) # assuming standard bin capacity 1.0, or detect empty as max capacity.\n    # More generally, let's assume max capacity represents empty bins if capacities are uniform, \n    # but since we just have an array of bin capacities, let's identify empty bins as those equal to the max capacity in the array.\n    if bins.size > 0:\n        max_cap = np.max(bins)\n        is_empty = (bins == max_cap)\n        # If multiple are empty, we only want to prioritize one to avoid spreading.\n        # Assign a slightly lower priority to empty bins unless no other bin fits, or use Best-Fit for used bins and lower priority for empty.\n        # Standard Best-Fit Decreasing / harmonic: prefer tightest fit among non-empty, then empty.\n        scores = np.where(rem >= 0, 1.0 / (rem + 1e-5), -np.inf)\n        # Penalize empty bins to exhaust existing bins first, but keep them viable if necessary\n        scores = np.where(is_empty & (rem >= 0), scores * 0.5, scores)\n    return scores\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The algorithm scores bins by favoring those where the remaining capacity after adding the item is minimized, thereby tightly packing bins, while giving empty bins a neutral score to prevent premature opening.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    rem = bins - item\n    scores = np.where(rem >= 0, -rem, -np.inf)\n    empty_mask = (bins == np.max(bins)) & (rem >= 0)\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] = -np.max(bins) / 2.0\n    return scores\n\n",
+        "score": -0.04757541094046359
+    }
+]

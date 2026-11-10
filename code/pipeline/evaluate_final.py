@@ -1,0 +1,161 @@
+"""Score every run's best program, and the hand-designed baselines, on held-out sets.
+Usage:
+    python pipeline/evaluate_final.py --config configs/smoke.yaml [--sets val test_id] [--workers 4]
+The search never saw these sets. Evolved programs run in separate processes with a timeout.
+Outputs: results/<experiment>/final_per_instance.csv and final_summary.csv
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import multiprocessing as mp
+import queue
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from obpevo import baselines, config as C, core, instances
+
+
+def _worker(program: str, insts: list[dict], mode: str, q):
+    try:
+        ns = {}
+        exec(program, ns)                                           # defines priority()
+        q.put(("ok", core.evaluate(ns["priority"], insts, mode)))
+    except Exception as e:
+        q.put(("error", f"{type(e).__name__}: {str(e)[:200]}"))
+
+
+def _failed_row(meta: dict, inst: dict, status: str) -> dict:
+    """A failed instance is scored as Next Fit, not NaN: a NaN would drop out of the mean and make a program that
+    fails often look better. `status` still records the failure. Next Fit is worse than every sensible heuristic
+    (it never beats Best Fit on any v0 instance), but it is not a strict floor: in funsearch mode a valid program
+    that always opens a new bin uses more bins than Next Fit, so it would score better by crashing."""
+    items, cap = inst["items"], inst["capacity"]
+    n, lb = baselines.pack_next_fit(items, cap), core.lower_bound(items, cap)
+    return dict(**meta, instance=inst["id"], n_items=len(items), capacity=cap, bins=n, lb=lb,
+                excess=(n - lb) / lb, time_s=np.nan, status=status)
+
+
+def run_programs(jobs: list[dict], sets: dict, mode: str, timeout: float, workers: int) -> list[dict]:
+    """Run (program x set) jobs in forked processes, at most `workers` at a time, killing any over `timeout`."""
+    # fork on Linux/macOS (fast); spawn on Windows, which has no fork (slower start-up per job, same results)
+    method = "fork" if "fork" in mp.get_all_start_methods() else "spawn"
+    ctx, rows, pending, live = mp.get_context(method), [], list(jobs), []
+    while pending or live:
+        while pending and len(live) < workers:
+            j = pending.pop(0)
+            q = ctx.Queue()
+            p = ctx.Process(target=_worker, args=(j["program"], sets[j["set"]], mode, q), daemon=True)
+            p.start()
+            live.append((j, p, q, time.time()))
+        time.sleep(0.05)
+        for item in list(live):
+            j, p, q, t0 = item
+            done, status, payload = not q.empty(), None, None
+            if done:
+                status, payload = q.get()
+            elif time.time() - t0 > timeout:
+                status, payload = "timeout", f"exceeded {timeout}s"
+            elif not p.is_alive():
+                try:                                                 # the result can land between the two checks
+                    status, payload = q.get(timeout=1)
+                except queue.Empty:
+                    status, payload = "crash", "process died"
+            if status is None:
+                continue
+            p.kill() if p.is_alive() else None
+            live.remove(item)
+            meta = {k: j[k] for k in ("kind", "label", "method", "seed", "set")}
+            if status == "ok":
+                rows += [dict(**meta, **r, status="ok") for r in payload]
+            else:                                                    # one row per instance so failures stay visible
+                rows += [_failed_row(meta, i, f"{status}: {payload}") for i in sets[j["set"]]]
+            print(f"  {j['label']:>16} seed{j['seed']} {j['set']:<18} {status}")
+    return rows
+
+
+def run_baselines(sets: dict) -> list[dict]:
+    rows = []
+    for set_name, insts in sets.items():
+        for name, pack in baselines.BASELINES.items():
+            for i in insts:
+                t0 = time.perf_counter()
+                n, lb = pack(i["items"], i["capacity"]), core.lower_bound(i["items"], i["capacity"])
+                rows.append(dict(kind="baseline", label=name, method=name, seed=-1, set=set_name, instance=i["id"],
+                                 n_items=len(i["items"]), capacity=i["capacity"], bins=n, lb=lb, excess=(n - lb) / lb,
+                                 time_s=round(time.perf_counter() - t0, 4), status="ok"))
+    return rows
+
+
+def add_l2(df: pd.DataFrame, sets: dict) -> pd.DataFrame:
+    """Add lb_l2 and excess_l2 per row. `lb` and `excess` stay on L1, the bound the search and the papers use.
+    L2 only differs from L1 where many items exceed half a bin: of our sets, test_scale65 (Best Fit is 10.2% over
+    L1 but 0.4% over L2) and the control set test_control (every rule is exactly 0% over L2). The sets are detected
+    from the data, not listed. Also used by summarise.py to backfill older results without rerunning."""
+    lb2 = {(sn, i["id"]): core.lower_bound_l2(i["items"], i["capacity"]) for sn, insts in sets.items() for i in insts}
+    lb_l2 = pd.Series([lb2[k] for k in zip(df["set"], df["instance"])], index=df.index)
+    return df.assign(lb_l2=lb_l2, excess_l2=(df["bins"] - lb_l2) / lb_l2)
+
+
+def summarise(df: pd.DataFrame) -> pd.DataFrame:
+    """Mean excess per (label, set): averaged within each run first, then across seeds; plus wins vs Best Fit."""
+    bf = df[df.label == "best_fit"].set_index(["set", "instance"])["bins"]
+    d = df.assign(bf_bins=df.set_index(["set", "instance"]).index.map(bf))
+    d = d.assign(win=d.bins < d.bf_bins, tie=d.bins == d.bf_bins, loss=d.bins > d.bf_bins)
+    l2 = {"excess_l2": ("excess_l2", "mean")} if "excess_l2" in d else {}
+    per_run = d.groupby(["kind", "label", "set", "seed"]).agg(
+        excess=("excess", "mean"), failed=("status", lambda s: (s != "ok").mean()),
+        win=("win", "mean"), tie=("tie", "mean"), loss=("loss", "mean"), **l2).reset_index()
+    l2 = {"mean_excess_l2": ("excess_l2", "mean"), "sd_excess_l2": ("excess_l2", "std"),
+          "best_run_l2": ("excess_l2", "min"), "worst_run_l2": ("excess_l2", "max")} if l2 else {}
+    out = per_run.groupby(["kind", "label", "set"]).agg(
+        runs=("seed", "nunique"), mean_excess=("excess", "mean"), sd_excess=("excess", "std"),
+        best_run=("excess", "min"), worst_run=("excess", "max"), failed_frac=("failed", "mean"),
+        win_vs_bf=("win", "mean"), tie_vs_bf=("tie", "mean"), loss_vs_bf=("loss", "mean"), **l2).reset_index()
+    for sfx in ["", "_l2"] if l2 else [""]:     # unsuffixed = L1 (the papers' bound); _l2 = what the report uses
+        bf_set = out[out.label == "best_fit"].set_index("set")[f"mean_excess{sfx}"]
+        out[f"delta_vs_bf_pp{sfx}"] = (out[f"mean_excess{sfx}"] - out.set.map(bf_set)) * 100  # pp; negative = better
+    return out.round(5).sort_values(["set", "mean_excess"])
+
+
+def main(config, sets=None, workers=None, overrides=None, llm=None, budget=None, experiment=None) -> pd.DataFrame:
+    """Score best programs + baselines on held-out sets; returns the summary table. Callable from a notebook."""
+    workers = workers or max(mp.cpu_count() - 1, 1)
+    cfg = C.load(config, overrides, llm=llm, budget=budget, experiment=experiment)
+    out, idir = C.results_dir(cfg), C.ensure_instances(cfg)     # builds data/ on a fresh clone
+    set_names = sets or cfg["final_eval"]["sets"]
+    sets = {s: instances.load_set(idir / f"{s}.npz") for s in set_names}
+
+    jobs = []
+    for summ in sorted(out.glob("*/seed*/summary.json")):
+        s, prog = json.loads(summ.read_text()), summ.parent / "best_program.py"
+        if prog.exists():
+            jobs += [dict(kind=s.get("kind", "evolved"), label=s["label"], method=s["method"], seed=s["seed"], set=sn,
+                          program=prog.read_text()) for sn in set_names]
+    print(f"[{cfg['experiment']}] {len(jobs)} program x set jobs on {set_names}")
+
+    rows = run_baselines(sets) + run_programs(jobs, sets, cfg["evaluation"]["mode"],
+                                              cfg["final_eval"]["timeout_seconds"], workers)
+    df = add_l2(pd.DataFrame(rows), sets)
+    df.to_csv(out / "final_per_instance.csv", index=False)
+    summ = summarise(df)
+    summ.to_csv(out / "final_summary.csv", index=False)
+    sfx = "_l2" if "mean_excess_l2" in summ else ""     # print what the report uses (#12 decision 7)
+    print(summ[["label", "set", "runs", f"mean_excess{sfx}", f"sd_excess{sfx}", f"delta_vs_bf_pp{sfx}", "win_vs_bf",
+                "failed_frac"]].to_string(index=False))
+    return summ
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", required=True)
+    ap.add_argument("--sets", nargs="*", help="override final_eval.sets from the config")
+    ap.add_argument("--workers", type=int, default=None)
+    ap.add_argument("--llm", help="model name from configs/llms.yaml (default: the config's)")
+    ap.add_argument("--budget", help="budget name from configs/budgets.yaml (default: the config's)")
+    ap.add_argument("--experiment", help="results folder name (default: from config, llm and budget)")
+    a = ap.parse_args()
+    main(a.config, a.sets, a.workers, llm=a.llm, budget=a.budget, experiment=a.experiment)

@@ -1,0 +1,37 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, effectively implementing a Best-Fit strategy that minimizes wasted space.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    return np.where(remaining >= 0, 1.0 / (1.0 + remaining), -np.inf)\n\n",
+        "score": -0.0295663556157795,
+        "program": ""
+    },
+    {
+        "sample_order": 77,
+        "algorithm": "{The algorithm implements a bi-objective scoring mechanism that balances maximizing the utilization of the most filled existing bins with a controlled preference for opening new empty bins based on the current item size relative to the average capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    initial_capacity = np.max(bins) if len(bins) > 0 else 1.0\n    used_space = initial_capacity - bins\n    utilization = np.where(bins > 0, used_space / initial_capacity, 0.0)\n    is_empty = bins == initial_capacity\n    scores = np.where(valid, np.where(is_empty, 0.5 * (item / initial_capacity), utilization + (1.0 / (1.0 + remaining))), -np.inf)\n    return scores\n\n",
+        "score": -0.029369862869842833,
+        "program": ""
+    },
+    {
+        "sample_order": 123,
+        "algorithm": "{\\text{The algorithm scores bins using an exponential decay of the remaining capacity combined with a smooth penalty for variance from the average fill level to encourage load balancing.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    max_cap = np.max(bins) if len(bins) > 0 else 1.0\n    filled = max_cap - bins\n    mean_filled = np.mean(filled[bins < max_cap]) if np.any(bins < max_cap) else 0.0\n    balance_penalty = np.abs(filled - mean_filled) / max_cap\n    scores = np.where(valid, np.exp(-remaining) - 0.2 * balance_penalty, -np.inf)\n    return scores\n\n",
+        "score": -0.029352319006735007,
+        "program": ""
+    },
+    {
+        "sample_order": 207,
+        "algorithm": "{The algorithm computes a Gaussian-weighted tightness score combined with a sigmoid filling penalty and a linear positional bias to prioritize well-balanced and early-indexed bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    \n    max_cap = np.maximum(np.max(bins), 1.0)\n    fill_ratio = 1.0 - (remaining / max_cap)\n    \n    fit_score = np.exp(-np.power(remaining, 2.0) / 0.25)\n    load_penalty = 1.0 / (1.0 + np.exp(-5.0 * (fill_ratio - 0.5)))\n    position_weight = 1.0 / (1.0 + 0.1 * np.arange(len(bins), dtype=float))\n    \n    scores = np.where(valid, fit_score * load_penalty * position_weight, -np.inf)\n    return scores\n\n",
+        "score": -0.029267642593964402,
+        "program": ""
+    },
+    {
+        "sample_order": 247,
+        "algorithm": "{\\giga{The algorithm uses a Gaussian-decay function centered on a target residual capacity to reward balanced packing while applying an exponential penalty for bin index depth.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    target_residual = 0.1\n    fit_score = np.exp(-((remaining - target_residual) ** 2) / 0.05)\n    indices = np.arange(len(bins), dtype=float)\n    pos_factor = np.exp(-0.1 * indices)\n    scores = np.where(valid, fit_score * pos_factor, -np.inf)\n    return scores\n\n",
+        "score": -0.028969468053887552,
+        "program": ""
+    }
+]

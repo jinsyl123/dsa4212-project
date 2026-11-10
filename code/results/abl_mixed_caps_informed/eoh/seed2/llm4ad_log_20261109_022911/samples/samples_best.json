@@ -1,0 +1,16 @@
+[
+    {
+        "sample_order": 1,
+        "algorithm": "{The algorithm scores bins by favoring those that leave the tightest remaining capacity after placement, penalizing new empty bins to consolidate items efficiently.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    scores = np.where(remaining >= 0, 1.0 / (remaining + 1e-5), -np.inf)\n    if np.any(remaining >= 0):\n        max_cap = np.max(bins) + 1.0\n        scores = np.where((bins == max_cap) & (remaining >= 0), scores * 0.5, scores)\n    else:\n        scores = np.zeros_like(bins)\n    return scores\n\n",
+        "score": -0.0295663556157795,
+        "program": ""
+    },
+    {
+        "sample_order": 250,
+        "algorithm": "{The algorithm uses a hyperbolic slack penalty combined with a trigonometric fill-level resonance to evaluate bin suitability while applying a logarithmic cost penalty to discourage opening new bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    \n    # Hyperbolic penalty for leftover space to favor tight packing\n    tightness_score = np.where(valid, 1.0 / (1.0 + 4.0 * remaining), -np.inf)\n    \n    # Trigonometric resonance reward targeting optimal fill states\n    capacity = np.max(bins)\n    current_load = capacity - bins\n    new_load = current_load + item\n    fill_ratio = new_load / (capacity + 1e-9)\n    balance_reward = np.cos(np.pi * (fill_ratio - 0.75))\n    \n    scores = tightness_score + 0.4 * balance_reward\n    scores = np.where(valid, scores, -np.inf)\n    \n    # Penalize opening a brand new bin using a dampening factor\n    empty_mask = (bins == capacity) & valid\n    if np.any(empty_mask):\n        first_empty = np.argmax(empty_mask)\n        scores[first_empty] *= 0.3\n        \n    return scores\n\n",
+        "score": -0.02766218828567085,
+        "program": ""
+    }
+]

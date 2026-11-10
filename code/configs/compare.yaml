@@ -1,0 +1,51 @@
+# Main comparison: every method gets the same LLM, instances, evaluation budget and token cap.
+# Labels let the same method appear twice with different settings (ablations).
+experiment: compare
+
+instances: { spec: configs/instances/v0.yaml, dir: data/v0 }
+
+llm: gemini-3.5-flash-lite
+
+budget:
+  max_evals: 500
+  max_tokens: 2500000
+  max_minutes: 180
+
+parallel: { num_samplers: 2, num_evaluators: 2 }
+
+evaluation:
+  { mode: funsearch, timeout_seconds: 60, train_set: train, prompt: llm4ad }
+
+seeds: [0, 1, 2]
+
+methods:
+  - { name: eoh, params: { pop_size: 10 } } # baseline
+  - {
+      label: eoh_no_m2,
+      name: eoh,
+      params: { pop_size: 10, use_m2_operator: false },
+    } # ablation: no parameter-tuning operator
+  - { name: reevo, params: { pop_size: 10 } }
+  - { name: hillclimb } # (1+1)-EPS simple baseline (PPSN 2024)
+  - { name: randsample } # control: LLM sampling without search
+  # - {name: funsearch}
+  # - {name: mcts_ahd, params: {pop_size: 10}}                              # experimental in v0
+
+final_eval:
+  sets:
+    [
+      val,
+      test_id_5k,
+      test_size_1k,
+      test_size_10k,
+      test_cap200,
+      test_cap500,
+      test_cap500_scaled,
+      test_scale25,
+      test_scale65,
+      test_shape_k1.5,
+      test_shape_k5,
+      test_uniform,
+      test_control,
+    ]
+  timeout_seconds: 900

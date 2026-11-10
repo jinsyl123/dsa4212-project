@@ -1,0 +1,28 @@
+# End-to-end pipeline check with an offline fake LLM: no API key, no cost, ~2-4 minutes.
+# Exercises EoH plus alternative methods, budget enforcement and failure logging (NaN, wrong shape, timeout).
+experiment: smoke
+
+instances: { spec: configs/instances/smoke.yaml, dir: data/smoke }
+
+llm: fake
+
+budget: smoke
+
+parallel: { num_samplers: 2, num_evaluators: 2 }
+
+evaluation:
+  { mode: funsearch, timeout_seconds: 30, train_set: train, prompt: llm4ad }
+
+seeds: [0, 1]
+
+methods:
+  - { name: eoh, params: { pop_size: 4 } } # baseline
+  - { name: randsample } # control: no search
+  - { name: hillclimb } # (1+1)-EPS baseline
+  - { name: reevo, params: { pop_size: 4 } }
+  - { name: funsearch }
+  - { name: tuned_bf } # no-LLM budget-matched baseline
+
+final_eval:
+  sets: [val, test_id, test_cap500, test_shape_k5]
+  timeout_seconds: 120

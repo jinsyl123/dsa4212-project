@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining an exponential decay of the remaining capacity with a Gaussian-like penalty centered around a median utilization rate.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    utilization = 1.0 - (remaining / bins)\n    mean_util = np.mean(utilization[valid])\n    score = np.exp(-remaining) - np.exp(-((utilization - mean_util) ** 2))\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.0444391261870879
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining exponential remaining capacity decay with a hyperbolic tangent penalty based on deviation from the mean utilization rate.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    utilization = 1.0 - (remaining / bins)\n    mean_util = np.mean(utilization[valid])\n    score = np.exp(-remaining) - np.tanh(utilization - mean_util)\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.04685685578876171
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining a power-law decay of the remaining capacity with a cosine similarity modulation against the mean valid remaining capacity.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_remaining = remaining[valid]\n    mean_rem = np.mean(valid_remaining)\n    power_penalty = -np.power(remaining + 1.0, 0.5)\n    modulation = np.cos(np.pi * remaining / (mean_rem + 1e-8))\n    score = power_penalty + modulation\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.04745056731649084
+    },
+    {
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after adding the item to bins that have enough space, and assigns a very low priority to bins that would overflow.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining an exponential decay of remaining capacity with a Gaussian-weighted deviation from the mean capacity of valid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_remaining = remaining[valid]\n    mean_rem = np.mean(valid_remaining)\n    decay = np.exp(-remaining)\n    gaussian_penalty = np.exp(-((remaining - mean_rem) ** 2) / (2.0 * (np.var(valid_remaining) + 1e-8)))\n    score = decay * gaussian_penalty\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.04752008277137581
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining a logarithmic penalty of the remaining capacity with a hyperbolic tangent modulation scaled by the standard deviation of the valid remaining capacities.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_remaining = remaining[valid]\n    std_rem = np.std(valid_remaining)\n    log_penalty = -np.log(remaining + 1.0)\n    modulation = np.tanh(remaining / (std_rem + 1e-8))\n    score = log_penalty + modulation\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.047582065345480665
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by balancing polynomial remaining capacity scaling with a sinusoidal penalty based on deviation from the median utilization rate.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    utilization = 1.0 - (remaining / bins)\n    median_util = np.median(utilization[valid])\n    score = (remaining + 1e-8) ** (-0.5) + np.cos(np.pi * (utilization - median_util))\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.04821697179456945
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining a linear penalty of remaining capacity with a Cauchy-weighted deviation from the median capacity of valid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_remaining = remaining[valid]\n    median_rem = np.median(valid_remaining)\n    linear_score = 1.0 / (1.0 + remaining)\n    cauchy_penalty = 1.0 / (1.0 + ((remaining - median_rem) ** 2) / (np.var(valid_remaining) + 1e-8))\n    score = linear_score * cauchy_penalty\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.0482860868915359
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by combining exponential remaining capacity decay with a hyperbolic tangent penalty based on deviation from the mean utilization rate.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    utilization = 1.0 - (remaining / bins)\n    mean_util = np.mean(utilization[valid])\n    score = np.exp(-remaining) - np.tanh(np.abs(utilization - mean_util))\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.04963372260522106
+    },
+    {
+        "algorithm": "{The new algorithm prioritizes bins by balancing an inverse power law of remaining capacity with a Cauchy-weighted deviation from the median capacity of valid bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    valid = remaining >= 0\n    if not np.any(valid):\n        return np.full_like(bins, -np.inf, dtype=float)\n    valid_remaining = remaining[valid]\n    median_rem = np.median(valid_remaining)\n    inv_power = 1.0 / (1.0 + remaining)\n    mad = np.median(np.abs(valid_remaining - median_rem)) + 1e-8\n    cauchy_penalty = 1.0 / (1.0 + ((remaining - median_rem) / mad) ** 2)\n    score = inv_power * cauchy_penalty\n    return np.where(valid, score, -np.inf)\n\n",
+        "score": -0.05058276370401373
+    }
+]

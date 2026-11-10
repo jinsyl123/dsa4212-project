@@ -1,0 +1,52 @@
+[
+    {
+        "algorithm": "{The algorithm computes priority using a sinusoidal harmonic function of the remaining capacity ratio, heavily penalizing deviations from a golden-ratio-based target while strictly forbidding overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    ratio = np.divide(remaining, bins, out=np.zeros_like(bins, dtype=float), where=bins>0)\n    score = -np.abs(np.sin(np.pi * ratio)) - 0.5 * np.abs(ratio - 0.618)\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.045816574280622795
+    },
+    {
+        "algorithm": "{The algorithm calculates priority as the negative remaining capacity after adding the item to bins that have enough space, and negative infinity for bins that overflow.\\}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    return np.where(remaining >= 0, -remaining, -np.inf)\n\n",
+        "score": -0.04751333399919737
+    },
+    {
+        "algorithm": "{The algorithm calculates priority as the negative absolute difference between the remaining capacity and a target buffer, heavily penalizing overflowing bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target_buffer = 0.1 * bins\n    score = -np.abs(remaining - target_buffer)\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.05425035154866313
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority as the inverse of the cubed positive remaining capacity combined with a logarithmic penalty for deviating from a proportional target fill level, while strictly prohibiting overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    target_buffer = 0.15 * bins\n    score = -np.power(np.abs(remaining - target_buffer) + 1.0, -3) - np.log1p(np.abs(remaining - target_buffer))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.059041681609439345
+    },
+    {
+        "algorithm": "{\\1}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target = 0.15 * bins\n    score = -np.maximum(0.0, (remaining - target)) ** 1.5 - np.maximum(0.0, (target - remaining)) ** 1.5\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.059252627851121446
+    },
+    {
+        "algorithm": "{The algorithm calculates priority based on the exponential decay of the squared distance between the remaining capacity and a proportional target buffer, while strictly prohibiting overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target_buffer = 0.15 * bins\n    score = -np.exp((remaining - target_buffer) ** 2 / (bins + 1e-8))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.05981420042588714
+    },
+    {
+        "algorithm": "{The algorithm calculates priority by rewarding bins whose remaining capacity closely matches a proportional target fraction while applying an exponential penalty for tight fits and strictly forbidding overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target_buffer = 0.15 * bins\n    diff = remaining - target_buffer\n    score = -np.exp(np.abs(diff) / (bins + 1e-8))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.060706171480623
+    },
+    {
+        "algorithm": "{The new algorithm calculates priority as the exponential decay of the squared difference between the remaining capacity and a larger target buffer, while strictly prohibiting overflow.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    target_buffer = 0.2 * bins\n    score = -np.square(remaining - target_buffer)\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.0672808520137882
+    },
+    {
+        "algorithm": "{The algorithm calculates priority as the exponential penalty of the squared deviation between the remaining capacity and a preferred utilization ratio, assigning negative infinity to overflowing bins.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    remaining = bins - item\n    optimal_remaining = 0.2 * bins\n    score = -np.exp((remaining - optimal_remaining) ** 2 / (bins + 1e-8))\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.06842041403168
+    },
+    {
+        "algorithm": "{The new algorithm computes priority using an asymmetric exponential penalty function targeting a tighter remaining capacity threshold while strictly prohibiting overflows.}",
+        "function": "def priority(item: float, bins: np.ndarray) -> np.ndarray:\n    \"\"\"Returns priority with which we want to add item to each bin.\n    Args:\n        item: Size of item to be added to the bin.\n        bins: Array of capacities for each bin.\n    Return:\n        Array of same size as bins with priority score of each bin.\n    \"\"\"\n    remaining = bins - item\n    target_remaining = 0.2 * bins\n    deviation = remaining - target_remaining\n    scale = 0.3 * bins + 1e-8\n    score = np.exp(- (np.abs(deviation) ** 1.5) / scale)\n    return np.where(remaining >= 0, score, -np.inf)\n\n",
+        "score": -0.06862199331837461
+    }
+]
