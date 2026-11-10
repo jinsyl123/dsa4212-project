@@ -43,9 +43,18 @@ All numerical results are under `code/results/<setting>/` (see the table above),
 
 ## Setup
 
-**Python 3.10–3.12** (LLM4AD needs `numpy<2`). From the `code/` folder:
+**Python 3.10–3.12** (LLM4AD needs `numpy<2`, which has no wheels for 3.13+). Check with `python --version`. If you have another version, install 3.12 alongside it and use a virtual environment, so the install cannot conflict with other Python packages on your machine:
+
+| System         | Install Python 3.12                 | Create and activate the environment, from the repo root             |
+| -------------- | ----------------------------------- | ------------------------------------------------------------------- |
+| macOS          | `brew install python@3.12`          | `python3.12 -m venv .venv` then `source .venv/bin/activate`         |
+| Windows        | `winget install Python.Python.3.12` | `py -3.12 -m venv .venv` then `.venv\Scripts\activate`              |
+| Anaconda (any) | (included)                          | `conda create -n dsa4212 python=3.12` then `conda activate dsa4212` |
+
+Then, with the environment active, install from the `code/` folder:
 
 ```bash
+cd code
 pip install -r requirements.txt      # installs LLM4AD at the pinned commit
 python -m unittest discover tests    # every test should pass
 ```
