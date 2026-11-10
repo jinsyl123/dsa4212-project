@@ -63,7 +63,7 @@ Reproducing the results needs **no API key**: scoring only rescores the committe
 
 ## Reproducing the main results
 
-From the `code/` folder, with no LLM calls (about 1.5–2 hours in total; on Windows, run from Git Bash):
+From the `code/` folder, with no LLM calls (about 15–30 minutes in total, since the committed tuned Best Fit runs are reused; on Windows, run from Git Bash):
 
 ```bash
 bash pipeline/score.sh --check --llm openrouter-gemini-3.5-flash-lite eoh_baseline
