@@ -160,3 +160,11 @@ One entry per decision that affects results. Link the config and the results fol
 - **Sources:** EoH-S (arXiv 2508.03082) trains on 200–2,000-item instances and measures "the average relative gap to lower bound", i.e. this objective. FunSearch (Nature 2024) and LLM4AD score by negative bins and EoH (ICML 2024) by average lb/n, all three on equal-size instances (LLM4AD and EoH: 5 × 5,000 items, capacity 100).
 - **Side effect:** excess is unbounded, so instances where a rule collapses dominate the mean far more than under a bounded ratio such as lb/n = 1/(1 + excess).
 - **Affects:** no code; readme §11 wording ("identical to LLM4AD") should say "same packing and reported metric, different search objective".
+
+### 2026-11-12: report §5.5 checks 2–3 committed as scripts (Nic)
+
+- **Decision:** `pipeline/masked_choice.py` (check 2, masked choice, with check 1, AnyFit, rescored the same way) and `pipeline/ratio_sweep.py` (check 3, item-to-bin ratio sweep) added, writing `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `tests/test_masked_choice.py` tests the masked packer. No LLM calls.
+- **Why:** the 11 Nov report draft quoted results from checks 2–3 that were not in the repo (Jin's review); every reported number must trace to a command and a file.
+- **Results:** checks 1–2 reproduce the draft exactly on the frozen test sets: under AnyFit the collapsed sets land within 0.03 pp of Best Fit; under masked choice seeds 0, 2, 3 and 9 are +0.00 pp on `test_id_5k`, `test_cap200`, `test_cap500` and `test_scale25`; seed 4 is −0.81 pp masked and +0.21 pp under AnyFit on `test_id_5k`. Check 3's original instances were not recorded, so it was rerun on new deterministic sets (v0 base seed 2026, set names `sweep_rho*` and `sweep_cap1000`, 5 × 2,000 items): same pattern (seed 0 −0.3, +4.7, +67, +201 pp at ρ = 0.36, 0.31, 0.27, 0.23; seed 4 +18 and +290 pp at 0.18 and 0.13; capacity 1,000: no collapse, seed 2 +42 pp). The report's §5.5 quotes these committed numbers.
+- **Status:** exploratory, designed after A1 was scored; the ρ ≈ 0.32 threshold is derived from seed 0's code (report §5.5).
+- **Affects:** new files only; no existing output changes.
