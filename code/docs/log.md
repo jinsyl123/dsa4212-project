@@ -2,6 +2,8 @@
 
 One entry per decision that affects results. Link the config and the results folder. Order: oldest first; new entries go at the bottom.
 
+> Entries before 11 Nov cite sections of `code/readme.md` as it was then (see git history). It is now merged into the root `readme.md`, where §7–§12 keep their numbers.
+
 ## Template
 
 ### YYYY-MM-DD: short title (who)
