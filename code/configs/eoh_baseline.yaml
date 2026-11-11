@@ -1,5 +1,5 @@
-# G1 pilot: EoH (baseline) with a real LLM on the v0 instances.
-# Before running: export DEEPSEEK_API_KEY=...  (or switch to OpenAI below)
+# EoH baseline. The reported runs use --llm openrouter-gemini-3.5-flash-lite (results folder eoh_baseline__<llm>);
+# API key and setup: readme.md, section 5.
 experiment: eoh_baseline
 
 instances: { spec: configs/instances/v0.yaml, dir: data/v0 }
