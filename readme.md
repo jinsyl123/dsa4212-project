@@ -43,9 +43,18 @@ All numerical results are under `code/results/<setting>/` (see the table above),
 
 ## Setup
 
-**Python 3.10–3.12** (LLM4AD needs `numpy<2`). From the `code/` folder:
+**Python 3.10–3.12** (LLM4AD needs `numpy<2`, which has no wheels for 3.13+). Check with `python --version`. If you have another version, install 3.12 alongside it and use a virtual environment, so the install cannot conflict with other Python packages on your machine:
+
+| System         | Install Python 3.12                 | Create and activate the environment, from the repo root             |
+| -------------- | ----------------------------------- | ------------------------------------------------------------------- |
+| macOS          | `brew install python@3.12`          | `python3.12 -m venv .venv` then `source .venv/bin/activate`         |
+| Windows        | `winget install Python.Python.3.12` | `py -3.12 -m venv .venv` then `.venv\Scripts\activate`              |
+| Anaconda (any) | (included)                          | `conda create -n dsa4212 python=3.12` then `conda activate dsa4212` |
+
+Then, with the environment active, install from the `code/` folder:
 
 ```bash
+cd code
 pip install -r requirements.txt      # installs LLM4AD at the pinned commit
 python -m unittest discover tests    # every test should pass
 ```
@@ -54,7 +63,7 @@ Reproducing the results needs **no API key**: scoring only rescores the committe
 
 ## Reproducing the main results
 
-From the `code/` folder, with no LLM calls (about 1.5–2 hours in total; on Windows, run from Git Bash):
+From the `code/` folder, with no LLM calls (about 15–30 minutes in total, since the committed tuned Best Fit runs are reused; on Windows, run from Git Bash):
 
 ```bash
 bash pipeline/score.sh --check --llm openrouter-gemini-3.5-flash-lite eoh_baseline
@@ -63,7 +72,7 @@ bash pipeline/score.sh --check abl_mixed_shapes abl_mixed_caps_informed
 python pipeline/seed_counts.py       # seed counts and Fisher tests across settings (seconds)
 ```
 
-For each setting, `score.sh` retunes tuned Best Fit, rescores the committed best programs on every held-out set, runs the integrity checks, the fresh-bin diagnostic and the paired statistics, and rebuilds `final_summary.csv`, `paired_stats.csv`, `summary_tables.md` and the figures. With `--check` it then prints `OK: every committed output reproduced`, or lists the files that differ. CSV row order and measured run time are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. `seed_counts.py` then rebuilds `code/results/seed_counts.csv` and `seed_counts.md` from those outputs. Rerunning a *search* does not give the same programs, because LLM sampling is random; that is why every run folder, including every LLM call, is committed.
+For each setting, `score.sh` reuses the committed tuned Best Fit runs (finished seeds are skipped, so it does not retune), rescores the committed best programs on every held-out set, runs the integrity checks, the fresh-bin diagnostic and the paired statistics, and rebuilds `final_summary.csv`, `paired_stats.csv`, `summary_tables.md` and the figures. With `--check` it then prints `OK: every committed output reproduced`, or lists the files that differ. CSV row order and measured run time are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. `seed_counts.py` then rebuilds `code/results/seed_counts.csv` and `seed_counts.md` from those outputs. Rerunning a *search* does not give the same programs, because LLM sampling is random; that is why every run folder, including every LLM call, is committed.
 
 ## Results
 
