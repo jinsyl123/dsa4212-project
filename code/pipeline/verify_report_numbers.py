@@ -10,8 +10,9 @@ Each check recomputes a value from the committed files and compares it with the 
 an independent second route to every number. Sources, all under code/:
   configs/instances/v0.yaml                      instance sets, regenerated deterministically
   results/<setting>/{eoh,randsample,tuned_bf}/seed<k>/best_program.py
-                                                 the final programs: re-packed here (instance 0 of every set) and
-                                                 re-scored under AnyFit for the empty-bins-withheld numbers
+                                                 the final programs: re-packed here (instance 0 of every set),
+                                                 re-scored under AnyFit for the empty-bins-withheld numbers, and
+                                                 re-scored on A2's training sets with EoH's fitness (section 5.4)
   results/<setting>/final_per_instance.csv       bins, L2 bound and excess of every program on every instance
   results/<setting>/paired_stats.csv             the pipeline's verdicts; recomputed here from final_per_instance.csv
                                                  (bootstrap + sign test) and required to agree on every row
@@ -35,7 +36,7 @@ CODE = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).reso
 RES = CODE / "results"
 sys.path.insert(0, str(CODE / "pipeline"))
 from obpevo.instances import generate_set
-from obpevo.core import pack_funsearch, pack_anyfit, lower_bound, lower_bound_l2
+from obpevo.core import pack_funsearch, pack_anyfit, lower_bound, lower_bound_l2, evaluate, score, _checked
 from seed_counts import fisher_p                   # same two-sided Fisher exact test as the seed-count table
 S = {"Baseline": "eoh_baseline__openrouter-gemini-3.5-flash-lite", "A1a": "abl_anyfit", "A1b": "abl_informed_rules", "Control": "control_randsample", "A2a": "abl_mixed_shapes", "A2b": "abl_mixed_caps_informed"}
 SETS = ["test_" + x for x in ["id_5k", "size_1k", "size_10k", "cap200", "cap500", "cap500_scaled", "scale25", "scale65", "shape_k1.5", "shape_k5", "uniform"]]
@@ -159,7 +160,7 @@ for st, x in (("cap500_scaled", 10), ("scale25", 10), ("shape_k5", 10), ("shape_
 C("at most 2 worse on any set", max(n("Baseline", st.replace("test_", ""), "worse") for st in SETS), 2, 0)
 for sd in (0, 1, 7):
     for st in ("id_5k", "shape_k1.5", "shape_k5"): C(f"seed {sd} tie {st}", V[(V.s == "Baseline") & (V.label == "eoh") & (V.seed == sd) & (V.set == "test_" + st) & (V.ref == "best_fit")].v.iloc[0], "tie")
-group("5.2: what the rules do (fresh bins)", "diagnostics.csv, final_per_instance.csv, best_program.py re-scored under AnyFit")
+group("5.2: what the rules do (fresh bins)", "diagnostics.csv, final_per_instance.csv, best_program.py re-scored under AnyFit and re-packed by item size")
 C("fresh seeds", sorted(phi("Baseline", "train").loc[lambda x: x > .01].index.tolist()), [3, 4, 5])
 d = PI["Baseline"]; a, b = [d[(d.label == "eoh") & (d.seed == k)].sort_values(["set", "instance"]).bins.values for k in (4, 5)]; C("seeds 4,5 identical bins", bool(np.array_equal(a, b)), True)
 C("phi id seed4", phi("Baseline", "test_id_5k", 4), .26, .0051); C("phi k5 seed4", phi("Baseline", "test_shape_k5", 4), .45, .0051); C("k5 loss", D("Baseline", "shape_k5", 4), 2.49)
@@ -170,6 +171,20 @@ C("seed 4 k5 no empties", af("Baseline", "eoh", 4, "shape_k5"), 8.19); tk5 = np.
 C("seed 3 k1.5 with", mean("Baseline", "shape_k1.5", seed=3), 3.90, .02); C("seed 3 k1.5 without", af("Baseline", "eoh", 3, "shape_k1.5"), 3.99)
 for s in ("Baseline", "A1b", "A2a", "A2b"):
     g = -D(s, "id_5k"); p = phi(s, "test_id_5k").reindex(g.index); C(f"{s}: gain>1 implies phi>0.1", int(((g > 1) & (p <= .1)).sum()), 0, 0)
+def fresh_by_size(f, insts):
+    """Pack as pack_funsearch does; per item size, count placements where a used bin had room, and those of them that opened an empty bin."""
+    room, fresh = np.zeros(101), np.zeros(101)
+    for i in insts:
+        cap = i["capacity"]; bins = np.full(len(i["items"]), cap, dtype=int)
+        for s in i["items"]:
+            idx = np.flatnonzero(bins >= s); b = idx[np.argmax(_checked(f(s, bins[idx]), idx.size))]
+            if (bins[idx] < cap).any(): room[s] += 1; fresh[s] += bins[b] == cap
+            bins[b] -= s
+    return room, fresh
+room, fr = fresh_by_size(load(prog("Baseline", "eoh", 4)), INST["test_id_5k"])   # capacity 100, so sizes 1..100
+z = np.arange(101); share = lambda m: fr[m].sum() / room[m].sum()
+C("seed 4 opens an empty bin in most placements of items 35-50 (id_5k)", share((z >= 35) & (z <= 50)) > .5, True)
+C("seed 4 rarely does so for smaller items (< 3%)", share(z < 35) < .03, True); C("or larger items (< 3%)", share(z > 50) < .03, True)
 group("5.3: Ablation 1 and the control", "final_per_instance.csv, diagnostics.csv, runs_index.csv, best_program.py")
 C("A1a better", n("A1a", "id_5k", "better"), 6, 0); C("A1a max gain", (-D("A1a", "id_5k")).max(), .93)
 C("A1a tuned", mean("A1a", "id_5k", "tuned_bf"), 3.17); C("A1a tuned gain", mean("A1a", "id_5k", "best_fit") - mean("A1a", "id_5k", "tuned_bf"), .91); C("A1a worse than tuned", n("A1a", "id_5k", "worse", "tuned_bf"), 8, 0)
@@ -188,7 +203,7 @@ c = RI["Control"]; c = c[c.kind == "evolved"]; C("control unique", c.n_unique_pr
 for st in SETS: C(f"control = BF {st}", n("Control", st.replace("test_", ""), "tie"), 10, 0)
 C("p fresh control 6", f(0, 10, 3, 6), .036, .0006); C("p fresh control 10", f(0, 10, 3, 10), .21, .005)
 C("A1a seed 5 k5", D("A1a", "shape_k5", 5), .21); C("A1b median", RI["A1b"].query("kind=='evolved'").best_eval.median(), 217, 0); C("Base median", RI["Baseline"].query("kind=='evolved'").best_eval.median(), 180, 0); C("A1b k5 worse", n("A1b", "shape_k5", "worse"), 1, 0)
-group("5.4: Ablation 2", "final_per_instance.csv, paired verdicts, Fisher tests")
+group("5.4: Ablation 2", "final_per_instance.csv, paired verdicts, Fisher tests, best_program.py re-scored on train_mixed and train_mixed_cap")
 C("A2a better", n("A2a", "id_5k", "better"), 9, 0); C("A2a gain", (-D("A2a", "id_5k")).mean(), .44); C("base gain", (-D("Baseline", "id_5k")).mean(), .30)
 sw = lambda s, sd=None: V[(V.s == s) & (V.label == EV(s)) & (V.ref == "best_fit") & (V.v == "worse") & V.set.isin(["test_shape_k1.5", "test_shape_k5"]) & (V.seed.isin(sd if sd else range(10)))].seed.nunique()
 C("A2a worse shape", sw("A2a"), 1, 0); C("A2a seed 6", D("A2a", "shape_k5", 6), .62); C("base 3/6", sw("Baseline", list(range(6))), 3, 0); C("base 3/10", sw("Baseline"), 3, 0); C("p .12", f(1, 10, 3, 6), .12, .005); C("p .58", f(1, 10, 3, 10), .58, .005)
@@ -196,6 +211,14 @@ C("A2a tuned k5", mean("A2a", "shape_k5", "tuned_bf"), 7.68); C("A2a tuned id", 
 C("A2b cap200", col("A2b", "cap200"), []); C("A2b scale25", col("A2b", "scale25"), []); C("A2b cap500", col("A2b", "cap500"), [2, 8]); C("p .087", f(0, 10, 4, 10), .087, .0006); C("p .35", f(2, 10, 5, 10), .35, .005)
 C("scale25 worse A1b", n("A1b", "scale25", "worse"), 5, 0); C("scale25 worse A2b", n("A2b", "scale25", "worse"), 0, 0); C("p .033", f(0, 10, 5, 10), .033, .0006); C("seed 4 sc25", D("A1b", "scale25", 4), .68)
 C("A2b gain", (-D("A2b", "id_5k")).mean(), .35); C("A1b gain", (-D("A1b", "id_5k")).mean(), .56); C("A2b seed 8 cap500", D("A2b", "cap500", 8), 520, .5)
+# Would A2's training data have selected against these rules? EoH's own fitness (core.score: mean excess over L1) on A2's training sets
+TS = {TR[s]: generate_set(TR[s], cfg["sets"][TR[s]], cfg["seed"]) for s in ("A2a", "A2b")}
+fit = lambda fn, st: -score(evaluate(fn, TS[st], mode="funsearch")) * 100
+b4 = fit(load(prog("Baseline", "eoh", 4)), TR["A2a"])
+C("baseline seed 4 on mixed shapes beats 9 of A2a's 10 final programs", sum(fit(load(prog("A2a", "eoh", k)), TR["A2a"]) > b4 for k in range(10)), 9, 0)
+cm = [fit(load(prog("A1b", "eoh", k)), TR["A2b"]) for k in col("A1b", "cap500")]
+C("A1b's collapsing programs on A2b's training set: lowest", min(cm), 122, .51); C("highest", max(cm), 324, .51)
+C("Best Fit on A2b's training set", fit(lambda item, bins: -(bins - item), TR["A2b"]), 2.96)
 group("Cost table: validation-selected seed", "final_per_instance.csv, set val (lowest mean excess)")
 for s, sd in (("A2b", 8), ("A1b", 1), ("A1a", 1), ("Baseline", 4), ("A2a", 6)):
     v = PI[s]; v = v[(v.label == EV(s)) & (v.set == "val")].groupby("seed").excess_l2.mean(); C(f"{s} val-selected", int(v.idxmin()), sd, 0)
