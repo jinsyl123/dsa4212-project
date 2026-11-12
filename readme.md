@@ -98,7 +98,8 @@ Earlier runs (the 25 Oct free-tier run, free-tier seed 11) and how the analysis 
     │   ├── score.sh               every scoring step for one or more settings; --check compares with the commit
     │   ├── check_outputs.py       the comparison --check uses
     │   ├── seed_counts.py         setting-level seed counts and Fisher tests
-    │   └── make_report_assets.py  the report's figures and results tables (writes to report/)
+    │   ├── make_report_assets.py  the report's figures and results tables (writes to report/)
+    │   └── verify_report_numbers.py  checks every number quoted in the report against the committed results
     ├── configs/           # one YAML per setting, plus llms.yaml, budgets.yaml and instances/
     ├── tests/             # unit tests
     ├── docs/              # claims.md (frozen predictions), log.md (decision log)
@@ -192,7 +193,7 @@ It counts, per setting, the seeds in each category (better / worse than Best Fit
 
 **Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: `python pipeline/masked_choice.py` (empty bins withheld, or visible but not choosable while a used bin fits; about 10 min) and `python pipeline/ratio_sweep.py` (new instances at smaller item-to-bin ratios, and at capacity 1,000; a few minutes). They write `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `git status --short results/` is empty if both reproduced.
 
-### 4.5 Report figures
+### 4.5 Report figures, tables and numbers
 
 ```bash
 python pipeline/make_report_assets.py
@@ -200,6 +201,14 @@ git status --short ../report   # empty = figures, tables and numbers reproduced
 ```
 
 It reads the committed `final_per_instance.csv`, `final_summary.csv`, `paired_stats.csv`, `diagnostics.csv` and `runs_index.csv` of every setting, the baseline's `evals.csv` files, and `results/abl_informed_rules/ratio_sweep.csv` (written by `pipeline/ratio_sweep.py`, §4.4). It writes the report's five figures to `report/figures/` (`convergence.pdf`: search progress on the training set; `empty_bins.pdf`: each seed with empty bins offered against withheld; `fresh_rate.pdf`: loss on `shape_k5` against how often a rule opens fresh bins there; `collapses.pdf`: each A1b and A2b seed's excess above Best Fit, ordered by item-to-bin ratio; `ratio_sweep.pdf`: the five collapsing A1b rules as the item-to-bin ratio falls), its four results tables to `report/tables/` and the numbers quoted in the text to `report/numbers.txt`. Table means are taken from `final_summary.csv` with the same rounding as `summary_tables.md`, so the two agree. It takes seconds. As in 4.3, figure bytes can differ with the matplotlib version and fonts; the tables and numbers should not.
+
+**Checking every number in the report.** A second, independent script recomputes each number the report quotes from the committed files and compares it with the value printed in the report:
+
+```bash
+python pipeline/verify_report_numbers.py   # about 5-10 minutes; exits with status 1 if any check fails
+```
+
+It re-packs every final program (instance 0 of every set) against `final_per_instance.csv`, recomputes every verdict from the per-instance rows and requires it to agree with `paired_stats.csv`, checks `runs_index.csv` against each run's `evals.csv`, and then checks the numbers quoted in each report section against `final_per_instance.csv`, `diagnostics.csv`, `runs_index.csv`, `integrity.csv`, tuned Best Fit's `candidates.jsonl` and `summary.json`, and §5.5's `masked_choice.csv` and `ratio_sweep.csv`. It prints one line per report section with the files it read and the number of checks and failures (2,421 checks, 0 failures on this commit). It does not read `make_report_assets.py`'s outputs, so it is a second route to the same numbers.
 
 ### 4.6 What reproduces exactly, and what doesn't
 
