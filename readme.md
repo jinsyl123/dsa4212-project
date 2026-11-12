@@ -97,7 +97,9 @@ Earlier runs (the 25 Oct free-tier run, free-tier seed 11) and how the analysis 
     │   ├── summarise.py           step 3: tables and figures
     │   ├── score.sh               every scoring step for one or more settings; --check compares with the commit
     │   ├── check_outputs.py       the comparison --check uses
-    │   └── seed_counts.py         setting-level seed counts and Fisher tests
+    │   ├── seed_counts.py         setting-level seed counts and Fisher tests
+    │   ├── masked_choice.py       report §5.5: A1b's rules with empty bins withheld or masked
+    │   └── ratio_sweep.py         report §5.5: A1b's rules at smaller item-to-bin ratios
     ├── configs/           # one YAML per setting, plus llms.yaml, budgets.yaml and instances/
     ├── tests/             # unit tests
     ├── docs/              # claims.md (frozen predictions), log.md (decision log)
