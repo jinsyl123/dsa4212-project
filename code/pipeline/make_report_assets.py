@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+"""Regenerate the report's figures and tables from the scored results. No LLM calls; takes seconds.
+
+From code/:  python pipeline/make_report_assets.py [results dir] [output dir]
+Defaults: results/ (this repo's code/results) and the repo's report/ folder.
+Reads final_per_instance.csv, paired_stats.csv, diagnostics.csv and runs_index.csv for each setting, plus the
+baseline's per-run evals.csv for the search-progress figure.
+Writes report/figures/{convergence,empty_bins,collapses}.pdf, report/tables/{baseline,ablation1,ablation2,cost}.tex
+and report/numbers.txt (values quoted in the report text, for checking).
+"""
+import os, sys
+import numpy as np, pandas as pd
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+from seed_counts import fisher_p                   # same two-sided Fisher exact test as the seed-count table
+
+R = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "results")
+OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(HERE, "..", "..", "report")
+os.makedirs(f"{OUT}/figures", exist_ok=True); os.makedirs(f"{OUT}/tables", exist_ok=True)
+S = {"Baseline": "eoh_baseline__openrouter-gemini-3.5-flash-lite", "A1a": "abl_anyfit", "A1b": "abl_informed_rules",
+     "Control": "control_randsample", "A2a": "abl_mixed_shapes", "A2b": "abl_mixed_caps_informed"}
+TRAIN = {"Baseline": "train", "A1a": "train", "A1b": "train", "Control": "train", "A2a": "train_mixed", "A2b": "train_mixed_cap"}
+SETS = ["id_5k", "size_1k", "size_10k", "cap200", "cap500", "cap500_scaled", "scale25", "scale65", "shape_k1.5", "shape_k5", "uniform"]
+HEAD = ["\\texttt{id\\_5k}", "1k", "10k", "c200", "c500", "c500s", "s25", "s65", "k1.5", "k5", "unif."]
+T = lambda s: "test_" + s
+RATIO = {"cap500": .08, "cap200": .20, "scale25": .22, "id_5k": .40, "cap500_scaled": .40, "scale65": .58}
+COL = dict(zip(["Baseline", "A1a", "A1b", "Control", "A2a", "A2b", "Tuned"],
+               ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6"]))
+MK = dict(zip(COL, ["o", "s", "^", "D", "v", "P", "X"]))
+INK, MUTED, GRID = "#0b0b0b", "#52514e", "#e4e3df"
+plt.rcParams.update({"font.size": 8, "axes.edgecolor": MUTED, "axes.labelcolor": INK, "xtick.color": MUTED, "ytick.color": MUTED,
+                     "axes.spines.top": False, "axes.spines.right": False, "axes.grid": True, "grid.color": GRID, "grid.linewidth": .6,
+                     "axes.axisbelow": True, "legend.frameon": False, "pdf.fonttype": 42, "font.family": "DejaVu Sans"})
+
+rd = lambda s, f: pd.read_csv(f"{R}/{S[s]}/{f}")
+PI = {s: rd(s, "final_per_instance.csv") for s in S}
+PS = {s: rd(s, "paired_stats.csv") for s in S}
+DG = {s: rd(s, "diagnostics.csv") for s in S}
+RI = {s: rd(s, "runs_index.csv") for s in S}
+MODE = lambda s: "anyfit" if s == "A1a" else "funsearch"
+N = []
+def note(k, v): N.append(f"{k}: {v}")
+
+def mean_excess(s, kind):
+    d = PI[s]; d = d[(d.kind == kind) & d.set.isin(map(T, SETS))]
+    g = d.groupby(["seed", "set"]).excess_l2.mean().unstack() * 100
+    return g
+def btuw(v): return "/".join(str((v == k).sum()) for k in ("better", "tie", "unclear", "worse"))
+def bw(s, kind, ref, seeds=None):
+    d = PS[s]; d = d[(d.kind == kind) & (d.reference == ref)]
+    if seeds is not None: d = d[d.seed.isin(seeds)]
+    return [btuw(d[d.set == T(x)].verdict) for x in SETS]
+BF = PI["Baseline"]; BF = BF[BF.label == "best_fit"].groupby("set").excess_l2.mean() * 100
+def fmt(v): return "{:.2f}".format(v) if v < 100 else "{:.0f}".format(v)
+def row(label, cells): return label + " & " + " & ".join(cells) + r" \\"
+def means(s, kind):
+    g = mean_excess(s, kind).mean(); return [fmt(g[T(x)]) for x in SETS]
+def table(path, rows):
+    spec = "@{}l" + "r" * len(SETS) + "@{}"
+    open(f"{OUT}/tables/{path}.tex", "w").write("\\scriptsize\\setlength{\\tabcolsep}{2.5pt}\\begin{tabular}{" + spec + "}\n\\toprule\n" + row("", HEAD) + "\n\\midrule\n" + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+bfrow = row("Best Fit, excess \\%", [fmt(BF[T(x)]) for x in SETS])
+def block(s, name, tuned_label=None):
+    r = [row(f"{name}, excess \\%", means(s, "evolved")), row("\\quad vs Best Fit (B/T/U/W)", bw(s, "evolved", "best_fit")), row("\\quad vs tuned (B/T/U/W)", bw(s, "evolved", "tuned_bf"))]
+    if tuned_label: r.append(row(f"{tuned_label}, excess \\%", means(s, "tuned")))
+    return r
+table("baseline", [bfrow, row("Tuned Best Fit, excess \\%", means("Baseline", "tuned")), row("\\quad vs Best Fit (B/T/U/W)", bw("Baseline", "tuned", "best_fit"))] + block("Baseline", "Baseline"))
+table("ablation1", block("A1a", "A1a", "Tuned, AnyFit") + block("A1b", "A1b") + block("Control", "Control"))
+table("ablation2", block("A2a", "A2a", "Tuned, mixed shapes") + block("A2b", "A2b", "Tuned, mixed capacities"))
+
+# Cost and validation-selected rule
+L = ["\\setlength{\\tabcolsep}{4pt}\\begin{tabular}{@{}lrrrrrrrrr@{}}\n\\toprule\nSetting & \\$/run & Tokens/run & Valid \\% & Unique & Median best eval & Time (s) & Selected seed & vs Best Fit & vs tuned\\\\\n\\midrule"]
+for s in S:
+    e = RI[s]; e = e[e.kind == "evolved"]
+    p = PI[s]; ev = p[p.kind == "evolved"]; v = ev[ev.set == "val"].groupby("seed").excess_l2.mean(); sd = int(v.idxmin())
+    q = PS[s]; q = q[(q.kind == "evolved") & (q.seed == sd) & q.set.isin(map(T, SETS))]
+    c = lambda r: btuw(q[q.reference == r].verdict)
+    tm = ev[ev.set == "test_id_5k"].time_s.mean()
+    L.append(f"{s} & {e.cost_usd.mean():.2f} & {int((e.prompt_tokens + e.completion_tokens).mean()/1000)}k & {(e.n_ok / e.n_evals).mean()*100:.1f} & {e.n_unique_programs.mean():.0f} & {e.best_eval.median():.0f} & {tm:.2f} & {sd} & {c('best_fit')} & {c('tuned_bf')}\\\\")
+    note(f"{s} val-selected", sd)
+L.append("\\bottomrule\n\\end{tabular}")
+open(f"{OUT}/tables/cost.tex", "w").write("\n".join(L) + "\n")
+
+# Per-seed quantities
+def per_seed(s, kind="evolved"):
+    d = DG[s]; d = d[(d.kind == kind) & (d["mode"] == MODE(s))]
+    phi = lambda st: d[d.set == st].groupby("seed").apply(lambda x: x.n_fresh.sum() / max(1, x.n_room.sum()), include_groups=False)
+    return phi
+def dpp(s, st, kind="evolved"):
+    q = PS[s]; q = q[(q.kind == kind) & (q.reference == "best_fit") & (q.set == T(st))]
+    return q.set_index("seed").mean_diff_pp
+
+BLUE, ORANGE = "#2a78d6", "#eb6834"
+def grouped(ax, cats, a, b, la, lb):
+    x = np.arange(len(cats)); w = .34
+    ax.bar(x - w / 2 - .01, a, w, color=BLUE, label=la, zorder=3)
+    ax.bar(x + w / 2 + .01, b, w, color=ORANGE, label=lb, zorder=3)
+    ax.set_xticks(x); ax.set_xticklabels(cats); ax.grid(axis="x", visible=False); ax.tick_params(axis="x", length=0)
+def diag_mean(s, kind, st, mode, seed=None):
+    d = DG[s]; d = d[(d.kind == kind) & (d.set == T(st)) & (d["mode"] == mode)]
+    if seed is not None: d = d[d.seed == seed]
+    return d.groupby("seed").excess.mean().mean() * 100
+
+# Figure: search progress on the training set, baseline
+def progress(label):
+    out = {}
+    for k in range(10):
+        e = pd.read_csv(f"{R}/{S['Baseline']}/{label}/seed{k}/evals.csv"); e = e[e.status == "ok"].sort_values("eval")
+        out[k] = (e.set_index("eval").train_excess.cummin() * 100).reindex(range(1, 301)).ffill().bfill()
+    return pd.DataFrame(out)
+fig, ax = plt.subplots(figsize=(6.3, 1.6))
+bf_train = DG["Baseline"].query("label == 'best_fit' and set == 'train' and mode == 'funsearch'").excess.mean() * 100
+for label, c, name in [("eoh", BLUE, "EoH baseline"), ("tuned_bf", ORANGE, "Tuned Best Fit")]:
+    g = progress(label); ax.fill_between(g.index, g.min(axis=1), g.max(axis=1), color=c, alpha=.15, lw=0, zorder=2)
+    ax.plot(g.index, g.median(axis=1), color=c, lw=2, label=name, zorder=3)
+    note(f"{name} median at eval 10", round(g.median(axis=1)[10], 2)); note(f"{name} median at eval 300", round(g.median(axis=1)[300], 2)); note(f"{name} best seed at eval 300", round(g.min(axis=1)[300], 2))
+    if label == "eoh":
+        med = g.median(axis=1); note("EoH median first below Best Fit at eval", int(med[med < bf_train - 1e-6].index.min())); note("EoH best seed first below 4.0 at eval", int(g.min(axis=1)[g.min(axis=1) < 4].index.min()))
+note("Best Fit train", round(bf_train, 2))
+ax.axhline(bf_train, color=INK, lw=1, ls=":", zorder=1, label="Best Fit")
+ax.set_xlim(1, 300); ax.set_ylim(2, 5.4); ax.set_xlabel("Evaluations used"); ax.set_ylabel("Training excess (%)"); ax.set_yticks([2, 3, 4, 5]); fig.legend(*ax.get_legend_handles_labels(), loc="upper center", ncol=3, borderaxespad=0)
+fig.tight_layout(pad=.4, rect=(0, 0, 1, .87)); fig.savefig(f"{OUT}/figures/convergence.pdf", metadata={"CreationDate": None}); plt.close(fig)
+
+# Figure: every seed with empty bins offered against withheld
+fig, ax = plt.subplots(1, 2, figsize=(6.3, 2.9))
+for a, st, name in zip(ax, ["id_5k", "shape_k5"], ["In distribution (id_5k)", "Clustered sizes (shape_k5)"]):
+    for kind, c, m, lab in [("evolved", BLUE, "o", "EoH baseline (10 seeds)"), ("tuned", ORANGE, "X", "Tuned Best Fit (10 seeds)")]:
+        d = DG["Baseline"]; g = d[(d.kind == kind) & (d.set == T(st))].groupby(["seed", "mode"]).excess.mean().unstack() * 100
+        a.scatter(g.funsearch, g.anyfit, s=34, c=c, marker=m, edgecolors="white", linewidths=.5, label=lab, zorder=3, clip_on=False)
+    lo = min(a.get_xlim()[0], a.get_ylim()[0]); hi = max(a.get_xlim()[1], a.get_ylim()[1])
+    a.plot([lo, hi], [lo, hi], color=INK, lw=1, ls=":", zorder=1, label="Same excess with or without empty bins"); a.set_xlim(lo, hi); a.set_ylim(lo, hi); a.set_aspect("equal", adjustable="box")
+    a.set_title(name, loc="left", fontsize=8.5, color=INK); a.set_xlabel("Excess with empty bins offered (%)")
+ax[0].set_ylabel("Excess with empty bins withheld (%)")
+h, l = ax[0].get_legend_handles_labels(); fig.legend(h, l, loc="upper center", ncol=3, borderaxespad=0)
+fig.tight_layout(pad=.4, rect=(0, 0, 1, .93)); fig.savefig(f"{OUT}/figures/empty_bins.pdf", metadata={"CreationDate": None}); plt.close(fig)
+
+# Figure: difference from Best Fit on each test set, ordered by item-to-bin ratio, every seed
+CAP = {"scale25": 100, "id_5k": 100, "scale65": 100, "cap200": 200, "cap500": 500, "cap500_scaled": 500}
+order = sorted(RATIO, key=lambda k: (RATIO[k], CAP[k]))
+fig, ax = plt.subplots(figsize=(6.3, 2.5))
+for offset, s, c in [(.17, "A1b", BLUE), (-.17, "A2b", ORANGE)]:
+    for i, st in enumerate(order):
+        y = dpp(s, st); ax.scatter(y.values, np.full(len(y), i + offset) + np.linspace(-.07, .07, len(y)), s=20, c=c, edgecolors="white", linewidths=.4, zorder=3, clip_on=False, label=s if i == 0 else None)
+ax.axvline(0, color=INK, lw=1, ls=":", zorder=1, label="Same as Best Fit")
+ax.set_xscale("symlog", linthresh=1, linscale=.6); ax.set_xlim(-5, 2000); ax.set_ylim(-.6, len(order) - .4); ax.invert_yaxis()
+ax.set_yticks(range(len(order))); ax.set_yticklabels([f"{st} (capacity {CAP[st]}, ratio {RATIO[st]:.2f})" for st in order]); ax.tick_params(axis="y", length=0); ax.grid(axis="y", visible=False)
+ax.set_xlabel("Excess above Best Fit (pp)"); ax.legend(loc="upper center", ncol=3, bbox_to_anchor=(.5, 1.14), borderaxespad=0)
+fig.tight_layout(pad=.4); fig.savefig(f"{OUT}/figures/collapses.pdf", metadata={"CreationDate": None}); plt.close(fig)
+
+# Numbers quoted in the text
+def worse_any_shape(s, seeds=None):
+    q = PS[s]; q = q[(q.kind == "evolved") & (q.reference == "best_fit") & q.set.isin([T("shape_k1.5"), T("shape_k5")]) & (q.verdict == "worse")]
+    if seeds is not None: q = q[q.seed.isin(seeds)]
+    return q.seed.nunique()
+f = lambda a, n, b, m: round(fisher_p(a, n, b, m), 3)
+b6, b10, a = worse_any_shape("Baseline", range(6)), worse_any_shape("Baseline"), worse_any_shape("A2a")
+note("A2a seeds worse on a shape set", f"{a}/10; baseline {b6}/6 p={f(a,10,b6,6)}; {b10}/10 p={f(a,10,b10,10)}")
+for s in S:
+    g = -dpp(s, "id_5k"); note(f"{s} mean id_5k gain pp", round(g.mean(), 2)); note(f"{s} max id_5k gain pp", round(g.max(), 2))
+g = -dpp("Baseline", "id_5k", "tuned"); note("tuned id_5k gain pp", round(g.mean(), 2))
+open(f"{OUT}/numbers.txt", "w").write("\n".join(N) + "\n")
+print("\n".join(N))
