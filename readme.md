@@ -97,7 +97,8 @@ Earlier runs (the 25 Oct free-tier run, free-tier seed 11) and how the analysis 
     │   ├── summarise.py           step 3: tables and figures
     │   ├── score.sh               every scoring step for one or more settings; --check compares with the commit
     │   ├── check_outputs.py       the comparison --check uses
-    │   └── seed_counts.py         setting-level seed counts and Fisher tests
+    │   ├── seed_counts.py         setting-level seed counts and Fisher tests
+    │   └── make_report_assets.py  the report's figures and results tables (writes to report/)
     ├── configs/           # one YAML per setting, plus llms.yaml, budgets.yaml and instances/
     ├── tests/             # unit tests
     ├── docs/              # claims.md (frozen predictions), log.md (decision log)
@@ -191,7 +192,12 @@ It counts, per setting, the seeds in each category (better / worse than Best Fit
 
 ### 4.5 Report figures
 
-Commands for the report's figures, which write to `report/figures/`, are added with the report source.
+```bash
+python pipeline/make_report_assets.py
+git status --short ../report   # empty = figures, tables and numbers reproduced
+```
+
+It reads the committed `final_per_instance.csv`, `paired_stats.csv`, `diagnostics.csv` and `runs_index.csv` of every setting, plus the baseline's `evals.csv` files, and writes the report's three figures to `report/figures/` (`convergence.pdf`: search progress on the training set; `empty_bins.pdf`: each seed with empty bins offered against withheld; `collapses.pdf`: each A1b and A2b seed's excess above Best Fit, ordered by item-to-bin ratio), its four results tables to `report/tables/` and the numbers quoted in the text to `report/numbers.txt`. It takes seconds. As in 4.3, figure bytes can differ with the matplotlib version and fonts; the tables and numbers should not.
 
 ### 4.6 What reproduces exactly, and what doesn't
 
