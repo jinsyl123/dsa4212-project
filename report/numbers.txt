@@ -1,0 +1,29 @@
+Baseline val-selected: 4
+A1a val-selected: 1
+A1b val-selected: 1
+Control val-selected: 0
+A2a val-selected: 6
+A2b val-selected: 8
+EoH baseline median at eval 10: 4.75
+EoH baseline median at eval 300: 4.55
+EoH baseline best seed at eval 300: 3.72
+EoH median first below Best Fit at eval: 186
+EoH best seed first below 4.0 at eval: 94
+Tuned Best Fit median at eval 10: 2.86
+Tuned Best Fit median at eval 300: 2.41
+Tuned Best Fit best seed at eval 300: 2.36
+Best Fit train: 4.75
+A2a seeds worse on a shape set: 1/10; baseline 3/6 p=0.118; 3/10 p=0.582
+Baseline mean id_5k gain pp: 0.3
+Baseline max id_5k gain pp: 1.2
+A1a mean id_5k gain pp: 0.36
+A1a max id_5k gain pp: 0.93
+A1b mean id_5k gain pp: 0.56
+A1b max id_5k gain pp: 2.32
+Control mean id_5k gain pp: 0.0
+Control max id_5k gain pp: -0.0
+A2a mean id_5k gain pp: 0.44
+A2a max id_5k gain pp: 2.09
+A2b mean id_5k gain pp: 0.35
+A2b max id_5k gain pp: 2.03
+tuned id_5k gain pp: 2.48
