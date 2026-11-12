@@ -97,7 +97,9 @@ Earlier runs (the 25 Oct free-tier run, free-tier seed 11) and how the analysis 
     │   ├── summarise.py           step 3: tables and figures
     │   ├── score.sh               every scoring step for one or more settings; --check compares with the commit
     │   ├── check_outputs.py       the comparison --check uses
-    │   └── seed_counts.py         setting-level seed counts and Fisher tests
+    │   ├── seed_counts.py         setting-level seed counts and Fisher tests
+    │   ├── masked_choice.py       report §5.5: A1b's rules with empty bins withheld or masked
+    │   └── ratio_sweep.py         report §5.5: A1b's rules at smaller item-to-bin ratios
     ├── configs/           # one YAML per setting, plus llms.yaml, budgets.yaml and instances/
     ├── tests/             # unit tests
     ├── docs/              # claims.md (frozen predictions), log.md (decision log)
@@ -133,7 +135,7 @@ Install LLM4AD **only** through `requirements.txt`: `pip install llm4ad` gives a
 
 ## 4. Reproducing the results (no LLM, no API key)
 
-Everything in this section runs from `code/`, makes no LLM calls and needs no API key. Steps 4.1, 4.2 and 4.4 take minutes; 4.3 takes about 15–20 minutes per setting (18 minutes for A2b from a clean checkout), so 1.5–2 hours for all six.
+Everything in this section runs from `code/`, makes no LLM calls and needs no API key. Steps 4.1, 4.2 and 4.4 take minutes; 4.3 takes about 15–20 minutes per setting (12 minutes for the baseline and 18 for A2b on a clean checkout), so 1.5–2 hours for all six.
 
 ### 4.1 Run the tests
 
@@ -148,7 +150,7 @@ They cover the evaluator (packing, both lower bounds, score), the instance sets,
 `configs/smoke.yaml` runs the whole pipeline (search, held-out scoring, tables and figures) on small instance sets with a **fake LLM** that returns canned heuristics, including deliberately broken ones. It checks the plumbing: budgets, failure logging and every output file. Its scores say nothing about method quality.
 
 ```bash
-python pipeline/run_experiment.py --config configs/smoke.yaml    # 5 methods x 2 seeds, fake LLM (~7 min on Windows)
+python pipeline/run_experiment.py --config configs/smoke.yaml    # 5 methods x 2 seeds, fake LLM (~7 min on Windows, ~1 min on macOS)
 python pipeline/evaluate_final.py --config configs/smoke.yaml    # held-out scoring
 python pipeline/summarise.py      --config configs/smoke.yaml    # tables and figures
 ```
@@ -174,7 +176,7 @@ The baseline needs `--llm` because its results folder is named after the model; 
 5. `paired_stats.py`: per-seed verdicts against Best Fit and tuned Best Fit; for the baseline, also seeds 0–5 against tuned Best Fit seeds 0–5 (`paired_stats_seeds0-5.csv`), the pre-registered comparison;
 6. `summarise.py`: `summary_tables.md` and the figures.
 
-With `--check`, it then prints `OK: every committed output reproduced`, or lists the files that differ and exits with an error. CSV row order and measured run times (`time_s`) are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. Every score, bin count and verdict must match exactly.
+With `--check`, it then prints `OK: every committed output reproduced`, or lists the files that differ and exits with an error. CSV row order and measured run times (`time_s`) are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. Every score, bin count and verdict must match exactly. `git status` may then show some CSVs as modified; that is row order and `time_s` only, and `--check` is the verdict.
 
 To score a single setting, name only that one, e.g. `bash pipeline/score.sh --check abl_mixed_caps_informed`.
 
@@ -188,6 +190,8 @@ git status --short results/seed_counts.csv results/seed_counts.md   # empty = bo
 ```
 
 It counts, per setting, the seeds in each category (better / worse than Best Fit or tuned Best Fit on each set, collapses, fresh-bin seeds) and runs Fisher's exact test against the baseline's seeds 0–5 and 0–9, or against A1b for A2b (`docs/claims.md`, shared rules). It reads the committed `paired_stats.csv`, `final_per_instance.csv` and `diagnostics.csv` and writes `results/seed_counts.csv` (every category and set) and `results/seed_counts.md` (the table in §1, with p-values). It takes seconds.
+
+**Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: `python pipeline/masked_choice.py` (empty bins withheld, or visible but not choosable while a used bin fits; about 10 min) and `python pipeline/ratio_sweep.py` (new instances at smaller item-to-bin ratios, and at capacity 1,000; a few minutes). They write `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `git status --short results/` is empty if both reproduced.
 
 ### 4.5 Report figures
 
