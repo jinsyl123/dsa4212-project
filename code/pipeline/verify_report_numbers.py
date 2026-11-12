@@ -196,7 +196,7 @@ C("A2a tuned k5", mean("A2a", "shape_k5", "tuned_bf"), 7.68); C("A2a tuned id", 
 C("A2b cap200", col("A2b", "cap200"), []); C("A2b scale25", col("A2b", "scale25"), []); C("A2b cap500", col("A2b", "cap500"), [2, 8]); C("p .087", f(0, 10, 4, 10), .087, .0006); C("p .35", f(2, 10, 5, 10), .35, .005)
 C("scale25 worse A1b", n("A1b", "scale25", "worse"), 5, 0); C("scale25 worse A2b", n("A2b", "scale25", "worse"), 0, 0); C("p .033", f(0, 10, 5, 10), .033, .0006); C("seed 4 sc25", D("A1b", "scale25", 4), .68)
 C("A2b gain", (-D("A2b", "id_5k")).mean(), .35); C("A1b gain", (-D("A1b", "id_5k")).mean(), .56); C("A2b seed 8 cap500", D("A2b", "cap500", 8), 520, .5)
-group("Table 10: validation-selected seed", "final_per_instance.csv, set val (lowest mean excess)")
+group("Cost table: validation-selected seed", "final_per_instance.csv, set val (lowest mean excess)")
 for s, sd in (("A2b", 8), ("A1b", 1), ("A1a", 1), ("Baseline", 4), ("A2a", 6)):
     v = PI[s]; v = v[(v.label == EV(s)) & (v.set == "val")].groupby("seed").excess_l2.mean(); C(f"{s} val-selected", int(v.idxmin()), sd, 0)
 group("5.5 and Table 9: failure attribution", "final_per_instance.csv, diagnostics.csv, best_program.py re-scored under AnyFit")
@@ -204,7 +204,7 @@ C("cap500 collapse value", mean("A1b", "cap500", seed=0), 1142, 1); C("cap500 no
 C("seed 0 one bin per item", int(PI["A1b"].query("label=='eoh' and seed==0 and set=='test_cap500'").bins.min()), 5000, 0); C("phi cap500", phi("A1b", "test_cap500", 0), 1.00)
 C("k5 attr", mean("Baseline", "shape_k5", seed=4), 10.81); C("tuned 5.19", mean("Baseline", "cap500_scaled", "tuned_bf"), 5.19); C("tuned 5.20", mean("A1a", "cap500_scaled", "tuned_bf"), 5.20)
 C("A1b any cap500 no empties", max(af("A1b", "eoh", k, "cap500") for k in (0, 2, 3, 4, 9)), .5, .03); C("A2b seed2 cap500 with", mean("A2b", "cap500", seed=2), 223, .6); C("A2b seed8 with", mean("A2b", "cap500", seed=8), 520, .6); C("A2b no empties", max(af("A2b", "eoh", k, "cap500") for k in (2, 8)), .5, .03)
-group("5.6 and Table 10: cost and integrity", "runs_index.csv, integrity.csv")
+group("5.6 and the cost table: cost and integrity", "runs_index.csv, integrity.csv")
 costs = {s: RI[s].query("kind=='evolved'").cost_usd.mean() for s in S}; C("cost lo", min(v for k, v in costs.items() if k != "Control"), .17); C("cost hi", max(costs.values()), .23); C("control cost", costs["Control"], .09)
 vr = [(RI[s].query("kind=='evolved'").n_ok / RI[s].query("kind=='evolved'").n_evals).mean() for s in S]; C("about 99% valid", min(vr), .99, .005)
 for s in S:
