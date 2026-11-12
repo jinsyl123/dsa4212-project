@@ -3,10 +3,12 @@
 
 From code/:  python pipeline/make_report_assets.py [results dir] [output dir]
 Defaults: results/ (this repo's code/results) and the repo's report/ folder.
-Reads final_per_instance.csv, paired_stats.csv, diagnostics.csv and runs_index.csv for each setting, plus the
-baseline's per-run evals.csv for the search-progress figure.
-Writes report/figures/{convergence,empty_bins,collapses}.pdf, report/tables/{baseline,ablation1,ablation2,cost}.tex
-and report/numbers.txt (values quoted in the report text, for checking).
+Reads final_per_instance.csv, final_summary.csv, paired_stats.csv, diagnostics.csv and runs_index.csv for each
+setting, the baseline's per-run evals.csv for the search-progress figure, and abl_informed_rules/ratio_sweep.csv
+(written by pipeline/ratio_sweep.py) for the ratio-sweep figure.
+Writes report/figures/{convergence,empty_bins,fresh_rate,collapses,ratio_sweep}.pdf,
+report/tables/{baseline,ablation1,ablation2,cost}.tex and report/numbers.txt (values quoted in the report text).
+Table means are formatted from final_summary.csv exactly as summarise.py does, so they match summary_tables.md.
 """
 import os, sys
 import numpy as np, pandas as pd
@@ -38,6 +40,7 @@ rd = lambda s, f: pd.read_csv(f"{R}/{S[s]}/{f}")
 PI = {s: rd(s, "final_per_instance.csv") for s in S}
 PS = {s: rd(s, "paired_stats.csv") for s in S}
 DG = {s: rd(s, "diagnostics.csv") for s in S}
+FS = {s: rd(s, "final_summary.csv") for s in S}
 RI = {s: rd(s, "runs_index.csv") for s in S}
 MODE = lambda s: "anyfit" if s == "A1a" else "funsearch"
 N = []
@@ -55,8 +58,8 @@ def bw(s, kind, ref, seeds=None):
 BF = PI["Baseline"]; BF = BF[BF.label == "best_fit"].groupby("set").excess_l2.mean() * 100
 def fmt(v): return "{:.2f}".format(v) if v < 100 else "{:.0f}".format(v)
 def row(label, cells): return label + " & " + " & ".join(cells) + r" \\"
-def means(s, kind):
-    g = mean_excess(s, kind).mean(); return [fmt(g[T(x)]) for x in SETS]
+def means(s, kind):                              # same source and rounding as summary_tables.md
+    f = FS[s]; g = f[f.kind == kind].set_index("set").mean_excess_l2 * 100; return [fmt(g[T(x)]) for x in SETS]
 def table(path, rows):
     spec = "@{}l" + "r" * len(SETS) + "@{}"
     open(f"{OUT}/tables/{path}.tex", "w").write("\\scriptsize\\setlength{\\tabcolsep}{2.5pt}\\begin{tabular}{" + spec + "}\n\\toprule\n" + row("", HEAD) + "\n\\midrule\n" + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
@@ -109,7 +112,7 @@ def progress(label):
         e = pd.read_csv(f"{R}/{S['Baseline']}/{label}/seed{k}/evals.csv"); e = e[e.status == "ok"].sort_values("eval")
         out[k] = (e.set_index("eval").train_excess.cummin() * 100).reindex(range(1, 301)).ffill().bfill()
     return pd.DataFrame(out)
-fig, ax = plt.subplots(figsize=(6.3, 1.6))
+fig, ax = plt.subplots(figsize=(3.3, 1.9))
 bf_train = DG["Baseline"].query("label == 'best_fit' and set == 'train' and mode == 'funsearch'").excess.mean() * 100
 for label, c, name in [("eoh", BLUE, "EoH baseline"), ("tuned_bf", ORANGE, "Tuned Best Fit")]:
     g = progress(label); ax.fill_between(g.index, g.min(axis=1), g.max(axis=1), color=c, alpha=.15, lw=0, zorder=2)
@@ -119,8 +122,8 @@ for label, c, name in [("eoh", BLUE, "EoH baseline"), ("tuned_bf", ORANGE, "Tune
         med = g.median(axis=1); note("EoH median first below Best Fit at eval", int(med[med < bf_train - 1e-6].index.min())); note("EoH best seed first below 4.0 at eval", int(g.min(axis=1)[g.min(axis=1) < 4].index.min()))
 note("Best Fit train", round(bf_train, 2))
 ax.axhline(bf_train, color=INK, lw=1, ls=":", zorder=1, label="Best Fit")
-ax.set_xlim(1, 300); ax.set_ylim(2, 5.4); ax.set_xlabel("Evaluations used"); ax.set_ylabel("Training excess (%)"); ax.set_yticks([2, 3, 4, 5]); fig.legend(*ax.get_legend_handles_labels(), loc="upper center", ncol=3, borderaxespad=0)
-fig.tight_layout(pad=.4, rect=(0, 0, 1, .87)); fig.savefig(f"{OUT}/figures/convergence.pdf", metadata={"CreationDate": None}); plt.close(fig)
+ax.set_xlim(1, 300); ax.set_ylim(2, 5.4); ax.set_xlabel("Evaluations used"); ax.set_ylabel("Training excess (%)"); ax.set_yticks([2, 3, 4, 5]); fig.legend(*ax.get_legend_handles_labels(), loc="upper center", ncol=3, borderaxespad=.2, handlelength=1.5, columnspacing=1, fontsize=7)
+fig.tight_layout(pad=.3, rect=(0, 0, 1, .88)); fig.savefig(f"{OUT}/figures/convergence.pdf", metadata={"CreationDate": None}); plt.close(fig)
 
 # Figure: every seed with empty bins offered against withheld
 fig, ax = plt.subplots(1, 2, figsize=(6.3, 2.9))
@@ -135,6 +138,26 @@ ax[0].set_ylabel("Excess with empty bins withheld (%)")
 h, l = ax[0].get_legend_handles_labels(); fig.legend(h, l, loc="upper center", ncol=3, borderaxespad=0)
 fig.tight_layout(pad=.4, rect=(0, 0, 1, .93)); fig.savefig(f"{OUT}/figures/empty_bins.pdf", metadata={"CreationDate": None}); plt.close(fig)
 
+# Figure: loss on clustered sizes against the fresh-bin rate there, every rule that opens fresh bins on shape_k5
+def fresh_points(s, kind):
+    y = dpp(s, "shape_k5", kind); x = per_seed(s, kind)(T("shape_k5")).reindex(y.index)
+    return pd.DataFrame({"phi": x, "d": y, "setting": s, "kind": kind}).query("phi > 0.1")
+FR = pd.concat([fresh_points(s, "evolved") for s in S if MODE(s) == "funsearch"] +
+               [fresh_points(s, "tuned") for s in ("Baseline", "A2a", "A2b")])   # A1b and the control reuse the baseline's tuned Best Fit
+fig, ax = plt.subplots(figsize=(3.3, 2.2))
+for kind, c, m, lab in [("evolved", BLUE, "o", "Evolved rules"), ("tuned", ORANGE, "X", "Tuned Best Fit")]:
+    g = FR[FR.kind == kind]; ax.scatter(g.phi, g.d, s=26, c=c, marker=m, edgecolors="white", linewidths=.5, label=lab, zorder=3, clip_on=False)
+ax.axhline(0, color=INK, lw=1, ls=":", zorder=1, label="Same as Best Fit")
+ax.set_yscale("symlog", linthresh=1, linscale=.6); ax.set_ylim(-4, 60); ax.set_yticks([-1, 0, 1, 10]); ax.set_yticklabels(["\u22121", "0", "1", "10"]); ax.minorticks_off()
+ax.set_xlim(.15, .6); ax.set_xlabel(r"Fresh-bin rate $\phi$ on shape_k5"); ax.set_ylabel("Excess above Best Fit (pp)")
+fig.legend(*ax.get_legend_handles_labels(), loc="upper center", ncol=3, borderaxespad=.2, handlelength=1.5, columnspacing=1, fontsize=7)
+fig.tight_layout(pad=.3, rect=(0, 0, 1, .9)); fig.savefig(f"{OUT}/figures/fresh_rate.pdf", metadata={"CreationDate": None}); plt.close(fig)
+lo, mid, hi = FR[FR.phi < .44], FR[(FR.phi >= .44) & (FR.phi < .5)], FR[FR.phi >= .5]
+note("shape_k5 rules with phi > 0.1 (evolved, distinct tuned)", f"{(FR.kind == 'evolved').sum()}, {(FR.kind == 'tuned').sum()}")
+note("shape_k5 phi < 0.44: n, max loss pp, rules losing > 0.05 pp", f"{len(lo)}, {lo.d.max():.2f}, {[(r.setting, r.kind, int(k), round(r.phi, 2)) for k, r in lo[lo.d > .05].iterrows()]}")
+note("shape_k5 phi 0.44-0.5: n, loss range pp", f"{len(mid)}, {mid.d.min():.2f} to {mid.d.max():.2f}")
+note("shape_k5 phi >= 0.5: n, min phi, loss range pp", f"{len(hi)}, {hi.phi.min():.2f}, {hi.d.min():.2f} to {hi.d.max():.2f}")
+
 # Figure: difference from Best Fit on each test set, ordered by item-to-bin ratio, every seed
 CAP = {"scale25": 100, "id_5k": 100, "scale65": 100, "cap200": 200, "cap500": 500, "cap500_scaled": 500}
 order = sorted(RATIO, key=lambda k: (RATIO[k], CAP[k]))
@@ -143,12 +166,31 @@ for offset, s, c in [(.17, "A1b", BLUE), (-.17, "A2b", ORANGE)]:
     for i, st in enumerate(order):
         y = dpp(s, st); ax.scatter(y.values, np.full(len(y), i + offset) + np.linspace(-.07, .07, len(y)), s=20, c=c, edgecolors="white", linewidths=.4, zorder=3, clip_on=False, label=s if i == 0 else None)
 ax.axvline(0, color=INK, lw=1, ls=":", zorder=1, label="Same as Best Fit")
-ax.set_xscale("symlog", linthresh=1, linscale=.6); ax.set_xlim(-5, 2000); ax.set_ylim(-.6, len(order) - .4); ax.invert_yaxis()
+ax.set_xscale("symlog", linthresh=1, linscale=.6); ax.set_xlim(-5, 2000); ax.set_xticks([-1, 0, 1, 10, 100, 1000]); ax.set_xticklabels(["\u22121", "0", "1", "10", "100", "1000"]); ax.minorticks_off(); ax.set_ylim(-.6, len(order) - .4); ax.invert_yaxis()
 ax.set_yticks(range(len(order))); ax.set_yticklabels([f"{st} (capacity {CAP[st]}, ratio {RATIO[st]:.2f})" for st in order]); ax.tick_params(axis="y", length=0); ax.grid(axis="y", visible=False)
 ax.set_xlabel("Excess above Best Fit (pp)"); ax.legend(loc="upper center", ncol=3, bbox_to_anchor=(.5, 1.14), borderaxespad=0)
 fig.tight_layout(pad=.4); fig.savefig(f"{OUT}/figures/collapses.pdf", metadata={"CreationDate": None}); plt.close(fig)
 
+# Figure: ratio sweep of the collapsing A1b rules (Section 5.5), from pipeline/ratio_sweep.py's committed output
+SW = pd.read_csv(f"{R}/{S['A1b']}/ratio_sweep.csv"); sw = SW[SW.capacity == 100].pivot(index="rho_actual", columns="seed", values="delta_pp")
+fig, ax = plt.subplots(figsize=(3.3, 2.2))
+for k in sw.columns:
+    early = k != 4
+    ax.plot(sw.index, sw[k], color=BLUE if early else ORANGE, lw=1.5, marker="o" if early else "s", ms=3, zorder=3,
+            label=("A1b seeds 0, 2, 3, 9" if k == sw.columns[0] else None) if early else "A1b seed 4")
+ax.axhline(0, color=INK, lw=1, ls=":", zorder=1, label="Same as Best Fit")
+ax.set_yscale("symlog", linthresh=1, linscale=.6); ax.set_ylim(-3, 2000); ax.set_yticks([-1, 0, 1, 10, 100, 1000]); ax.set_yticklabels(["\u22121", "0", "1", "10", "100", "1000"]); ax.minorticks_off()
+ax.set_xlabel(r"Item-to-bin ratio $\rho$ (capacity 100)"); ax.set_ylabel("Excess above Best Fit (pp)")
+fig.legend(*ax.get_legend_handles_labels(), loc="upper center", ncol=3, borderaxespad=.2, handlelength=1.5, columnspacing=1, fontsize=7)
+fig.tight_layout(pad=.3, rect=(0, 0, 1, .9)); fig.savefig(f"{OUT}/figures/ratio_sweep.pdf", metadata={"CreationDate": None}); plt.close(fig)
+for k in sw.columns: note(f"sweep A1b seed {k} pp above Best Fit at rho " + "/".join(f"{r:.2f}" for r in sw.index[::-1]), " ".join(f"{v:.1f}" for v in sw[k][::-1]))
+note("sweep capacity 1000 pp above Best Fit, seeds " + "/".join(map(str, sw.columns)), " ".join(f"{v:.1f}" for v in SW[SW.capacity == 1000].set_index("seed").delta_pp))
+
 # Numbers quoted in the text
+for s in ("Baseline", "A2a"):
+    g = mean_excess(s, "tuned")[T("shape_k5")]; note(f"{s} tuned Best Fit shape_k5 excess %, range over seeds", f"{g.min():.1f} to {g.max():.1f}")
+ff = PI["Baseline"]; ff = ff[ff.label == "first_fit"].groupby("set").excess_l2.mean() * 100
+note("sets where First Fit is better than Best Fit", [x for x in SETS if ff[T(x)] < BF[T(x)] - 1e-9])
 def worse_any_shape(s, seeds=None):
     q = PS[s]; q = q[(q.kind == "evolved") & (q.reference == "best_fit") & q.set.isin([T("shape_k1.5"), T("shape_k5")]) & (q.verdict == "worse")]
     if seeds is not None: q = q[q.seed.isin(seeds)]
