@@ -152,6 +152,7 @@ One entry per decision that affects results. Link the config and the results fol
 - **Decision:** the EoH baseline (`eoh_baseline.yaml`, `openrouter-gemini-3.5-flash-lite`) runs seeds 0–9; seeds 6–9 added on `ablation-runs` with the same settings as 0–5 (checked against seed 3's `config.json`: same LLM4AD commit, model, budget, method, prompt, training set).
 - **Why:** consistency with the ablations and the control (10 seeds each), and comparable seed counts for the Fisher tests in #15.
 - **How it's reported:** the pre-registered comparisons against the 6-seed baseline stay primary; 10-seed comparisons are added alongside, labelled as added after A1 and the control were scored (#15 amendment, 9 Nov).
+- **Tuned Best Fit:** its seeds 6–9 were run with the same settings, so the baseline's tuned reference also has 10 seeds. It is identical (same parameters and scores) in every setting with the same training set and packing convention, i.e. the baseline, A1b and the control (determinism check, #19). The pre-registered comparison uses its seeds 0–5 (`paired_stats_seeds0-5.csv`).
 - **Claim rule:** a difference in seed counts against the baseline is claimed only if Fisher's exact test gives p < 0.05 against both the 6-seed and the 10-seed baseline; otherwise it is reported with both p-values and labelled not robust. Added in `787760f`, after the seeds 6–9 runs (`code/docs/claims.md`, Amendments, point 3; #21). Applied by `pipeline/seed_counts.py` (`significant_vs_all` in `results/seed_counts.csv`, bold in `seed_counts.md`).
 - **Affects:** `configs/eoh_baseline.yaml` (seeds); results in `results/eoh_baseline__openrouter-gemini-3.5-flash-lite/eoh/seed6`–`seed9`.
 
@@ -178,3 +179,9 @@ One entry per decision that affects results. Link the config and the results fol
 - **The cost table's "selected seed" (stated here because #27 found the rule unstated):** the seed with the lowest mean excess on the validation set `val`, over that setting's ten evolved programs (`final_per_instance.csv`); a tie goes to the lower seed index. No other criterion is used.
 - **Reproducing:** tables and `numbers.txt` reproduce byte for byte (`git status --short report/tables report/numbers.txt` is empty). Figure bytes and axes placement can differ by operating system and matplotlib version (a Windows run showed the same plotted data), so figures are compared by their data, not their bytes.
 - **Affects:** new files and `readme.md` §4.5; no result file changes.
+
+### 2026-11-13: exploratory rescoring on A2's training sets (Jin, 9–10 Nov; recorded by Nic)
+
+- **What:** after A2 was scored, committed final programs were rescored with EoH's own fitness (`core.score`, mean excess over L1) on A2's training sets. A1b's five collapsing programs (seeds 0, 2, 3, 4, 9) score 122–324% on `train_mixed_cap` against Best Fit's 2.96%, so A2b's selection would have rejected them (report §5.4). Baseline seed 4 scores better on `train_mixed` than 9 of A2a's 10 final programs, so mixed shapes do not penalise its fresh-bin rule.
+- **Status:** exploratory, computed after scoring. No results file holds these values; `pipeline/verify_report_numbers.py` recomputes them from the committed programs on every run (its §5.4 group).
+- **Affects:** report §5.4 only; no results change.
