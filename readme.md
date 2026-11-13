@@ -159,12 +159,20 @@ They cover the evaluator (packing, both lower bounds, score), the instance sets,
 `configs/smoke.yaml` runs the whole pipeline (search, held-out scoring, tables and figures) on small instance sets with a **fake LLM** that returns canned heuristics, including deliberately broken ones. It checks the plumbing: budgets, failure logging and every output file. Its scores say nothing about method quality.
 
 ```bash
-python pipeline/run_experiment.py --config configs/smoke.yaml    # 5 methods x 2 seeds, fake LLM (~7 min on Windows, ~1 min on macOS)
+python pipeline/run_experiment.py --config configs/smoke.yaml    # 6 methods x 2 seeds = 12 runs, fake LLM (~7 min on Windows, ~1 min on macOS)
 python pipeline/evaluate_final.py --config configs/smoke.yaml    # held-out scoring
 python pipeline/summarise.py      --config configs/smoke.yaml    # tables and figures
 ```
 
-The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountered in sqrt` lines come from the deliberately broken candidates and are expected. A second run skips finished seeds (`skip ... (done)`); add `--force` to rerun them. Outputs go to `results/smoke/`, which is git-ignored. §10 lists what each file holds.
+**What a good run shows.** Run the three commands one at a time. None of them should print a `Traceback`:
+
+| Command | Last line | Also expect |
+|---|---|---|
+| `run_experiment.py` | `Wrote .../results/smoke/runs_index.csv (12 runs)` | one line per run, 12 in all |
+| `evaluate_final.py` | the last row of a long table (`next_fit` on `val`) | `[smoke] 40 program x set jobs ...`, then 40 job lines, each ending in `ok` |
+| `summarise.py` | `Figures in .../results/smoke/figures` | tables headed `## Search runs` and `## Held-out sets`; the `best_fit` row of the held-out table reads 4.79, 4.40, 1.25 and 8.80 |
+
+The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountered in sqrt` lines come from the deliberately broken candidates and are expected. **The two `funsearch` runs also show `0 evals ... error`, and their row in the summary table is `nan`:** LLM4AD's FunSearch needs `scipy`, which we do not install because FunSearch is not run in this study. This is expected and nothing else depends on it. Run times and token counts differ slightly between machines. A second run skips finished seeds (`skip ... (done)`); add `--force` to rerun them. Outputs go to `results/smoke/`, which is git-ignored. §10 lists what each file holds.
 
 ### 4.3 Regenerate every reported result from the committed runs
 
@@ -219,7 +227,7 @@ It reads the committed `final_per_instance.csv`, `final_summary.csv`, `paired_st
 python pipeline/verify_report_numbers.py   # about 5-10 minutes; exits with status 1 if any check fails
 ```
 
-It re-packs every final program (instance 0 of every set) against `final_per_instance.csv`, recomputes every verdict from the per-instance rows and requires it to agree with `paired_stats.csv`, checks `runs_index.csv` against each run's `evals.csv`, and then checks the numbers quoted in each report section against `final_per_instance.csv`, `diagnostics.csv`, `runs_index.csv`, `integrity.csv`, tuned Best Fit's `candidates.jsonl` and `summary.json`, and §5.5's `masked_choice.csv` and `ratio_sweep.csv`. For the few numbers that no results file holds, it re-scores the committed programs itself: baseline seed 4's empty-bin placements by item size (§5.2), and the final programs on A2's training sets with EoH's fitness (§5.4). It prints one line per report section with the files it read and the number of checks and failures (2,428 checks, 0 failures on this commit). It does not read `make_report_assets.py`'s outputs, so it is a second route to the same numbers.
+It re-packs every final program (instance 0 of every set) against `final_per_instance.csv`, recomputes every verdict from the per-instance rows and requires it to agree with `paired_stats.csv`, checks `runs_index.csv` against each run's `evals.csv`, and then checks the numbers quoted in each report section against `final_per_instance.csv`, `diagnostics.csv`, `runs_index.csv`, `integrity.csv`, tuned Best Fit's `candidates.jsonl` and `summary.json`, and §5.5's `masked_choice.csv` and `ratio_sweep.csv`. For the few numbers that no results file holds, it re-scores the committed programs itself: baseline seed 4's empty-bin placements by item size (§5.2), and the final programs on A2's training sets with EoH's fitness (§5.4). It prints one line per report section with the files it read and the number of checks and failures. A passing run ends with `checks run: 2428, failed: 0` and `no failures`. It does not read `make_report_assets.py`'s outputs, so it is a second route to the same numbers.
 
 ### 4.6 What reproduces exactly, and what doesn't
 
