@@ -121,7 +121,7 @@ git clone https://github.com/jinsyl123/dsa4212-project.git
 cd dsa4212-project
 ```
 
-**Python 3.10–3.12** (LLM4AD needs `numpy<2`, which has no wheels for 3.13+). Check with `python --version`. If you have another version, install 3.12 alongside it and use a virtual environment, so the install cannot conflict with other Python packages on your machine:
+**Python 3.12** (LLM4AD needs `numpy<2`, which has no wheels for 3.13+). Check with `python --version`. If you have another version, install 3.12 alongside it and use a virtual environment, so the install cannot conflict with other Python packages on your machine:
 
 | System | Install Python 3.12 | Create and activate the environment, from the repo root |
 |---|---|---|
@@ -133,7 +133,7 @@ Then, with the environment active, install from the `code/` folder:
 
 ```bash
 cd code
-pip install -r requirements.txt        # installs LLM4AD at the pinned commit
+pip install -r requirements.txt        # installs LLM4AD at the pinned commit; prints "Successfully installed ..."
 ```
 
 Install LLM4AD **only** through `requirements.txt`: `pip install llm4ad` gives an older release (1.0.0) without ReEvo, MCTS-AHD or HSEvo.
@@ -149,28 +149,29 @@ Everything in this section runs from `code/`, makes no LLM calls and needs no AP
 ### 4.1 Run the tests
 
 ```bash
-python -m unittest discover -s tests   # every test should pass
+python -m unittest discover -s tests   # passes if the last line is "OK"; "FAILED (...)" lists the failing tests
 ```
 
-They cover the evaluator (packing, both lower bounds, score), the instance sets, tuned Best Fit, the integrity checks, the configs of every setting, and the Fisher test against the values quoted in `docs/claims.md`.
+They cover the evaluator (packing, both lower bounds, score), the instance sets, tuned Best Fit, the integrity checks, the configs of every setting, and the Fisher test against the values quoted in `docs/claims.md`. One `RuntimeWarning: invalid value encountered in sqrt` from `test_core.py` is expected: that test checks that a rule returning NaN is rejected.
 
 ### 4.2 Run the pipeline end to end with a fake LLM
 
 `configs/smoke.yaml` runs the whole pipeline (search, held-out scoring, tables and figures) on small instance sets with a **fake LLM** that returns canned heuristics, including deliberately broken ones. It checks the plumbing: budgets, failure logging and every output file. Its scores say nothing about method quality.
 
 ```bash
-python pipeline/run_experiment.py --config configs/smoke.yaml    # 5 methods x 2 seeds, fake LLM (~7 min on Windows, ~1 min on macOS)
-python pipeline/evaluate_final.py --config configs/smoke.yaml    # held-out scoring
-python pipeline/summarise.py      --config configs/smoke.yaml    # tables and figures
+python pipeline/run_experiment.py --config configs/smoke.yaml    # 6 methods x 2 seeds = 12 runs, fake LLM (~7 min on Windows, ~1 min on macOS); ends "Wrote .../runs_index.csv (12 runs)"
+python pipeline/evaluate_final.py --config configs/smoke.yaml    # held-out scoring; 40 job lines, each "ok", then a table
+python pipeline/summarise.py      --config configs/smoke.yaml    # ends "Figures in .../results/smoke/figures"; the best_fit row of the held-out table reads 4.79, 4.40, 1.25, 8.80
 ```
 
-The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountered in sqrt` lines come from the deliberately broken candidates and are expected. A second run skips finished seeds (`skip ... (done)`); add `--force` to rerun them. Outputs go to `results/smoke/`, which is git-ignored. §10 lists what each file holds.
+The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountered in sqrt` lines come from the deliberately broken candidates and are expected. **The two `funsearch` runs also show `0 evals ... error` (and `nan` in the summary table):** LLM4AD's FunSearch needs `scipy`, which we do not install because FunSearch is not run in this study; nothing else depends on it. A second run skips finished seeds (`skip ... (done)`); add `--force` to rerun them. Outputs go to `results/smoke/`, which is git-ignored. §10 lists what each file holds.
 
 ### 4.3 Regenerate every reported result from the committed runs
 
 Every search run is committed in full (§10), so every reported number can be rebuilt from the committed best programs:
 
 ```bash
+# each command ends with "OK: every committed output reproduced (...)"; RuntimeWarning lines on the way are expected
 bash pipeline/score.sh --check --llm openrouter-gemini-3.5-flash-lite eoh_baseline
 bash pipeline/score.sh --check abl_anyfit abl_informed_rules control_randsample
 bash pipeline/score.sh --check abl_mixed_shapes abl_mixed_caps_informed
@@ -185,7 +186,9 @@ The baseline needs `--llm` because its results folder is named after the model; 
 5. `paired_stats.py`: per-seed verdicts against Best Fit and tuned Best Fit; for the baseline, also seeds 0–5 against tuned Best Fit seeds 0–5 (`paired_stats_seeds0-5.csv`), the pre-registered comparison;
 6. `summarise.py`: `summary_tables.md` and the figures.
 
-With `--check`, it then prints `OK: every committed output reproduced`, or lists the files that differ and exits with an error. CSV row order and measured run times (`time_s`) are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. Every score, bin count and verdict must match exactly. `git status` may then show some CSVs as modified; that is row order and `time_s` only, and `--check` is the verdict.
+With `--check`, it then prints `OK: every committed output reproduced`, or lists the files that differ and exits with an error. CSV row order and measured run times (`time_s`) are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. Every score, bin count and verdict must match exactly. `git status` may then show some CSVs and figures as modified; that is row order, `time_s` and figure bytes only, and `--check` is the verdict.
+
+**Windows:** run with Python's UTF-8 mode on, e.g. `PYTHONUTF8=1 bash pipeline/score.sh --check ...` in Git Bash. Without it, `summary_tables.md` is written in the Windows default encoding (cp1252), so `--check` flags that file even though only the bytes of its `±` signs differ.
 
 To score a single setting, name only that one, e.g. `bash pipeline/score.sh --check abl_mixed_caps_informed`.
 
@@ -200,11 +203,18 @@ git status --short results/seed_counts.csv results/seed_counts.md   # empty = bo
 
 It counts, per setting, the seeds in each category (better / worse than Best Fit or tuned Best Fit on each set, collapses, fresh-bin seeds) and runs Fisher's exact test against the baseline's seeds 0–5 and 0–9, or against A1b for A2b (`docs/claims.md`, shared rules). It reads the committed `paired_stats.csv`, `final_per_instance.csv` and `diagnostics.csv` and writes `results/seed_counts.csv` (every category and set) and `results/seed_counts.md` (the table in §1, with p-values). It takes seconds.
 
-**Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: `python pipeline/masked_choice.py` (empty bins withheld, or visible but not choosable while a used bin fits; about 10 min) and `python pipeline/ratio_sweep.py` (new instances at smaller item-to-bin ratios, and at capacity 1,000; a few minutes). They write `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `git status --short results/abl_informed_rules/masked_choice.csv results/abl_informed_rules/ratio_sweep.csv` is empty if both reproduced (not all of `results/`, which shows 4.3's re-measured run times).
+**Also run report §5.5's two extra checks.** They rescore A1b's committed programs, with no LLM calls: empty bins withheld, or visible but not choosable while a used bin fits (`masked_choice.py`), and new instances at smaller item-to-bin ratios and at capacity 1,000 (`ratio_sweep.py`). They write the CSVs behind the report's §5.5 numbers; [4.5](#45-report-figures-tables-and-numbers)'s `verify_report_numbers.py` then checks the report against those CSVs.
+
+```bash
+python pipeline/masked_choice.py   # about 10 min; ends "-> .../masked_choice.csv"
+python pipeline/ratio_sweep.py     # a few minutes; ends "-> .../ratio_sweep.csv"
+git status --short results/abl_informed_rules/masked_choice.csv results/abl_informed_rules/ratio_sweep.csv   # empty = both reproduced
+```
 
 ### 4.5 Report figures, tables and numbers
 
 ```bash
+git checkout -- results                                     # if you ran 4.3: restores the run times it re-measured
 python pipeline/make_report_assets.py
 git status --short ../report/tables ../report/numbers.txt   # empty = tables and numbers reproduced
 ```
@@ -216,10 +226,10 @@ It reads the committed `final_per_instance.csv`, `final_summary.csv`, `paired_st
 **Checking every number in the report.** A second, independent script recomputes each number the report quotes from the committed files and compares it with the value printed in the report:
 
 ```bash
-python pipeline/verify_report_numbers.py   # about 5-10 minutes; exits with status 1 if any check fails
+python pipeline/verify_report_numbers.py   # about 5-10 minutes; ends "checks run: 2428, failed: 0" and "no failures"
 ```
 
-It re-packs every final program (instance 0 of every set) against `final_per_instance.csv`, recomputes every verdict from the per-instance rows and requires it to agree with `paired_stats.csv`, checks `runs_index.csv` against each run's `evals.csv`, and then checks the numbers quoted in each report section against `final_per_instance.csv`, `diagnostics.csv`, `runs_index.csv`, `integrity.csv`, tuned Best Fit's `candidates.jsonl` and `summary.json`, and §5.5's `masked_choice.csv` and `ratio_sweep.csv`. For the few numbers that no results file holds, it re-scores the committed programs itself: baseline seed 4's empty-bin placements by item size (§5.2), and the final programs on A2's training sets with EoH's fitness (§5.4). It prints one line per report section with the files it read and the number of checks and failures (2,428 checks, 0 failures on this commit). It does not read `make_report_assets.py`'s outputs, so it is a second route to the same numbers.
+It re-packs every final program (instance 0 of every set) against `final_per_instance.csv`, recomputes every verdict from the per-instance rows and requires it to agree with `paired_stats.csv`, checks `runs_index.csv` against each run's `evals.csv`, and then checks the numbers quoted in each report section against `final_per_instance.csv`, `diagnostics.csv`, `runs_index.csv`, `integrity.csv`, tuned Best Fit's `candidates.jsonl` and `summary.json`, and §5.5's `masked_choice.csv` and `ratio_sweep.csv`. For the few numbers that no results file holds, it re-scores the committed programs itself: baseline seed 4's empty-bin placements by item size (§5.2), and the final programs on A2's training sets with EoH's fitness (§5.4). It prints one line per report section with the files it read and the number of checks and failures. It does not read `make_report_assets.py`'s outputs, so it is a second route to the same numbers.
 
 ### 4.6 What reproduces exactly, and what doesn't
 
@@ -663,7 +673,7 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 ## 13. Known limitations
 
 - The searches don't reproduce exactly (§4.6); the analysis rests on 10 seeds per setting and per-seed verdicts.
-- Only EoH, RandSample and tuned Best Fit have been run. ReEvo, FunSearch and hill climbing are wired up but not run; MCTS-AHD and HSEvo are untested.
+- Only EoH, RandSample and tuned Best Fit have been run. ReEvo, FunSearch and hill climbing are wired up but not run (FunSearch also needs `scipy`, which we do not install); MCTS-AHD and HSEvo are untested.
 - Only each run's single best program (by training score) goes to held-out evaluation. Selecting among the top programs on `val` instead is a possible extension.
 - No operator attribution (which EoH operator produced each candidate) and no diversity metrics (clone rate, collapse rate, behavioural diversity).
 - `tuned_bf`'s knobs are in absolute item units, tuned at the training capacity (like the evolved programs). A variant with knobs relative to the bin size would test the hard-coded-capacity explanation for the capacity failures.

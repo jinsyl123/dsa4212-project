@@ -19,7 +19,7 @@ The paths in `main.tex` are relative to this folder, so run the commands from he
 
 ## Regenerating the figures, tables and numbers
 
-This uses the same Python environment as the rest of the repository: Python 3.10–3.12 with `code/requirements.txt` installed (readme §3). From the repository root, on macOS or Linux (for Windows or conda, see readme §3):
+This uses the same Python environment as the rest of the repository: Python 3.12 with `code/requirements.txt` installed (readme §3). From the repository root, on macOS or Linux (for Windows or conda, see readme §3):
 
 ```bash
 python3.12 -m venv .venv && source .venv/bin/activate      # skip if the environment exists
@@ -31,3 +31,5 @@ python pipeline/verify_report_numbers.py                   # checks every number
 ```
 
 Run these on the committed results. If you ran `score.sh` first (readme §4.3), it re-measured the run times that the cost table's Time column reads, so restore them with `git checkout -- results` (from `code/`). Figure bytes can differ with the matplotlib version, fonts and operating system, but the plotted data does not (readme §4.5).
+
+The report's §5.5 checks (`masked_choice.py`, `ratio_sweep.py`) are in [readme §4.4](../readme.md#44-setting-level-seed-counts-and-fisher-tests). They write the CSVs that `verify_report_numbers.py` checks the report against.
