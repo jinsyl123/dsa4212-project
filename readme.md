@@ -159,20 +159,12 @@ They cover the evaluator (packing, both lower bounds, score), the instance sets,
 `configs/smoke.yaml` runs the whole pipeline (search, held-out scoring, tables and figures) on small instance sets with a **fake LLM** that returns canned heuristics, including deliberately broken ones. It checks the plumbing: budgets, failure logging and every output file. Its scores say nothing about method quality.
 
 ```bash
-python pipeline/run_experiment.py --config configs/smoke.yaml    # 6 methods x 2 seeds = 12 runs, fake LLM (~7 min on Windows, ~1 min on macOS)
-python pipeline/evaluate_final.py --config configs/smoke.yaml    # held-out scoring
-python pipeline/summarise.py      --config configs/smoke.yaml    # tables and figures
+python pipeline/run_experiment.py --config configs/smoke.yaml    # 6 methods x 2 seeds = 12 runs, fake LLM (~7 min on Windows, ~1 min on macOS); ends "Wrote .../runs_index.csv (12 runs)"
+python pipeline/evaluate_final.py --config configs/smoke.yaml    # held-out scoring; 40 job lines, each "ok", then a table
+python pipeline/summarise.py      --config configs/smoke.yaml    # ends "Figures in .../results/smoke/figures"; the best_fit row of the held-out table reads 4.79, 4.40, 1.25, 8.80
 ```
 
-**What a good run shows.** Run the three commands one at a time. None of them should print a `Traceback`:
-
-| Command | Last line | Also expect |
-|---|---|---|
-| `run_experiment.py` | `Wrote .../results/smoke/runs_index.csv (12 runs)` | one line per run, 12 in all |
-| `evaluate_final.py` | the last row of a long table (`next_fit` on `val`) | `[smoke] 40 program x set jobs ...`, then 40 job lines, each ending in `ok` |
-| `summarise.py` | `Figures in .../results/smoke/figures` | tables headed `## Search runs` and `## Held-out sets`; the `best_fit` row of the held-out table reads 4.79, 4.40, 1.25 and 8.80 |
-
-The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountered in sqrt` lines come from the deliberately broken candidates and are expected. **The two `funsearch` runs also show `0 evals ... error`, and their row in the summary table is `nan`:** LLM4AD's FunSearch needs `scipy`, which we do not install because FunSearch is not run in this study. This is expected and nothing else depends on it. Run times and token counts differ slightly between machines. A second run skips finished seeds (`skip ... (done)`); add `--force` to rerun them. Outputs go to `results/smoke/`, which is git-ignored. §10 lists what each file holds.
+None of the three should print a `Traceback`. The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountered in sqrt` lines come from the deliberately broken candidates and are expected. **The two `funsearch` runs also show `0 evals ... error` (and `nan` in the summary table):** LLM4AD's FunSearch needs `scipy`, which we do not install because FunSearch is not run in this study; nothing else depends on it. Run times and token counts vary a little between machines. A second run skips finished seeds (`skip ... (done)`); add `--force` to rerun them. Outputs go to `results/smoke/`, which is git-ignored. §10 lists what each file holds.
 
 ### 4.3 Regenerate every reported result from the committed runs
 
