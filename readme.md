@@ -114,6 +114,13 @@ The root `docs/log.md` covers the topic choice and framework (from 21 Oct); ever
 
 ## 3. Setup
 
+Clone the repository and work from its root. While the repository is private, cloning needs a GitHub account with access to it.
+
+```bash
+git clone https://github.com/jinsyl123/dsa4212-project.git
+cd dsa4212-project
+```
+
 **Python 3.10–3.12** (LLM4AD needs `numpy<2`, which has no wheels for 3.13+). Check with `python --version`. If you have another version, install 3.12 alongside it and use a virtual environment, so the install cannot conflict with other Python packages on your machine:
 
 | System | Install Python 3.12 | Create and activate the environment, from the repo root |
