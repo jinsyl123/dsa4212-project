@@ -114,6 +114,13 @@ The root `docs/log.md` covers the topic choice and framework (from 21 Oct); ever
 
 ## 3. Setup
 
+Clone the repository and work from its root:
+
+```bash
+git clone https://github.com/jinsyl123/dsa4212-project.git
+cd dsa4212-project
+```
+
 **Python 3.10–3.12** (LLM4AD needs `numpy<2`, which has no wheels for 3.13+). Check with `python --version`. If you have another version, install 3.12 alongside it and use a virtual environment, so the install cannot conflict with other Python packages on your machine:
 
 | System | Install Python 3.12 | Create and activate the environment, from the repo root |
@@ -193,7 +200,7 @@ git status --short results/seed_counts.csv results/seed_counts.md   # empty = bo
 
 It counts, per setting, the seeds in each category (better / worse than Best Fit or tuned Best Fit on each set, collapses, fresh-bin seeds) and runs Fisher's exact test against the baseline's seeds 0–5 and 0–9, or against A1b for A2b (`docs/claims.md`, shared rules). It reads the committed `paired_stats.csv`, `final_per_instance.csv` and `diagnostics.csv` and writes `results/seed_counts.csv` (every category and set) and `results/seed_counts.md` (the table in §1, with p-values). It takes seconds.
 
-**Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: `python pipeline/masked_choice.py` (empty bins withheld, or visible but not choosable while a used bin fits; about 10 min) and `python pipeline/ratio_sweep.py` (new instances at smaller item-to-bin ratios, and at capacity 1,000; a few minutes). They write `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `git status --short results/` is empty if both reproduced.
+**Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: `python pipeline/masked_choice.py` (empty bins withheld, or visible but not choosable while a used bin fits; about 10 min) and `python pipeline/ratio_sweep.py` (new instances at smaller item-to-bin ratios, and at capacity 1,000; a few minutes). They write `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `git status --short results/abl_informed_rules/masked_choice.csv results/abl_informed_rules/ratio_sweep.csv` is empty if both reproduced (not all of `results/`, which shows 4.3's re-measured run times).
 
 ### 4.5 Report figures, tables and numbers
 
@@ -201,6 +208,8 @@ It counts, per setting, the seeds in each category (better / worse than Best Fit
 python pipeline/make_report_assets.py
 git status --short ../report/tables ../report/numbers.txt   # empty = tables and numbers reproduced
 ```
+
+Run it on the committed results. `score.sh` (4.3) re-measures the run times in each `final_per_instance.csv`, and the report's cost table reads them (its Time column, in `report/tables/cost.tex`), so after 4.3 that column differs. `git checkout -- results` restores the committed files.
 
 It reads the committed `final_per_instance.csv`, `final_summary.csv`, `paired_stats.csv`, `diagnostics.csv` and `runs_index.csv` of every setting, the baseline's `evals.csv` files, and `results/abl_informed_rules/ratio_sweep.csv` (written by `pipeline/ratio_sweep.py`, §4.4). It writes the report's five figures to `report/figures/` (`convergence.pdf`: search progress on the training set; `empty_bins.pdf`: each seed with empty bins offered against withheld; `fresh_rate.pdf`: loss on `shape_k5` against how often a rule opens fresh bins there; `collapses.pdf`: each A1b and A2b seed's excess above Best Fit, ordered by item-to-bin ratio; `ratio_sweep.pdf`: the five collapsing A1b rules as the item-to-bin ratio falls), its four results tables to `report/tables/` and the numbers quoted in the text to `report/numbers.txt`. Table means are taken from `final_summary.csv` with the same rounding as `summary_tables.md`, so the two agree. It takes seconds. As in 4.3, figure bytes (and the axes' exact placement) can differ with the matplotlib version, fonts and operating system, so only the tables and numbers are expected to match byte for byte; the plotted data does not change.
 
