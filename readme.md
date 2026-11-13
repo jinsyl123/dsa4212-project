@@ -200,7 +200,7 @@ git status --short results/seed_counts.csv results/seed_counts.md   # empty = bo
 
 It counts, per setting, the seeds in each category (better / worse than Best Fit or tuned Best Fit on each set, collapses, fresh-bin seeds) and runs Fisher's exact test against the baseline's seeds 0–5 and 0–9, or against A1b for A2b (`docs/claims.md`, shared rules). It reads the committed `paired_stats.csv`, `final_per_instance.csv` and `diagnostics.csv` and writes `results/seed_counts.csv` (every category and set) and `results/seed_counts.md` (the table in §1, with p-values). It takes seconds.
 
-**Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: `python pipeline/masked_choice.py` (empty bins withheld, or visible but not choosable while a used bin fits; about 10 min) and `python pipeline/ratio_sweep.py` (new instances at smaller item-to-bin ratios, and at capacity 1,000; a few minutes). They write `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `git status --short results/` is empty if both reproduced.
+**Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: `python pipeline/masked_choice.py` (empty bins withheld, or visible but not choosable while a used bin fits; about 10 min) and `python pipeline/ratio_sweep.py` (new instances at smaller item-to-bin ratios, and at capacity 1,000; a few minutes). They write `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `git status --short results/abl_informed_rules/masked_choice.csv results/abl_informed_rules/ratio_sweep.csv` is empty if both reproduced (not all of `results/`, which shows 4.3's re-measured run times).
 
 ### 4.5 Report figures, tables and numbers
 
