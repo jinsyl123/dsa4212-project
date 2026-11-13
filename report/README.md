@@ -30,4 +30,4 @@ git status --short ../report/tables ../report/numbers.txt  # empty = tables and 
 python pipeline/verify_report_numbers.py                   # checks every number the report quotes; about 5-10 minutes
 ```
 
-Figure bytes can differ with the matplotlib version, fonts and operating system, but the plotted data does not (readme §4.5).
+Run these on the committed results. If you ran `score.sh` first (readme §4.3), it re-measured the run times that the cost table's Time column reads, so restore them with `git checkout -- results` (from `code/`). Figure bytes can differ with the matplotlib version, fonts and operating system, but the plotted data does not (readme §4.5).
