@@ -188,6 +188,8 @@ The baseline needs `--llm` because its results folder is named after the model; 
 
 With `--check`, it then prints `OK: every committed output reproduced`, or lists the files that differ and exits with an error. CSV row order and measured run times (`time_s`) are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. Every score, bin count and verdict must match exactly. `git status` may then show some CSVs and figures as modified; that is row order, `time_s` and figure bytes only, and `--check` is the verdict.
 
+**Windows:** run with Python's UTF-8 mode on, e.g. `PYTHONUTF8=1 bash pipeline/score.sh --check ...` in Git Bash. Without it, `summary_tables.md` is written in the Windows default encoding (cp1252), so `--check` flags that file even though only the bytes of its `±` signs differ.
+
 To score a single setting, name only that one, e.g. `bash pipeline/score.sh --check abl_mixed_caps_informed`.
 
 ### 4.4 Setting-level seed counts and Fisher tests
