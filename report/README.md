@@ -19,7 +19,7 @@ The paths in `main.tex` are relative to this folder, so run the commands from he
 
 ## Regenerating the figures, tables and numbers
 
-This uses the same Python environment as the rest of the repository: Python 3.10–3.12 with `code/requirements.txt` installed (readme §3). From the repository root, on macOS or Linux (for Windows or conda, see readme §3):
+This uses the same Python environment as the rest of the repository: Python 3.12 with `code/requirements.txt` installed (readme §3). From the repository root, on macOS or Linux (for Windows or conda, see readme §3):
 
 ```bash
 python3.12 -m venv .venv && source .venv/bin/activate      # skip if the environment exists
