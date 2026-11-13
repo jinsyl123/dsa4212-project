@@ -132,7 +132,7 @@ for label, c, name in [("eoh", BLUE, "EoH baseline"), ("tuned_bf", ORANGE, "Tune
     if label == "eoh":
         med = g.median(axis=1); note("EoH median first below Best Fit at eval", int(med[med < bf_train - 1e-6].index.min())); note("EoH best seed first below 4.0 at eval", int(g.min(axis=1)[g.min(axis=1) < 4].index.min()))
 note("Best Fit train", round(bf_train, 2))
-ax.axhline(bf_train, color=INK, lw=1, ls=":", zorder=1, label="Best Fit")
+ax.axhline(bf_train, color=INK, lw=1, ls=":", zorder=4, label="Best Fit")
 ax.set_xlim(1, 300); ax.set_ylim(2, 5.4); ax.set_xlabel("Evaluations used"); ax.set_ylabel("Training excess (%)"); ax.set_yticks([2, 3, 4, 5]); fig.legend(*ax.get_legend_handles_labels(), loc="upper center", ncol=3, borderaxespad=.2, handlelength=1.5, columnspacing=1, fontsize=7)
 fig.tight_layout(pad=.3, rect=(0, 0, 1, .88)); fig.savefig(f"{OUT}/figures/convergence.pdf", metadata={"CreationDate": None}); plt.close(fig)
 
@@ -143,7 +143,7 @@ for a, st, name in zip(ax, ["id_5k", "shape_k5"], ["In distribution (id_5k)", "C
         d = DG["Baseline"]; g = d[(d.kind == kind) & (d.set == T(st))].groupby(["seed", "mode"]).excess.mean().unstack() * 100
         a.scatter(g.funsearch, g.anyfit, s=34, c=c, marker=m, edgecolors="white", linewidths=.5, label=lab, zorder=3, clip_on=False)
     lo = min(a.get_xlim()[0], a.get_ylim()[0]); hi = max(a.get_xlim()[1], a.get_ylim()[1])
-    a.plot([lo, hi], [lo, hi], color=INK, lw=1, ls=":", zorder=1, label="Same excess with or without empty bins"); a.set_xlim(lo, hi); a.set_ylim(lo, hi); a.set_aspect("equal", adjustable="box")
+    a.plot([lo, hi], [lo, hi], color=INK, lw=1, ls=":", zorder=1, label="Same with or without empty bins"); a.set_xlim(lo, hi); a.set_ylim(lo, hi); a.set_aspect("equal", adjustable="box")
     a.set_title(name, loc="left", fontsize=8.5, color=INK); a.set_xlabel("Excess with empty bins offered (%)")
 ax[0].set_ylabel("Excess with empty bins withheld (%)")
 h, l = ax[0].get_legend_handles_labels(); fig.legend(h, l, loc="upper center", ncol=3, borderaxespad=0)
@@ -191,7 +191,7 @@ for k in sw.columns:
     ax.plot(sw.index, sw[k], color=BLUE if early else ORANGE, lw=1.5, marker="o" if early else "s", ms=3, zorder=3,
             label=("A1b seeds 0, 2, 3, 9" if k == sw.columns[0] else None) if early else "A1b seed 4")
 ax.axhline(0, color=INK, lw=1, ls=":", zorder=1, label="Same as Best Fit")
-ax.set_yscale("symlog", linthresh=1, linscale=.6); ax.set_ylim(-3, 2000); ax.set_yticks([-1, 0, 1, 10, 100, 1000]); ax.set_yticklabels(["\u22121", "0", "1", "10", "100", "1000"]); ax.minorticks_off()
+ax.set_xticks([.15, .20, .25, .32]); ax.set_yscale("symlog", linthresh=1, linscale=.6); ax.set_ylim(-3, 2000); ax.set_yticks([-1, 0, 1, 10, 100, 1000]); ax.set_yticklabels(["\u22121", "0", "1", "10", "100", "1000"]); ax.minorticks_off()
 ax.set_xlabel(r"Item-to-bin ratio $\rho$ (capacity 100)"); ax.set_ylabel("Excess above Best Fit (pp)")
 fig.legend(*ax.get_legend_handles_labels(), loc="upper center", ncol=3, borderaxespad=.2, handlelength=1.5, columnspacing=1, fontsize=7)
 fig.tight_layout(pad=.3, rect=(0, 0, 1, .9)); fig.savefig(f"{OUT}/figures/ratio_sweep.pdf", metadata={"CreationDate": None}); plt.close(fig)
