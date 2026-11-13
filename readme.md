@@ -114,7 +114,7 @@ The root `docs/log.md` covers the topic choice and framework (from 21 Oct); ever
 
 ## 3. Setup
 
-Clone the repository and work from its root. While the repository is private, cloning needs a GitHub account with access to it.
+Clone the repository and work from its root:
 
 ```bash
 git clone https://github.com/jinsyl123/dsa4212-project.git
