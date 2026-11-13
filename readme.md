@@ -164,7 +164,7 @@ python pipeline/evaluate_final.py --config configs/smoke.yaml    # held-out scor
 python pipeline/summarise.py      --config configs/smoke.yaml    # ends "Figures in .../results/smoke/figures"; the best_fit row of the held-out table reads 4.79, 4.40, 1.25, 8.80
 ```
 
-None of the three should print a `Traceback`. The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountered in sqrt` lines come from the deliberately broken candidates and are expected. **The two `funsearch` runs also show `0 evals ... error` (and `nan` in the summary table):** LLM4AD's FunSearch needs `scipy`, which we do not install because FunSearch is not run in this study; nothing else depends on it. Run times and token counts vary a little between machines. A second run skips finished seeds (`skip ... (done)`); add `--force` to rerun them. Outputs go to `results/smoke/`, which is git-ignored. §10 lists what each file holds.
+The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountered in sqrt` lines come from the deliberately broken candidates and are expected. **The two `funsearch` runs also show `0 evals ... error` (and `nan` in the summary table):** LLM4AD's FunSearch needs `scipy`, which we do not install because FunSearch is not run in this study; nothing else depends on it. A second run skips finished seeds (`skip ... (done)`); add `--force` to rerun them. Outputs go to `results/smoke/`, which is git-ignored. §10 lists what each file holds.
 
 ### 4.3 Regenerate every reported result from the committed runs
 
