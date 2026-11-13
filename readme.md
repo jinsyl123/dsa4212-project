@@ -61,7 +61,7 @@ Bold: claimed, i.e. Fisher's exact test on seed counts gives p < 0.05 against bo
 
 **Consistent with the predictions but not significant with 10 seeds:** mixed shapes (A2a) cut shape failures from 3/6 to 1/10; mixed capacities (A2b) remove A1b's capacity collapse inside the trained range (0/10 vs 4/10 on `test_cap200` and `test_scale25`, 2/10 vs 5/10 on `test_cap500`).
 
-**Patterns across every setting:** no LLM rule beats its own tuned Best Fit in distribution (1 of 60 seeds, A2a seed 6). In the baseline, the fresh-bin seeds (3, 4, 5; opening an empty bin while a used one has room) account for both its largest in-distribution gains (seeds 4, 5) and all three of its shape failures. Tuned Best Fit fails most consistently under shape shift: every baseline seed is worse than Best Fit on `test_shape_k5` (about 30% over the bound, vs Best Fit's 8%).
+**Patterns across every setting:** no LLM rule beats its own tuned Best Fit in distribution (1 of 50 evolved seeds, A2a seed 6). In the baseline, the fresh-bin seeds (3, 4, 5; opening an empty bin while a used one has room) account for both its largest in-distribution gains (seeds 4, 5) and all three of its shape failures. Tuned Best Fit fails most consistently under shape shift: every baseline seed is worse than Best Fit on `test_shape_k5` (about 30% over the bound, vs Best Fit's 8%).
 
 Earlier runs (the 25 Oct free-tier run, free-tier seed 11) and how the analysis got here are in `code/docs/log.md`.
 
@@ -199,10 +199,10 @@ It counts, per setting, the seeds in each category (better / worse than Best Fit
 
 ```bash
 python pipeline/make_report_assets.py
-git status --short ../report   # empty = figures, tables and numbers reproduced
+git status --short ../report/tables ../report/numbers.txt   # empty = tables and numbers reproduced
 ```
 
-It reads the committed `final_per_instance.csv`, `final_summary.csv`, `paired_stats.csv`, `diagnostics.csv` and `runs_index.csv` of every setting, the baseline's `evals.csv` files, and `results/abl_informed_rules/ratio_sweep.csv` (written by `pipeline/ratio_sweep.py`, §4.4). It writes the report's five figures to `report/figures/` (`convergence.pdf`: search progress on the training set; `empty_bins.pdf`: each seed with empty bins offered against withheld; `fresh_rate.pdf`: loss on `shape_k5` against how often a rule opens fresh bins there; `collapses.pdf`: each A1b and A2b seed's excess above Best Fit, ordered by item-to-bin ratio; `ratio_sweep.pdf`: the five collapsing A1b rules as the item-to-bin ratio falls), its four results tables to `report/tables/` and the numbers quoted in the text to `report/numbers.txt`. Table means are taken from `final_summary.csv` with the same rounding as `summary_tables.md`, so the two agree. It takes seconds. As in 4.3, figure bytes can differ with the matplotlib version and fonts; the tables and numbers should not.
+It reads the committed `final_per_instance.csv`, `final_summary.csv`, `paired_stats.csv`, `diagnostics.csv` and `runs_index.csv` of every setting, the baseline's `evals.csv` files, and `results/abl_informed_rules/ratio_sweep.csv` (written by `pipeline/ratio_sweep.py`, §4.4). It writes the report's five figures to `report/figures/` (`convergence.pdf`: search progress on the training set; `empty_bins.pdf`: each seed with empty bins offered against withheld; `fresh_rate.pdf`: loss on `shape_k5` against how often a rule opens fresh bins there; `collapses.pdf`: each A1b and A2b seed's excess above Best Fit, ordered by item-to-bin ratio; `ratio_sweep.pdf`: the five collapsing A1b rules as the item-to-bin ratio falls), its four results tables to `report/tables/` and the numbers quoted in the text to `report/numbers.txt`. Table means are taken from `final_summary.csv` with the same rounding as `summary_tables.md`, so the two agree. It takes seconds. As in 4.3, figure bytes (and the axes' exact placement) can differ with the matplotlib version, fonts and operating system, so only the tables and numbers are expected to match byte for byte; the plotted data does not change.
 
 **Checking every number in the report.** A second, independent script recomputes each number the report quotes from the committed files and compares it with the value printed in the report:
 
