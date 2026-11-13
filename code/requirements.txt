@@ -10,3 +10,4 @@ pytz
 tqdm
 python-dotenv>=1.0       # loads API keys from .env
 ipykernel                # lets the .venv appear as a Jupyter / VS Code kernel
+scipy>=1.10              # imported by LLM4AD FunSearch (method/funsearch/programs_database.py)
