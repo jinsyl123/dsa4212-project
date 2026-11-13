@@ -186,7 +186,7 @@ The baseline needs `--llm` because its results folder is named after the model; 
 5. `paired_stats.py`: per-seed verdicts against Best Fit and tuned Best Fit; for the baseline, also seeds 0–5 against tuned Best Fit seeds 0–5 (`paired_stats_seeds0-5.csv`), the pre-registered comparison;
 6. `summarise.py`: `summary_tables.md` and the figures.
 
-With `--check`, it then prints `OK: every committed output reproduced`, or lists the files that differ and exits with an error. CSV row order and measured run times (`time_s`) are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. Every score, bin count and verdict must match exactly. `git status` may then show some CSVs as modified; that is row order and `time_s` only, and `--check` is the verdict.
+With `--check`, it then prints `OK: every committed output reproduced`, or lists the files that differ and exits with an error. CSV row order and measured run times (`time_s`) are ignored, and changed figures are not compared (their bytes depend on the matplotlib version and fonts; the CSVs they are drawn from are), though a missing or new figure still fails. Every score, bin count and verdict must match exactly. `git status` may then show some CSVs and figures as modified; that is row order, `time_s` and figure bytes only, and `--check` is the verdict.
 
 To score a single setting, name only that one, e.g. `bash pipeline/score.sh --check abl_mixed_caps_informed`.
 
