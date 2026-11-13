@@ -149,10 +149,10 @@ Everything in this section runs from `code/`, makes no LLM calls and needs no AP
 ### 4.1 Run the tests
 
 ```bash
-python -m unittest discover -s tests   # every test should pass
+python -m unittest discover -s tests   # passes if the last line is "OK"; "FAILED (...)" lists the failing tests
 ```
 
-They cover the evaluator (packing, both lower bounds, score), the instance sets, tuned Best Fit, the integrity checks, the configs of every setting, and the Fisher test against the values quoted in `docs/claims.md`.
+They cover the evaluator (packing, both lower bounds, score), the instance sets, tuned Best Fit, the integrity checks, the configs of every setting, and the Fisher test against the values quoted in `docs/claims.md`. One `RuntimeWarning: invalid value encountered in sqrt` from `test_core.py` is expected: that test checks that a rule returning NaN is rejected.
 
 ### 4.2 Run the pipeline end to end with a fake LLM
 
