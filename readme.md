@@ -201,7 +201,7 @@ git status --short results/seed_counts.csv results/seed_counts.md   # empty = bo
 
 It counts, per setting, the seeds in each category (better / worse than Best Fit or tuned Best Fit on each set, collapses, fresh-bin seeds) and runs Fisher's exact test against the baseline's seeds 0–5 and 0–9, or against A1b for A2b (`docs/claims.md`, shared rules). It reads the committed `paired_stats.csv`, `final_per_instance.csv` and `diagnostics.csv` and writes `results/seed_counts.csv` (every category and set) and `results/seed_counts.md` (the table in §1, with p-values). It takes seconds.
 
-**Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: empty bins withheld, or visible but not choosable while a used bin fits (`masked_choice.py`), and new instances at smaller item-to-bin ratios and at capacity 1,000 (`ratio_sweep.py`).
+**Also run report §5.5's two extra checks.** They rescore A1b's committed programs, with no LLM calls: empty bins withheld, or visible but not choosable while a used bin fits (`masked_choice.py`), and new instances at smaller item-to-bin ratios and at capacity 1,000 (`ratio_sweep.py`). They write the CSVs behind the report's §5.5 numbers; [4.5](#45-report-figures-tables-and-numbers)'s `verify_report_numbers.py` then checks the report against those CSVs.
 
 ```bash
 python pipeline/masked_choice.py   # about 10 min; ends "-> .../masked_choice.csv"
