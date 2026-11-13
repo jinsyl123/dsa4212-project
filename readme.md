@@ -171,7 +171,7 @@ The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountere
 Every search run is committed in full (§10), so every reported number can be rebuilt from the committed best programs:
 
 ```bash
-# each command ends with "OK: every committed output reproduced (...)"
+# each command ends with "OK: every committed output reproduced (...)"; RuntimeWarning lines on the way are expected
 bash pipeline/score.sh --check --llm openrouter-gemini-3.5-flash-lite eoh_baseline
 bash pipeline/score.sh --check abl_anyfit abl_informed_rules control_randsample
 bash pipeline/score.sh --check abl_mixed_shapes abl_mixed_caps_informed
