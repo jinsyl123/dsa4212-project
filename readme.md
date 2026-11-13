@@ -133,7 +133,7 @@ Then, with the environment active, install from the `code/` folder:
 
 ```bash
 cd code
-pip install -r requirements.txt        # installs LLM4AD at the pinned commit
+pip install -r requirements.txt        # installs LLM4AD at the pinned commit; prints "Successfully installed ..."
 ```
 
 Install LLM4AD **only** through `requirements.txt`: `pip install llm4ad` gives an older release (1.0.0) without ReEvo, MCTS-AHD or HSEvo.
@@ -171,6 +171,7 @@ The `err` and `timeout` counts and the `RuntimeWarning: invalid value encountere
 Every search run is committed in full (§10), so every reported number can be rebuilt from the committed best programs:
 
 ```bash
+# each command ends with "OK: every committed output reproduced (...)"
 bash pipeline/score.sh --check --llm openrouter-gemini-3.5-flash-lite eoh_baseline
 bash pipeline/score.sh --check abl_anyfit abl_informed_rules control_randsample
 bash pipeline/score.sh --check abl_mixed_shapes abl_mixed_caps_informed
@@ -205,6 +206,7 @@ It counts, per setting, the seeds in each category (better / worse than Best Fit
 ### 4.5 Report figures, tables and numbers
 
 ```bash
+git checkout -- results                                     # if you ran 4.3: restores the run times it re-measured
 python pipeline/make_report_assets.py
 git status --short ../report/tables ../report/numbers.txt   # empty = tables and numbers reproduced
 ```
@@ -216,10 +218,10 @@ It reads the committed `final_per_instance.csv`, `final_summary.csv`, `paired_st
 **Checking every number in the report.** A second, independent script recomputes each number the report quotes from the committed files and compares it with the value printed in the report:
 
 ```bash
-python pipeline/verify_report_numbers.py   # about 5-10 minutes; exits with status 1 if any check fails
+python pipeline/verify_report_numbers.py   # about 5-10 minutes; ends "checks run: 2428, failed: 0" and "no failures"
 ```
 
-It re-packs every final program (instance 0 of every set) against `final_per_instance.csv`, recomputes every verdict from the per-instance rows and requires it to agree with `paired_stats.csv`, checks `runs_index.csv` against each run's `evals.csv`, and then checks the numbers quoted in each report section against `final_per_instance.csv`, `diagnostics.csv`, `runs_index.csv`, `integrity.csv`, tuned Best Fit's `candidates.jsonl` and `summary.json`, and §5.5's `masked_choice.csv` and `ratio_sweep.csv`. For the few numbers that no results file holds, it re-scores the committed programs itself: baseline seed 4's empty-bin placements by item size (§5.2), and the final programs on A2's training sets with EoH's fitness (§5.4). It prints one line per report section with the files it read and the number of checks and failures. A passing run ends with `checks run: 2428, failed: 0` and `no failures`. It does not read `make_report_assets.py`'s outputs, so it is a second route to the same numbers.
+It re-packs every final program (instance 0 of every set) against `final_per_instance.csv`, recomputes every verdict from the per-instance rows and requires it to agree with `paired_stats.csv`, checks `runs_index.csv` against each run's `evals.csv`, and then checks the numbers quoted in each report section against `final_per_instance.csv`, `diagnostics.csv`, `runs_index.csv`, `integrity.csv`, tuned Best Fit's `candidates.jsonl` and `summary.json`, and §5.5's `masked_choice.csv` and `ratio_sweep.csv`. For the few numbers that no results file holds, it re-scores the committed programs itself: baseline seed 4's empty-bin placements by item size (§5.2), and the final programs on A2's training sets with EoH's fitness (§5.4). It prints one line per report section with the files it read and the number of checks and failures. It does not read `make_report_assets.py`'s outputs, so it is a second route to the same numbers.
 
 ### 4.6 What reproduces exactly, and what doesn't
 
@@ -663,7 +665,7 @@ Many candidates tied with Best Fit and few distinct scores mean the LLM keeps re
 ## 13. Known limitations
 
 - The searches don't reproduce exactly (§4.6); the analysis rests on 10 seeds per setting and per-seed verdicts.
-- Only EoH, RandSample and tuned Best Fit have been run. ReEvo, FunSearch and hill climbing are wired up but not run; MCTS-AHD and HSEvo are untested.
+- Only EoH, RandSample and tuned Best Fit have been run. ReEvo, FunSearch and hill climbing are wired up but not run (FunSearch also needs `scipy`, which we do not install); MCTS-AHD and HSEvo are untested.
 - Only each run's single best program (by training score) goes to held-out evaluation. Selecting among the top programs on `val` instead is a possible extension.
 - No operator attribution (which EoH operator produced each candidate) and no diversity metrics (clone rate, collapse rate, behavioural diversity).
 - `tuned_bf`'s knobs are in absolute item units, tuned at the training capacity (like the evolved programs). A variant with knobs relative to the bin size would test the hard-coded-capacity explanation for the capacity failures.
