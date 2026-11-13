@@ -61,7 +61,7 @@ Bold: claimed, i.e. Fisher's exact test on seed counts gives p < 0.05 against bo
 
 **Consistent with the predictions but not significant with 10 seeds:** mixed shapes (A2a) cut shape failures from 3/6 to 1/10; mixed capacities (A2b) remove A1b's capacity collapse inside the trained range (0/10 vs 4/10 on `test_cap200` and `test_scale25`, 2/10 vs 5/10 on `test_cap500`).
 
-**Patterns across every setting:** no LLM rule beats its own tuned Best Fit in distribution (1 of 60 seeds, A2a seed 6). In the baseline, the fresh-bin seeds (3, 4, 5; opening an empty bin while a used one has room) account for both its largest in-distribution gains (seeds 4, 5) and all three of its shape failures. Tuned Best Fit fails most consistently under shape shift: every baseline seed is worse than Best Fit on `test_shape_k5` (about 30% over the bound, vs Best Fit's 8%).
+**Patterns across every setting:** no LLM rule beats its own tuned Best Fit in distribution (1 of 50 evolved seeds, A2a seed 6). In the baseline, the fresh-bin seeds (3, 4, 5; opening an empty bin while a used one has room) account for both its largest in-distribution gains (seeds 4, 5) and all three of its shape failures. Tuned Best Fit fails most consistently under shape shift: every baseline seed is worse than Best Fit on `test_shape_k5` (about 30% over the bound, vs Best Fit's 8%).
 
 Earlier runs (the 25 Oct free-tier run, free-tier seed 11) and how the analysis got here are in `code/docs/log.md`.
 
@@ -99,7 +99,9 @@ Earlier runs (the 25 Oct free-tier run, free-tier seed 11) and how the analysis 
     │   ├── check_outputs.py       the comparison --check uses
     │   ├── seed_counts.py         setting-level seed counts and Fisher tests
     │   ├── masked_choice.py       report §5.5: A1b's rules with empty bins withheld or masked
-    │   └── ratio_sweep.py         report §5.5: A1b's rules at smaller item-to-bin ratios
+    │   ├── ratio_sweep.py         report §5.5: A1b's rules at smaller item-to-bin ratios
+    │   ├── make_report_assets.py  the report's figures and results tables (writes to report/)
+    │   └── verify_report_numbers.py  checks every number quoted in the report against the committed results
     ├── configs/           # one YAML per setting, plus llms.yaml, budgets.yaml and instances/
     ├── tests/             # unit tests
     ├── docs/              # claims.md (frozen predictions), log.md (decision log)
@@ -193,9 +195,22 @@ It counts, per setting, the seeds in each category (better / worse than Best Fit
 
 **Report §5.5's two extra checks** rescore A1b's committed programs, with no LLM calls: `python pipeline/masked_choice.py` (empty bins withheld, or visible but not choosable while a used bin fits; about 10 min) and `python pipeline/ratio_sweep.py` (new instances at smaller item-to-bin ratios, and at capacity 1,000; a few minutes). They write `results/abl_informed_rules/masked_choice.csv` and `ratio_sweep.csv`; `git status --short results/` is empty if both reproduced.
 
-### 4.5 Report figures
+### 4.5 Report figures, tables and numbers
 
-Commands for the report's figures, which write to `report/figures/`, are added with the report source.
+```bash
+python pipeline/make_report_assets.py
+git status --short ../report/tables ../report/numbers.txt   # empty = tables and numbers reproduced
+```
+
+It reads the committed `final_per_instance.csv`, `final_summary.csv`, `paired_stats.csv`, `diagnostics.csv` and `runs_index.csv` of every setting, the baseline's `evals.csv` files, and `results/abl_informed_rules/ratio_sweep.csv` (written by `pipeline/ratio_sweep.py`, §4.4). It writes the report's five figures to `report/figures/` (`convergence.pdf`: search progress on the training set; `empty_bins.pdf`: each seed with empty bins offered against withheld; `fresh_rate.pdf`: loss on `shape_k5` against how often a rule opens fresh bins there; `collapses.pdf`: each A1b and A2b seed's excess above Best Fit, ordered by item-to-bin ratio; `ratio_sweep.pdf`: the five collapsing A1b rules as the item-to-bin ratio falls), its four results tables to `report/tables/` and the numbers quoted in the text to `report/numbers.txt`. Table means are taken from `final_summary.csv` with the same rounding as `summary_tables.md`, so the two agree. It takes seconds. As in 4.3, figure bytes (and the axes' exact placement) can differ with the matplotlib version, fonts and operating system, so only the tables and numbers are expected to match byte for byte; the plotted data does not change.
+
+**Checking every number in the report.** A second, independent script recomputes each number the report quotes from the committed files and compares it with the value printed in the report:
+
+```bash
+python pipeline/verify_report_numbers.py   # about 5-10 minutes; exits with status 1 if any check fails
+```
+
+It re-packs every final program (instance 0 of every set) against `final_per_instance.csv`, recomputes every verdict from the per-instance rows and requires it to agree with `paired_stats.csv`, checks `runs_index.csv` against each run's `evals.csv`, and then checks the numbers quoted in each report section against `final_per_instance.csv`, `diagnostics.csv`, `runs_index.csv`, `integrity.csv`, tuned Best Fit's `candidates.jsonl` and `summary.json`, and §5.5's `masked_choice.csv` and `ratio_sweep.csv`. For the few numbers that no results file holds, it re-scores the committed programs itself: baseline seed 4's empty-bin placements by item size (§5.2), and the final programs on A2's training sets with EoH's fitness (§5.4). It prints one line per report section with the files it read and the number of checks and failures (2,428 checks, 0 failures on this commit). It does not read `make_report_assets.py`'s outputs, so it is a second route to the same numbers.
 
 ### 4.6 What reproduces exactly, and what doesn't
 
